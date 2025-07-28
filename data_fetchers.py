@@ -4,12 +4,13 @@ Data fetchers module for AI Daily Briefing Agent.
 This module contains functions for calling external data APIs:
 - NewsAPI for news articles
 - OpenWeatherMap for weather data
-- Listen Notes for podcast episodes
+- Taddy API for podcast episodes
 """
 
 import logging
 from typing import List, Dict, Any
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from config import get_config
 
@@ -57,21 +58,56 @@ def get_weather() -> WeatherData:
     """
     logger.info("Fetching weather data...")
     
-    # TODO: Implement in Milestone 1
-    # config = get_config()
-    # api_key = config.get('OPENWEATHER_API_KEY')
-    # city = config.get('LOCATION_CITY')
-    # country = config.get('LOCATION_COUNTRY')
+    config = get_config()
+    api_key = config.get('OPENWEATHER_API_KEY')
+    city = config.get('LOCATION_CITY')
+    country = config.get('LOCATION_COUNTRY')
     
-    # Placeholder return
-    return WeatherData(
-        city="San Francisco",
-        country="US",
-        temperature=22.5,
-        description="partly cloudy",
-        humidity=65,
-        wind_speed=3.2
-    )
+    # OpenWeatherMap Current Weather API
+    url = "https://api.openweathermap.org/data/2.5/weather"
+    params = {
+        'q': f"{city},{country}",
+        'appid': api_key,
+        'units': 'metric'  # Use Celsius
+    }
+    
+    try:
+        import requests
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        data = response.json()
+        
+        # Parse the response
+        weather_data = WeatherData(
+            city=data['name'],
+            country=data['sys']['country'],
+            temperature=data['main']['temp'],
+            description=data['weather'][0]['description'],
+            humidity=data['main']['humidity'],
+            wind_speed=data['wind']['speed']
+        )
+        
+        logger.info(f"✓ Weather data fetched for {weather_data.city}, {weather_data.country}")
+        return weather_data
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Weather API request failed: {e}")
+        # Try to get more details from the response if available
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                error_details = e.response.json()
+                logger.error(f"API error details: {error_details}")
+                raise Exception(f"Weather API error: {error_details.get('message', str(e))}")
+            except:
+                pass
+        raise Exception(f"Failed to fetch weather data: {e}")
+    except KeyError as e:
+        logger.error(f"Unexpected weather API response format: {e}")
+        raise Exception(f"Invalid weather API response: {e}")
+    except Exception as e:
+        logger.error(f"Weather data fetch error: {e}")
+        raise
 
 
 def get_news_articles() -> List[Article]:
@@ -86,32 +122,78 @@ def get_news_articles() -> List[Article]:
     """
     logger.info("Fetching news articles...")
     
-    # TODO: Implement in Milestone 1
-    # config = get_config()
-    # api_key = config.get('NEWSAPI_KEY')
-    # topics = config.get_news_topics()
-    # max_articles = config.get_max_articles_per_topic()
+    config = get_config()
+    api_key = config.get('NEWSAPI_KEY')
+    topics = config.get_news_topics()
+    max_articles = config.get_max_articles_per_topic()
     
-    # Placeholder return
-    return [
-        Article(
-            title="Sample Tech News Article",
-            source="TechCrunch",
-            url="https://example.com/article1",
-            content="This is sample content for a technology article..."
-        ),
-        Article(
-            title="Sample Business News Article", 
-            source="Bloomberg",
-            url="https://example.com/article2",
-            content="This is sample content for a business article..."
-        )
-    ]
+    all_articles = []
+    
+    try:
+        import requests
+        
+        for topic in topics:
+            logger.info(f"Fetching articles for topic: {topic}")
+            
+            # NewsAPI Everything endpoint
+            url = "https://newsapi.org/v2/everything"
+            params = {
+                'q': topic,
+                'apiKey': api_key,
+                'sortBy': 'publishedAt',
+                'pageSize': max_articles,
+                'language': 'en'
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if data['status'] != 'ok':
+                logger.warning(f"NewsAPI returned non-ok status for topic {topic}: {data.get('message', 'Unknown error')}")
+                continue
+            
+            # Parse articles
+            for article_data in data.get('articles', []):
+                # Skip articles with null/empty essential fields
+                if not article_data.get('title') or not article_data.get('url'):
+                    continue
+                
+                article = Article(
+                    title=article_data['title'],
+                    source=article_data.get('source', {}).get('name', 'Unknown Source'),
+                    url=article_data['url'],
+                    content=article_data.get('content', '') or article_data.get('description', ''),
+                    summary=""  # Will be populated in Milestone 2
+                )
+                all_articles.append(article)
+        
+        logger.info(f"✓ Fetched {len(all_articles)} news articles across {len(topics)} topics")
+        return all_articles
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"News API request failed: {e}")
+        # Try to get more details from the response if available
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                error_details = e.response.json()
+                logger.error(f"API error details: {error_details}")
+                raise Exception(f"News API error: {error_details.get('message', str(e))}")
+            except:
+                pass
+        raise Exception(f"Failed to fetch news articles: {e}")
+    except KeyError as e:
+        logger.error(f"Unexpected news API response format: {e}")
+        raise Exception(f"Invalid news API response: {e}")
+    except Exception as e:
+        logger.error(f"News articles fetch error: {e}")
+        raise
 
 
 def get_new_podcast_episodes() -> List[PodcastEpisode]:
     """
-    Fetch new podcast episodes from Listen Notes API.
+    Fetch new podcast episodes from Taddy GraphQL API.
     
     Returns:
         List of PodcastEpisode objects
@@ -121,21 +203,131 @@ def get_new_podcast_episodes() -> List[PodcastEpisode]:
     """
     logger.info("Fetching new podcast episodes...")
     
-    # TODO: Implement in Milestone 1
-    # config = get_config()
-    # api_key = config.get('LISTEN_NOTES_API_KEY')
-    # categories = config.get_podcast_categories()
+    config = get_config()
+    api_key = config.get('TADDY_API_KEY')
+    user_id = config.get('TADDY_USER_ID')
     
-    # Placeholder return
-    return [
-        PodcastEpisode(
-            podcast_title="Tech Talk Daily",
-            episode_title="The Future of AI in 2025",
-            url="https://example.com/podcast1"
-        ),
-        PodcastEpisode(
-            podcast_title="Business Insights",
-            episode_title="Market Trends This Week",
-            url="https://example.com/podcast2"
-        )
-    ] 
+    # Hardcoded popular podcasts for initial implementation
+    # These can be made configurable in a future iteration
+    POPULAR_PODCASTS = [
+        {
+            'uuid': 'dacd25f2-7433-497b-8759-93d6daa3ceea',
+            'name': 'TechCrunch Startup News',
+            'category': 'Technology'
+        },
+        {
+            'uuid': 'f371face-6b5d-4733-831f-3d242026248c', 
+            'name': 'Planet Money',
+            'category': 'Business'
+        },
+        {
+            'uuid': 'ac48632f-be29-457e-9349-c03ffc17f684',
+            'name': 'Science Talk',
+            'category': 'Science'
+        },
+        {
+            'uuid': '0e6d82bb-0da1-447f-84bd-1ef6cd596c2c',
+            'name': 'Recode Daily',
+            'category': 'Technology'
+        }
+    ]
+    
+    all_episodes = []
+    
+    try:
+        import requests
+        import json
+        import re
+        
+        for podcast in POPULAR_PODCASTS:
+            logger.info(f"Fetching episodes for {podcast['name']} ({podcast['category']})")
+            
+            # GraphQL query to get recent episodes from this podcast
+            graphql_query = {
+                "query": f"""{{
+                    getPodcastSeries(uuid: "{podcast['uuid']}") {{
+                        uuid
+                        name
+                        episodes(limitPerPage: 3) {{
+                            uuid
+                            name
+                            description
+                            audioUrl
+                            datePublished
+                        }}
+                    }}
+                }}"""
+            }
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'X-USER-ID': user_id,
+                'X-API-KEY': api_key
+            }
+            
+            response = requests.post(
+                'https://api.taddy.org/graphql',
+                json=graphql_query,
+                headers=headers,
+                timeout=10
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Check for GraphQL errors
+            if 'errors' in data:
+                error_messages = [error.get('message', 'Unknown error') for error in data['errors']]
+                logger.error(f"GraphQL errors for {podcast['name']}: {error_messages}")
+                continue
+            
+            # Parse episodes
+            podcast_data = data.get('data', {}).get('getPodcastSeries', {})
+            if not podcast_data:
+                logger.warning(f"No data returned for podcast {podcast['name']}")
+                continue
+                
+            episodes = podcast_data.get('episodes', [])
+            
+            for episode_data in episodes:
+                if not episode_data.get('name') or not episode_data.get('audioUrl'):
+                    continue
+                
+                # Clean up HTML tags from description for better readability
+                description = episode_data.get('description', '')
+                if description:
+                    # Remove HTML tags using regex
+                    description = re.sub(r'<[^>]+>', '', description)
+                    # Clean up extra whitespace
+                    description = re.sub(r'\s+', ' ', description).strip()
+                
+                episode = PodcastEpisode(
+                    podcast_title=podcast_data.get('name', 'Unknown Podcast'),
+                    episode_title=episode_data.get('name', 'Unknown Episode'),
+                    url=episode_data.get('audioUrl', '')
+                )
+                all_episodes.append(episode)
+        
+        logger.info(f"✓ Fetched {len(all_episodes)} podcast episodes across {len(POPULAR_PODCASTS)} podcasts")
+        return all_episodes
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Podcast API request failed: {e}")
+        # Try to get more details from the response if available
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                error_details = e.response.json()
+                logger.error(f"API error details: {error_details}")
+                if 'errors' in error_details:
+                    error_messages = [error.get('message', 'Unknown error') for error in error_details['errors']]
+                    raise Exception(f"Podcast API GraphQL errors: {'; '.join(error_messages)}")
+                raise Exception(f"Podcast API error: {error_details}")
+            except json.JSONDecodeError:
+                pass
+        raise Exception(f"Failed to fetch podcast episodes: {e}")
+    except KeyError as e:
+        logger.error(f"Unexpected podcast API response format: {e}")
+        raise Exception(f"Invalid podcast API response: {e}")
+    except Exception as e:
+        logger.error(f"Podcast episodes fetch error: {e}")
+        raise 

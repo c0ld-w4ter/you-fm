@@ -81,7 +81,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
     Generate the complete daily briefing.
     
     This function will be expanded in each milestone:
-    - Milestone 1: Fetch and assemble raw data
+    - Milestone 1: Fetch and assemble raw data ✅
     - Milestone 2: Add AI summarization
     - Milestone 3: Add audio generation and upload
     
@@ -90,12 +90,49 @@ def generate_daily_briefing() -> Dict[str, Any]:
     """
     logger.info("Generating daily briefing...")
     
-    # Placeholder for milestone implementations
-    return {
-        'status': 'placeholder',
-        'message': 'Briefing generation not yet implemented',
-        'milestone': 0
-    }
+    try:
+        # Import data fetching functions
+        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        
+        # Milestone 1: Fetch all raw data
+        logger.info("Fetching weather data...")
+        weather_data = get_weather()
+        
+        logger.info("Fetching news articles...")
+        news_articles = get_news_articles()
+        
+        logger.info("Fetching podcast episodes...")
+        podcast_episodes = get_new_podcast_episodes()
+        
+        # Assemble the raw text briefing
+        briefing_text = assemble_briefing_text(weather_data, news_articles, podcast_episodes)
+        
+        # Save to local file
+        briefing_file = "briefing.txt"
+        with open(briefing_file, 'w', encoding='utf-8') as f:
+            f.write(briefing_text)
+        
+        logger.info(f"✓ Daily briefing saved to {briefing_file}")
+        
+        return {
+            'status': 'success',
+            'message': f'Daily briefing generated and saved to {briefing_file}',
+            'milestone': 1,
+            'data': {
+                'weather': weather_data,
+                'articles_count': len(news_articles),
+                'podcasts_count': len(podcast_episodes),
+                'file_path': briefing_file
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to generate daily briefing: {e}")
+        return {
+            'status': 'error',
+            'message': f'Briefing generation failed: {e}',
+            'milestone': 1
+        }
 
 
 def main():
@@ -115,6 +152,87 @@ def main():
         print(f"Error: {e}")
         import traceback
         traceback.print_exc()
+
+
+def assemble_briefing_text(weather_data, news_articles, podcast_episodes) -> str:
+    """
+    Assemble raw data into a cohesive text briefing.
+    
+    Args:
+        weather_data: WeatherData object
+        news_articles: List of Article objects
+        podcast_episodes: List of PodcastEpisode objects
+        
+    Returns:
+        Complete briefing text
+    """
+    from datetime import datetime
+    
+    # Start with header
+    current_time = datetime.now().strftime("%A, %B %d, %Y at %I:%M %p")
+    briefing_parts = [
+        "=" * 60,
+        "AI DAILY BRIEFING",
+        f"Generated on {current_time}",
+        "=" * 60,
+        ""
+    ]
+    
+    # Weather section
+    briefing_parts.extend([
+        "🌤️  WEATHER UPDATE",
+        "-" * 30,
+        f"Location: {weather_data.city}, {weather_data.country}",
+        f"Temperature: {weather_data.temperature}°C",
+        f"Conditions: {weather_data.description.title()}",
+        f"Humidity: {weather_data.humidity}%",
+        f"Wind Speed: {weather_data.wind_speed} m/s",
+        ""
+    ])
+    
+    # News section
+    briefing_parts.extend([
+        "📰 NEWS HEADLINES",
+        "-" * 30
+    ])
+    
+    if news_articles:
+        for i, article in enumerate(news_articles, 1):
+            briefing_parts.extend([
+                f"{i}. {article.title}",
+                f"   Source: {article.source}",
+                f"   URL: {article.url}",
+                f"   Content: {article.content[:200]}..." if len(article.content) > 200 else f"   Content: {article.content}",
+                ""
+            ])
+    else:
+        briefing_parts.extend(["No news articles available.", ""])
+    
+    # Podcast section
+    briefing_parts.extend([
+        "🎧 NEW PODCAST EPISODES",
+        "-" * 30
+    ])
+    
+    if podcast_episodes:
+        for i, episode in enumerate(podcast_episodes, 1):
+            briefing_parts.extend([
+                f"{i}. {episode.episode_title}",
+                f"   Podcast: {episode.podcast_title}",
+                f"   URL: {episode.url}",
+                ""
+            ])
+    else:
+        briefing_parts.extend(["No new podcast episodes available.", ""])
+    
+    # Footer
+    briefing_parts.extend([
+        "=" * 60,
+        "End of Daily Briefing",
+        "=" * 60
+    ])
+    
+    return "\n".join(briefing_parts)
 
 
 if __name__ == "__main__":

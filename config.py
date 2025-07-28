@@ -26,7 +26,8 @@ class Config:
     REQUIRED_VARS = [
         'NEWSAPI_KEY',           # NewsAPI.org API key
         'OPENWEATHER_API_KEY',   # OpenWeatherMap API key
-        'LISTEN_NOTES_API_KEY',  # Listen Notes API key
+        'TADDY_API_KEY',         # Taddy Podcast API key
+        'TADDY_USER_ID',         # Taddy User ID
         'GEMINI_API_KEY',        # Google Gemini API key
         'ELEVENLABS_API_KEY',    # ElevenLabs API key
         'GOOGLE_DRIVE_FOLDER_ID', # Target folder ID in Google Drive

@@ -24,7 +24,7 @@ The development plan is broken into iterative, testable milestones to facilitate
 * **Testing Framework:** `pytest`
 
 #### **Python Libraries**
-* `requests`: For all REST API calls.
+* `requests`: For REST API calls and GraphQL queries.
 * `boto3`: AWS SDK for Python (for AWS Secrets Manager).
 * `google-api-python-client` & `google-auth-httplib2`: For Google Drive integration.
 * `google-generativeai`: Client for the Gemini API.
@@ -33,7 +33,7 @@ The development plan is broken into iterative, testable milestones to facilitate
 #### **External Services & APIs**
 * **News Source:** NewsAPI
 * **Weather Source:** OpenWeatherMap API
-* **Podcast Source:** Listen Notes API
+* **Podcast Source:** Taddy API (GraphQL)
 * **AI Summarization:** Google Gemini API
 * **Text-to-Speech (TTS):** ElevenLabs API
 * **File Delivery:** Google Drive API v3
@@ -95,7 +95,7 @@ The project will be built using a "text-first" approach, focusing on perfecting 
     3.  Implement and test `data_fetchers.get_new_podcast_episodes()`.
     4.  Modify `main.py` to call these functions and save the assembled raw text to a local file (e.g., `briefing.txt`).
 * **Test Plan:**
-    * **Unit Tests:** Mock the `requests.get` method for each function and assert that sample JSON responses are parsed into the correct data structures.
+    * **Unit Tests:** Mock the `requests.get` method for REST APIs and `requests.post` for GraphQL APIs. Assert that sample responses are parsed into the correct data structures.
     * **Manual Test:** Run `python main.py` and verify that `briefing.txt` contains the current weather, news headlines, and podcast updates.
 
 ### **Milestone 2: AI Summarization**

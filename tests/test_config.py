@@ -21,7 +21,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -57,7 +58,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -76,7 +78,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -95,7 +98,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -119,7 +123,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -137,7 +142,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -156,7 +162,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -178,7 +185,8 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -207,7 +215,8 @@ class TestGetConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'TADDY_API_KEY': 'test-taddy-api-key',
+        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
