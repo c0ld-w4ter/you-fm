@@ -82,7 +82,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
     
     This function will be expanded in each milestone:
     - Milestone 1: Fetch and assemble raw data ✅
-    - Milestone 2: Add AI summarization
+    - Milestone 2: Add AI summarization ✅
     - Milestone 3: Add audio generation and upload
     
     Returns:
@@ -91,8 +91,9 @@ def generate_daily_briefing() -> Dict[str, Any]:
     logger.info("Generating daily briefing...")
     
     try:
-        # Import data fetching functions
+        # Import data fetching and summarization functions
         from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from summarizer import summarize_articles, create_briefing_script
         
         # Milestone 1: Fetch all raw data
         logger.info("Fetching weather data...")
@@ -104,25 +105,40 @@ def generate_daily_briefing() -> Dict[str, Any]:
         logger.info("Fetching podcast episodes...")
         podcast_episodes = get_new_podcast_episodes()
         
-        # Assemble the raw text briefing
-        briefing_text = assemble_briefing_text(weather_data, news_articles, podcast_episodes)
+        # Milestone 2: AI Summarization
+        logger.info("Summarizing articles with AI...")
+        summarized_articles = summarize_articles(news_articles)
         
-        # Save to local file
-        briefing_file = "briefing.txt"
-        with open(briefing_file, 'w', encoding='utf-8') as f:
-            f.write(briefing_text)
+        logger.info("Creating final briefing script...")
+        briefing_script = create_briefing_script(weather_data, summarized_articles, podcast_episodes)
         
-        logger.info(f"✓ Daily briefing saved to {briefing_file}")
+        # Save both versions to local files
+        raw_briefing_file = "briefing_raw.txt"
+        final_briefing_file = "briefing.txt"
+        
+        # Save raw version for comparison
+        raw_briefing_text = assemble_briefing_text(weather_data, news_articles, podcast_episodes)
+        with open(raw_briefing_file, 'w', encoding='utf-8') as f:
+            f.write(raw_briefing_text)
+        
+        # Save AI-enhanced version
+        with open(final_briefing_file, 'w', encoding='utf-8') as f:
+            f.write(briefing_script)
+        
+        logger.info(f"✓ AI-enhanced daily briefing saved to {final_briefing_file}")
+        logger.info(f"✓ Raw briefing saved to {raw_briefing_file} for comparison")
         
         return {
             'status': 'success',
-            'message': f'Daily briefing generated and saved to {briefing_file}',
-            'milestone': 1,
+            'message': f'AI-enhanced daily briefing generated and saved to {final_briefing_file}',
+            'milestone': 2,
             'data': {
                 'weather': weather_data,
                 'articles_count': len(news_articles),
+                'summarized_articles': len(summarized_articles),
                 'podcasts_count': len(podcast_episodes),
-                'file_path': briefing_file
+                'final_script_file': final_briefing_file,
+                'raw_file': raw_briefing_file
             }
         }
         
@@ -131,7 +147,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
         return {
             'status': 'error',
             'message': f'Briefing generation failed: {e}',
-            'milestone': 1
+            'milestone': 2
         }
 
 

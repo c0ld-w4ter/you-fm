@@ -36,7 +36,7 @@ class Config:
     # Optional configuration with defaults
     DEFAULT_VALUES = {
         'AWS_REGION': 'us-east-1',
-        'LOCATION_CITY': 'San Francisco',
+        'LOCATION_CITY': 'Denver',
         'LOCATION_COUNTRY': 'US',
         'NEWS_TOPICS': 'technology,business,science',
         'MAX_ARTICLES_PER_TOPIC': '3',

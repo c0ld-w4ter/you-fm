@@ -4,14 +4,14 @@ A serverless application that generates personalized, AI-powered daily audio new
 
 ## 🏗️ Project Status
 
-**Current Status**: Milestone 1 ✅ Complete  
-**Next**: Milestone 2 - AI Summarization
+**Current Status**: Milestone 2 ✅ Complete  
+**Next**: Milestone 3 - Audio Generation & Delivery
 
 ### Milestone Progress
 - ✅ **Milestone 0**: Secure Setup & Configuration
 - ✅ **Milestone 1**: Live Data Aggregation  
-- 🔄 **Milestone 2**: AI Summarization
-- ⏳ **Milestone 3**: Audio Generation & Delivery
+- ✅ **Milestone 2**: AI Summarization with Google Gemini
+- 🔄 **Milestone 3**: Audio Generation & Delivery
 - ⏳ **Milestone 4**: Cloud Migration & Deployment
 
 ## 🚀 Quick Start
@@ -75,13 +75,16 @@ python -m pytest tests/test_config.py -v
 ```
 
 ### Test Coverage
-Current test coverage focuses on:
-- ✅ Configuration loading and validation
+Current test coverage includes **30 comprehensive tests** covering:
+- ✅ Configuration loading and validation (10 tests)
 - ✅ Environment variable handling  
 - ✅ Error handling for missing configuration
-- ✅ Live data fetching from external APIs
+- ✅ Live data fetching from external APIs (10 tests)
 - ✅ API response parsing and validation
 - ✅ Error handling for API failures
+- ✅ **AI summarization with Google Gemini (10 tests)**
+- ✅ **AI-generated briefing script creation**
+- ✅ **Fallback handling for AI failures**
 
 ## 🔧 Configuration
 
@@ -117,8 +120,8 @@ PODCAST_CATEGORIES=Technology,Business,Science
 
 ## 🏃 Running the Application
 
-### Current Functionality (Milestone 1)
-The application now fetches live data from external APIs and generates a text briefing:
+### Current Functionality (Milestone 2)
+The application fetches live data from external APIs, summarizes articles with AI, and generates an enhanced briefing:
 
 ```bash
 # Activate virtual environment
@@ -129,15 +132,22 @@ python main.py
 ```
 
 **Expected Output**: 
-- Console logs showing data fetching progress
-- A `briefing.txt` file containing current weather, news articles, and podcast episodes
-- Success message with data counts
+- Console logs showing data fetching and AI summarization progress
+- A `briefing.txt` file containing the AI-enhanced briefing script
+- A `briefing_raw.txt` file containing the raw data for comparison
+- Success message with data counts and file paths
 
-**Note**: You need to set the required environment variables (API keys) for the application to work with real data. Without API keys, you'll see configuration errors.
+**New Features**:
+- ✅ AI-powered article summarization using Google Gemini 2.5 Pro
+- ✅ **AI-generated briefing scripts** - Natural, professional scripts created entirely by AI
+- ✅ Intelligent content selection (top 5 articles, top 3 podcasts)
+- ✅ Dynamic script formatting based on available data
+- ✅ Robust fallback handling for API failures
+
+**Note**: You need to set all required environment variables (including `GEMINI_API_KEY`) for the application to work with real data.
 
 ### Future Functionality
-After upcoming milestones, the application will:
-- Generate AI summaries using Google Gemini (Milestone 2)  
+After upcoming milestones, the application will:  
 - Convert text to speech using ElevenLabs (Milestone 3)
 - Upload audio files to Google Drive (Milestone 3)
 - Deploy to AWS Lambda for automated daily execution (Milestone 4)
@@ -146,15 +156,16 @@ After upcoming milestones, the application will:
 
 ```
 ai-daily-briefing-agent/
-├── main.py                 # Main Lambda handler and orchestration (✅ Milestone 1)
+├── main.py                 # Main Lambda handler and orchestration (✅ Milestone 2)
 ├── config.py               # Configuration management (✅ Complete)
 ├── data_fetchers.py        # External API data fetching (✅ Complete)
-├── summarizer.py           # AI summarization with Gemini API (🔄 Next)
-├── tts_generator.py        # Text-to-speech with ElevenLabs
+├── summarizer.py           # AI summarization with Gemini API (✅ Complete)
+├── tts_generator.py        # Text-to-speech with ElevenLabs (🔄 Next)
 ├── uploader.py             # Google Drive file upload
 ├── tests/                  # Unit tests
 │   ├── test_config.py      # Configuration tests (✅ Complete)
-│   └── test_data_fetchers.py # Data fetching tests (✅ Complete)
+│   ├── test_data_fetchers.py # Data fetching tests (✅ Complete)
+│   └── test_summarizer.py  # AI summarization tests (✅ Complete)
 ├── requirements.txt        # Python dependencies
 ├── iam_policy.json         # AWS Lambda execution policy
 └── .gitignore             # Git ignore rules
@@ -185,14 +196,14 @@ python -m pytest tests/test_<module>.py -v
 
 ## 📋 Next Steps
 
-1. **Milestone 2**: Implement AI summarization
-   - Integrate Google Gemini API for article summarization
-   - Create cohesive briefing script generation
-   - Update tests for summarization functionality
+1. **Milestone 3**: Implement audio generation and delivery
+   - Integrate ElevenLabs API for text-to-speech conversion
+   - Implement Google Drive API for file upload
+   - Create end-to-end audio briefing workflow
 
-2. **Get API Keys**: Sign up for required services and configure environment variables
+2. **Get Additional API Keys**: If you haven't already, sign up for ElevenLabs and configure Google Drive credentials
 
-3. **Test Manual Workflow**: Run `python main.py` with API keys to generate live briefing
+3. **Test Complete Workflow**: Run `python main.py` with all API keys to generate AI-enhanced briefing
 
 ## 🐛 Troubleshooting
 

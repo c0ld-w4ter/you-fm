@@ -70,7 +70,7 @@ class TestConfig:
             
             # Verify default values are loaded
             assert config.get('AWS_REGION') == 'us-east-1'
-            assert config.get('LOCATION_CITY') == 'San Francisco'
+            assert config.get('LOCATION_CITY') == 'Denver'
             assert config.get('NEWS_TOPICS') == 'technology,business,science'
     
     def test_config_overrides_defaults(self):
