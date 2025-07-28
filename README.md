@@ -17,8 +17,13 @@ A serverless application that generates personalized, AI-powered daily audio new
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+ (tested with Python 3.13)
+- Python 3.11+ (tested with Python 3.11.13)
 - Virtual environment (recommended)
+
+> **Note**: If Python 3.11 is not installed, you can install it via:
+> - **macOS**: `brew install python@3.11`
+> - **Ubuntu/Debian**: `sudo apt install python3.11`
+> - **Other platforms**: Download from [python.org](https://www.python.org/downloads/)
 
 ### Setup
 
@@ -29,7 +34,7 @@ A serverless application that generates personalized, AI-powered daily audio new
 
 2. **Create and activate virtual environment**:
    ```bash
-   python3 -m venv venv
+   python3.11 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
