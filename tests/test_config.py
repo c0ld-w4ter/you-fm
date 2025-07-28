@@ -1,0 +1,223 @@
+"""
+Unit tests for the config module.
+
+These tests verify the configuration loading functionality
+as specified in Milestone 0 of the technical specification.
+"""
+
+import os
+import pytest
+from unittest.mock import patch, MagicMock
+
+from config import Config, ConfigurationError, get_config
+
+
+class TestConfig:
+    """Test cases for the Config class."""
+    
+    def test_config_loads_all_required_vars(self):
+        """Test that Config loads all required environment variables."""
+        # Mock all required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            # Verify all required variables are loaded
+            for var in Config.REQUIRED_VARS:
+                assert config.get(var) == mock_env[var]
+    
+    def test_config_handles_missing_required_vars(self):
+        """Test that Config raises error when required variables are missing."""
+        # Mock environment with missing required variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test-key',
+            # Missing other required vars
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            with pytest.raises(ConfigurationError) as exc_info:
+                Config()
+            
+            # Should mention the missing variables
+            error_msg = str(exc_info.value)
+            assert 'Missing required environment variables' in error_msg
+            assert 'OPENWEATHER_API_KEY' in error_msg
+    
+    def test_config_loads_defaults(self):
+        """Test that Config loads default values for optional variables."""
+        # Mock only required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            # Verify default values are loaded
+            assert config.get('AWS_REGION') == 'us-east-1'
+            assert config.get('LOCATION_CITY') == 'San Francisco'
+            assert config.get('NEWS_TOPICS') == 'technology,business,science'
+    
+    def test_config_overrides_defaults(self):
+        """Test that environment variables override default values."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+            'LOCATION_CITY': 'New York',  # Override default
+            'NEWS_TOPICS': 'politics,sports',  # Override default
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            assert config.get('LOCATION_CITY') == 'New York'
+            assert config.get('NEWS_TOPICS') == 'politics,sports'
+    
+    def test_get_with_default(self):
+        """Test the get method with default value."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            # Test existing key
+            assert config.get('NEWSAPI_KEY') == 'test-newsapi-key'
+            
+            # Test non-existing key with default
+            assert config.get('NON_EXISTING_KEY', 'default_value') == 'default_value'
+            
+            # Test non-existing key without default should raise error
+            with pytest.raises(ConfigurationError):
+                config.get('NON_EXISTING_KEY')
+    
+    def test_get_news_topics(self):
+        """Test parsing news topics into a list."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+            'NEWS_TOPICS': 'tech, business , science',  # Test with spaces
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            topics = config.get_news_topics()
+            
+            assert topics == ['tech', 'business', 'science']
+    
+    def test_get_max_articles_per_topic(self):
+        """Test parsing max articles as integer."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+            'MAX_ARTICLES_PER_TOPIC': '5',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            max_articles = config.get_max_articles_per_topic()
+            
+            assert max_articles == 5
+            assert isinstance(max_articles, int)
+    
+    def test_is_aws_environment(self):
+        """Test AWS environment detection."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        # Test without AWS environment
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            assert config.is_aws_environment() is False
+        
+        # Test with AWS environment
+        mock_env['AWS_EXECUTION_ENV'] = 'AWS_Lambda_python3.11'
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            assert config.is_aws_environment() is True
+    
+    def test_validate_config(self):
+        """Test configuration validation."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            # Should validate successfully
+            assert config.validate_config() is True
+        
+        # Test with invalid integer value
+        mock_env['MAX_ARTICLES_PER_TOPIC'] = 'not_a_number'
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            
+            with pytest.raises(ConfigurationError):
+                config.validate_config()
+
+
+class TestGetConfig:
+    """Test cases for the get_config function."""
+    
+    def test_get_config_returns_instance(self):
+        """Test that get_config returns a Config instance."""
+        mock_env = {
+            'NEWSAPI_KEY': 'test-newsapi-key',
+            'OPENWEATHER_API_KEY': 'test-weather-key',
+            'LISTEN_NOTES_API_KEY': 'test-listenapi-key',
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
+        }
+        
+        with patch.dict(os.environ, mock_env, clear=True):
+            # Reset global config to None to test fresh initialization
+            import config
+            config.config = None
+            
+            instance = get_config()
+            assert isinstance(instance, Config)
+            assert instance.get('NEWSAPI_KEY') == 'test-newsapi-key' 
