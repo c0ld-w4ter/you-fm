@@ -83,7 +83,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
     This function will be expanded in each milestone:
     - Milestone 1: Fetch and assemble raw data ✅
     - Milestone 2: Add AI summarization ✅
-    - Milestone 3: Add audio generation and upload
+    - Milestone 3: Add audio generation and upload ✅
     
     Returns:
         Dictionary containing briefing results
@@ -91,9 +91,11 @@ def generate_daily_briefing() -> Dict[str, Any]:
     logger.info("Generating daily briefing...")
     
     try:
-        # Import data fetching and summarization functions
+        # Import all required functions
         from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
         from summarizer import summarize_articles, create_briefing_script
+        from tts_generator import generate_audio, save_audio_locally
+        # from uploader import upload_to_drive  # Uncomment for Google Drive upload
         
         # Milestone 1: Fetch all raw data
         logger.info("Fetching weather data...")
@@ -112,33 +114,38 @@ def generate_daily_briefing() -> Dict[str, Any]:
         logger.info("Creating final briefing script...")
         briefing_script = create_briefing_script(weather_data, summarized_articles, podcast_episodes)
         
-        # Save both versions to local files
-        raw_briefing_file = "briefing_raw.txt"
-        final_briefing_file = "briefing.txt"
+        # Milestone 3: Audio Generation and Local Save
+        logger.info("Generating audio from briefing script...")
+        audio_data = generate_audio(briefing_script)
         
-        # Save raw version for comparison
-        raw_briefing_text = assemble_briefing_text(weather_data, news_articles, podcast_episodes)
-        with open(raw_briefing_file, 'w', encoding='utf-8') as f:
-            f.write(raw_briefing_text)
+        logger.info("Saving audio file locally...")
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        audio_filename = f"daily_briefing_{timestamp}.mp3"
+        audio_file_path = save_audio_locally(audio_data, audio_filename)
         
-        # Save AI-enhanced version
-        with open(final_briefing_file, 'w', encoding='utf-8') as f:
+        # Save script locally for reference
+        script_file = "briefing_script.txt"
+        with open(script_file, 'w', encoding='utf-8') as f:
             f.write(briefing_script)
         
-        logger.info(f"✓ AI-enhanced daily briefing saved to {final_briefing_file}")
-        logger.info(f"✓ Raw briefing saved to {raw_briefing_file} for comparison")
+        logger.info(f"✓ Complete audio briefing workflow finished successfully!")
+        logger.info(f"✓ Audio saved locally: {audio_file_path}")
+        logger.info(f"✓ Script saved locally: {script_file}")
         
         return {
             'status': 'success',
-            'message': f'AI-enhanced daily briefing generated and saved to {final_briefing_file}',
-            'milestone': 2,
+            'message': f'Complete audio daily briefing generated and saved locally',
+            'milestone': 3,
             'data': {
                 'weather': weather_data,
                 'articles_count': len(news_articles),
                 'summarized_articles': len(summarized_articles),
                 'podcasts_count': len(podcast_episodes),
-                'final_script_file': final_briefing_file,
-                'raw_file': raw_briefing_file
+                'audio_file_path': audio_file_path,
+                'audio_size_bytes': len(audio_data),
+                'script_length_chars': len(briefing_script),
+                'script_file': script_file
             }
         }
         
@@ -147,7 +154,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
         return {
             'status': 'error',
             'message': f'Briefing generation failed: {e}',
-            'milestone': 2
+            'milestone': 3
         }
 
 

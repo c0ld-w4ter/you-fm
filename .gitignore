@@ -128,8 +128,11 @@ dmypy.json
 # AWS Lambda deployment packages
 *.zip
 
-# Local development files
+# Local development files and output
 briefing.txt
+briefing_raw.txt
+briefing_script.txt
+daily_briefing_*.mp3
 *.mp3
 *.wav
 

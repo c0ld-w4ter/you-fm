@@ -30,7 +30,7 @@ class Config:
         'TADDY_USER_ID',         # Taddy User ID
         'GEMINI_API_KEY',        # Google Gemini API key
         'ELEVENLABS_API_KEY',    # ElevenLabs API key
-        'GOOGLE_DRIVE_FOLDER_ID', # Target folder ID in Google Drive
+        # 'GOOGLE_DRIVE_FOLDER_ID', # Target folder ID in Google Drive (temporarily disabled for local testing)
     ]
     
     # Optional configuration with defaults

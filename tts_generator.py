@@ -6,7 +6,6 @@ the briefing script text into high-quality audio.
 """
 
 import logging
-from typing import bytes
 
 from config import get_config
 
@@ -27,21 +26,63 @@ def generate_audio(script_text: str) -> bytes:
         Exception: If ElevenLabs API call fails
     """
     logger.info("Generating audio from script...")
+    
+    if not script_text or not script_text.strip():
+        raise Exception("Cannot generate audio from empty script text")
+    
     logger.info(f"Script length: {len(script_text)} characters")
     
-    # TODO: Implement in Milestone 3
-    # config = get_config()
-    # api_key = config.get('ELEVENLABS_API_KEY')
-    # voice_id = config.get('ELEVENLABS_VOICE_ID')
-    
-    # Call ElevenLabs API:
-    # 1. Prepare request with script text and voice settings
-    # 2. Make API call
-    # 3. Return audio bytes
-    
-    # Placeholder return (empty bytes)
-    logger.warning("Audio generation not yet implemented - returning placeholder")
-    return b""
+    try:
+        from elevenlabs.client import ElevenLabs
+        
+        # Get configuration
+        config = get_config()
+        api_key = config.get('ELEVENLABS_API_KEY')
+        voice_id = config.get('ELEVENLABS_VOICE_ID', 'default')
+        
+        # Initialize ElevenLabs client
+        client = ElevenLabs(api_key=api_key)
+        
+        logger.info(f"Using ElevenLabs voice: {voice_id}")
+        
+        # Generate audio using ElevenLabs API
+        # Use recommended settings for news/briefing content
+        audio = client.text_to_speech.convert(
+            text=script_text,
+            voice_id=voice_id if voice_id != 'default' else "JBFqnCBsd6RMkjVDRZzb",  # Rachel voice as default
+            model_id="eleven_multilingual_v2",  # High quality multilingual model
+            output_format="mp3_44100_128",  # Standard MP3 quality
+        )
+        
+        # Convert generator to bytes if needed
+        if hasattr(audio, '__iter__') and not isinstance(audio, (bytes, str)):
+            # Handle streaming response
+            audio_bytes = b''.join(audio)
+        else:
+            audio_bytes = audio
+            
+        logger.info(f"✓ Successfully generated {len(audio_bytes)} bytes of audio")
+        return audio_bytes
+        
+    except ImportError as e:
+        logger.error("ElevenLabs library not available")
+        raise Exception(f"ElevenLabs library not installed: {e}")
+        
+    except Exception as e:
+        logger.error(f"Failed to generate audio with ElevenLabs: {e}")
+        
+        # Enhanced error handling with specific messages
+        error_message = str(e).lower()
+        if "api key" in error_message or "unauthorized" in error_message:
+            raise Exception("ElevenLabs API authentication failed. Please check your ELEVENLABS_API_KEY.")
+        elif "voice" in error_message:
+            raise Exception(f"Voice ID '{voice_id}' not found. Please check your ELEVENLABS_VOICE_ID setting.")
+        elif "quota" in error_message or "limit" in error_message:
+            raise Exception("ElevenLabs API quota exceeded. Please check your account limits.")
+        elif "network" in error_message or "connection" in error_message:
+            raise Exception("Network error connecting to ElevenLabs API. Please check your internet connection.")
+        else:
+            raise Exception(f"ElevenLabs API error: {e}")
 
 
 def save_audio_locally(audio_data: bytes, filename: str = "briefing.mp3") -> str:
