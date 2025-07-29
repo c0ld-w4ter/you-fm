@@ -30,7 +30,7 @@ class Config:
         'TADDY_USER_ID',         # Taddy User ID
         'GEMINI_API_KEY',        # Google Gemini API key
         'ELEVENLABS_API_KEY',    # ElevenLabs API key
-        # 'GOOGLE_DRIVE_FOLDER_ID', # Target folder ID in Google Drive (temporarily disabled for local testing)
+        # 'S3_BUCKET_NAME', # Target S3 bucket name (temporarily disabled for local testing)
     ]
     
     # Optional configuration with defaults
@@ -42,6 +42,8 @@ class Config:
         'MAX_ARTICLES_PER_TOPIC': '3',
         'PODCAST_CATEGORIES': 'Technology,Business,Science',
         'ELEVENLABS_VOICE_ID': 'default',
+        'BRIEFING_DURATION_MINUTES': '8',  # Duration in minutes for the audio briefing
+        'LISTENER_NAME': 'Seamus',  # Name of the listener for personalized greetings (optional)
     }
     
     def __init__(self):
@@ -113,6 +115,14 @@ class Config:
     def get_max_articles_per_topic(self) -> int:
         """Get maximum articles per topic as integer."""
         return int(self.get('MAX_ARTICLES_PER_TOPIC'))
+    
+    def get_briefing_duration_minutes(self) -> int:
+        """Get briefing duration in minutes as integer."""
+        return int(self.get('BRIEFING_DURATION_MINUTES'))
+    
+    def get_listener_name(self) -> str:
+        """Get listener name for personalized greetings."""
+        return self.get('LISTENER_NAME')
     
     def is_aws_environment(self) -> bool:
         """

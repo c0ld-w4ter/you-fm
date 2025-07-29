@@ -1,453 +1,364 @@
 """
-Unit tests for uploader module.
+Tests for the uploader module.
 
-Tests the Google Drive API integration for file uploads.
+This module tests the S3 upload functionality.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, mock_open
-from uploader import upload_to_drive, setup_drive_credentials, verify_folder_access
+from unittest.mock import patch, MagicMock
+from uploader import upload_to_s3, verify_bucket_access, setup_s3_credentials
 
 
-class TestUploadToDrive:
-    """Test cases for upload_to_drive function."""
+class TestUploadToS3:
+    """Test cases for upload_to_s3 function."""
     
-    @patch('uploader.verify_folder_access')
-    @patch('uploader.setup_drive_credentials')
+    @patch('uploader.verify_bucket_access')
     @patch('uploader.get_config')
-    def test_upload_to_drive_success(self, mock_config, mock_setup_creds, mock_verify_folder):
-        """Test successful file upload to Google Drive."""
+    def test_upload_to_s3_success(self, mock_config, mock_verify_bucket):
+        """Test successful S3 upload."""
         # Mock configuration
         mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'test-folder-id'
+        mock_config_instance.get.return_value = 'test-bucket'
         mock_config.return_value = mock_config_instance
         
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        mock_verify_folder.return_value = True
+        # Mock S3 client
+        mock_s3_client = MagicMock()
         
-        # Mock upload response
-        mock_request = MagicMock()
-        mock_service.files().create.return_value = mock_request
-        mock_request.execute.return_value = {
-            'id': 'uploaded-file-id-12345',
-            'name': 'daily_briefing_20250128_140000.mp3',
-            'size': '1024',
-            'webViewLink': 'https://drive.google.com/file/d/uploaded-file-id-12345/view'
-        }
+        # Mock bucket verification
+        mock_verify_bucket.return_value = True
         
         # Test data
-        audio_data = b'fake_mp3_audio_data_content'
+        audio_data = b'test_audio_data'
         filename = 'test_briefing.mp3'
         
-        # Call function
-        result = upload_to_drive(audio_data, filename)
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            # Call function
+            result = upload_to_s3(audio_data, filename)
         
-        # Verify results
-        assert result == 'uploaded-file-id-12345'
+        # Verify S3 client was called correctly
+        mock_s3_client.put_object.assert_called_once()
+        call_args = mock_s3_client.put_object.call_args
         
-        # Verify service calls
-        mock_setup_creds.assert_called_once()
-        mock_verify_folder.assert_called_once_with('test-folder-id')
-        mock_service.files().create.assert_called_once()
+        assert call_args[1]['Bucket'] == 'test-bucket'
+        assert call_args[1]['Key'] == filename
+        assert call_args[1]['Body'] == audio_data
+        assert call_args[1]['ContentType'] == 'audio/mpeg'
         
-        # Verify file metadata
-        call_args = mock_service.files().create.call_args
-        file_metadata = call_args[1]['body']
-        assert file_metadata['name'] == filename
-        assert file_metadata['parents'] == ['test-folder-id']
-        
-    @patch('uploader.verify_folder_access')
-    @patch('uploader.setup_drive_credentials')
+        # Verify result is S3 URL
+        assert result == f"https://test-bucket.s3.amazonaws.com/{filename}"
+    
+    @patch('uploader.verify_bucket_access')
     @patch('uploader.get_config')
     @patch('uploader.datetime')
-    def test_upload_to_drive_auto_filename(self, mock_datetime, mock_config, mock_setup_creds, mock_verify_folder):
-        """Test upload with auto-generated filename."""
-        # Mock datetime for consistent filename
-        mock_datetime.now.return_value.strftime.return_value = '20250128_140000'
+    def test_upload_to_s3_auto_filename(self, mock_datetime, mock_config, mock_verify_bucket):
+        """Test S3 upload with auto-generated filename."""
+        # Mock datetime
+        mock_datetime.now.return_value.strftime.return_value = '20250128_143000'
         
         # Mock configuration
         mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'test-folder-id'
+        mock_config_instance.get.return_value = 'test-bucket'
         mock_config.return_value = mock_config_instance
         
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        mock_verify_folder.return_value = True
+        # Mock S3 client
+        mock_s3_client = MagicMock()
         
-        # Mock upload response
-        mock_request = MagicMock()
-        mock_service.files().create.return_value = mock_request
-        mock_request.execute.return_value = {
-            'id': 'uploaded-file-id-12345',
-            'name': 'daily_briefing_20250128_140000.mp3',
-            'size': '1024'
-        }
+        # Mock bucket verification
+        mock_verify_bucket.return_value = True
         
-        # Test data - no filename provided
-        audio_data = b'fake_mp3_audio_data_content'
+        # Test data
+        audio_data = b'test_audio_data'
         
-        # Call function without filename
-        result = upload_to_drive(audio_data)
-        
-        # Verify results
-        assert result == 'uploaded-file-id-12345'
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            # Call function without filename
+            result = upload_to_s3(audio_data)
         
         # Verify auto-generated filename was used
-        call_args = mock_service.files().create.call_args
-        file_metadata = call_args[1]['body']
-        assert file_metadata['name'] == 'daily_briefing_20250128_140000.mp3'
+        expected_filename = 'daily_briefing_20250128_143000.mp3'
+        call_args = mock_s3_client.put_object.call_args
         
-    def test_upload_to_drive_empty_audio(self):
-        """Test upload with empty audio data."""
-        # Test with None
-        with pytest.raises(Exception) as exc_info:
-            upload_to_drive(None)
-        assert "Cannot upload empty audio data" in str(exc_info.value)
-        
-        # Test with empty bytes
-        with pytest.raises(Exception) as exc_info:
-            upload_to_drive(b'')
-        assert "Cannot upload empty audio data" in str(exc_info.value)
-        
-    @patch('uploader.get_config')
-    def test_upload_to_drive_import_error(self, mock_config):
-        """Test handling of missing Google API libraries."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        
-        # Mock import error by patching the import inside the function
-        with patch('builtins.__import__', side_effect=ImportError("No module named 'googleapiclient'")):
-            with pytest.raises(Exception) as exc_info:
-                upload_to_drive(b'test_audio', 'test.mp3')
-            
-            assert "Google API libraries not installed" in str(exc_info.value)
-            
-    @patch('uploader.verify_folder_access')
-    @patch('uploader.setup_drive_credentials')
-    @patch('uploader.get_config')
-    def test_upload_to_drive_folder_access_failed(self, mock_config, mock_setup_creds, mock_verify_folder):
-        """Test upload when folder access verification fails."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'invalid-folder-id'
-        mock_config.return_value = mock_config_instance
-        
-        # Mock services
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        mock_verify_folder.return_value = False  # Folder access failed
-        
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            upload_to_drive(b'test_audio', 'test.mp3')
-            
-        assert "Cannot access Google Drive folder 'invalid-folder-id'" in str(exc_info.value)
-        
-    @patch('uploader.verify_folder_access')  
-    @patch('uploader.setup_drive_credentials')
-    @patch('uploader.get_config')
-    def test_upload_to_drive_api_error_authentication(self, mock_config, mock_setup_creds, mock_verify_folder):
-        """Test handling of authentication errors during upload."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'test-folder-id'
-        mock_config.return_value = mock_config_instance
-        
-        # Mock services
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        mock_verify_folder.return_value = True
-        
-        # Mock API authentication error
-        mock_request = MagicMock()
-        mock_service.files().create.return_value = mock_request
-        mock_request.execute.side_effect = Exception("Authentication failed: Invalid credentials")
-        
-        # Call function and verify error handling
-        with pytest.raises(Exception) as exc_info:
-            upload_to_drive(b'test_audio', 'test.mp3')
-            
-        assert "Google Drive authentication failed" in str(exc_info.value)
-        
-    @patch('uploader.verify_folder_access')
-    @patch('uploader.setup_drive_credentials') 
-    @patch('uploader.get_config')
-    def test_upload_to_drive_api_error_quota(self, mock_config, mock_setup_creds, mock_verify_folder):
-        """Test handling of quota exceeded errors."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'test-folder-id'
-        mock_config.return_value = mock_config_instance
-        
-        # Mock services
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        mock_verify_folder.return_value = True
-        
-        # Mock API quota error
-        mock_request = MagicMock()
-        mock_service.files().create.return_value = mock_request
-        mock_request.execute.side_effect = Exception("Storage quota exceeded")
-        
-        # Call function and verify error handling
-        with pytest.raises(Exception) as exc_info:
-            upload_to_drive(b'test_audio', 'test.mp3')
-            
-        assert "Google Drive storage quota exceeded" in str(exc_info.value)
-
-
-class TestSetupDriveCredentials:
-    """Test cases for setup_drive_credentials function."""
+        assert call_args[1]['Key'] == expected_filename
+        assert result == f"https://test-bucket.s3.amazonaws.com/{expected_filename}"
     
-    @patch('googleapiclient.discovery.build')
-    @patch('google.oauth2.service_account.Credentials.from_service_account_info')
-    @patch('os.getenv')
-    @patch('uploader.get_config')
-    def test_setup_drive_credentials_from_env_json(self, mock_config, mock_getenv, mock_from_service_account, mock_build):
-        """Test credential setup from environment JSON."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
+    def test_upload_to_s3_empty_audio(self):
+        """Test S3 upload with empty audio data."""
+        with pytest.raises(Exception, match="Cannot upload empty audio data to S3"):
+            upload_to_s3(None)
         
-        # Mock environment variable with JSON content
-        test_service_account_json = '{"type": "service_account", "project_id": "test-project"}'
-        mock_getenv.side_effect = lambda key: {
-            'GOOGLE_SERVICE_ACCOUNT_JSON': test_service_account_json,
-            'GOOGLE_SERVICE_ACCOUNT_FILE': None
-        }.get(key)
-        
-        # Mock service account credentials
-        mock_credentials = MagicMock()
-        mock_from_service_account.return_value = mock_credentials
-        
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_build.return_value = mock_service
-        
-        # Call function
-        result = setup_drive_credentials()
-        
-        # Verify results
-        assert result == mock_service
-        
-        # Verify credentials were created from JSON
-        mock_from_service_account.assert_called_once()
-        service_account_info = mock_from_service_account.call_args[0][0]
-        assert service_account_info['type'] == 'service_account'
-        assert service_account_info['project_id'] == 'test-project'
-        
-        # Verify service was built with correct parameters
-        mock_build.assert_called_once_with('drive', 'v3', credentials=mock_credentials)
-        
-    @patch('googleapiclient.discovery.build')
-    @patch('google.oauth2.service_account.Credentials.from_service_account_info')
-    @patch('os.path.exists')
-    @patch('os.getenv')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('uploader.get_config')
-    def test_setup_drive_credentials_from_file(self, mock_config, mock_file, mock_getenv, mock_exists, mock_from_service_account, mock_build):
-        """Test credential setup from service account file."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        
-        # Mock environment - no JSON, but file path exists
-        mock_getenv.side_effect = lambda key: {
-            'GOOGLE_SERVICE_ACCOUNT_JSON': None,
-            'GOOGLE_SERVICE_ACCOUNT_FILE': '/path/to/service_account.json'
-        }.get(key)
-        mock_exists.return_value = True
-        
-        # Mock file content
-        test_service_account_data = '{"type": "service_account", "project_id": "test-project-file"}'
-        mock_file.return_value.read.return_value = test_service_account_data
-        
-        # Mock service account credentials
-        mock_credentials = MagicMock()
-        mock_from_service_account.return_value = mock_credentials
-        
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_build.return_value = mock_service
-        
-        # Call function
-        result = setup_drive_credentials()
-        
-        # Verify results
-        assert result == mock_service
-        
-        # Verify file was opened and read
-        mock_file.assert_called_once_with('/path/to/service_account.json', 'r')
-        
-    @patch('os.path.exists')
-    @patch('os.getenv')
-    @patch('uploader.get_config')
-    def test_setup_drive_credentials_no_credentials(self, mock_config, mock_getenv, mock_exists):
-        """Test error when no credentials are found."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        
-        # Mock no credentials available
-        mock_getenv.return_value = None
-        mock_exists.return_value = False
-        
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            setup_drive_credentials()
-            
-        assert "Google service account credentials not found" in str(exc_info.value)
-        assert "GOOGLE_SERVICE_ACCOUNT_JSON" in str(exc_info.value)
-        assert "GOOGLE_SERVICE_ACCOUNT_FILE" in str(exc_info.value)
-        
-    @patch('uploader.get_config')
-    def test_setup_drive_credentials_import_error(self, mock_config):
-        """Test handling of missing Google API libraries."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        
-        # Mock import error by patching the import inside the function
-        with patch('builtins.__import__', side_effect=ImportError("No module named 'googleapiclient'")):
-            with pytest.raises(Exception) as exc_info:
-                setup_drive_credentials()
-            
-            assert "Required Google API libraries not installed" in str(exc_info.value)
-            
-    @patch('os.getenv')
-    @patch('uploader.get_config')
-    def test_setup_drive_credentials_invalid_json(self, mock_config, mock_getenv):
-        """Test handling of invalid JSON in environment variable."""
-        # Mock configuration
-        mock_config_instance = MagicMock()
-        mock_config.return_value = mock_config_instance
-        
-        # Mock environment variable with invalid JSON
-        mock_getenv.side_effect = lambda key: {
-            'GOOGLE_SERVICE_ACCOUNT_JSON': 'invalid-json-content',
-            'GOOGLE_SERVICE_ACCOUNT_FILE': None
-        }.get(key)
-        
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            setup_drive_credentials()
-            
-        assert "Google service account credentials not found" in str(exc_info.value)
-
-
-class TestVerifyFolderAccess:
-    """Test cases for verify_folder_access function."""
+        with pytest.raises(Exception, match="Cannot upload empty audio data to S3"):
+            upload_to_s3(b'')
     
-    @patch('uploader.setup_drive_credentials')
-    def test_verify_folder_access_success(self, mock_setup_creds):
-        """Test successful folder access verification."""
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
+    @patch('uploader.get_config')
+    def test_upload_to_s3_import_error(self, mock_config):
+        """Test S3 upload when boto3 is not available."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.return_value = 'test-bucket'
+        mock_config.return_value = mock_config_instance
         
-        # Mock folder response with write permissions
-        mock_service.files().get.return_value.execute.return_value = {
-            'id': 'test-folder-id',
-            'name': 'Test Folder',
-            'capabilities': {
-                'canAddChildren': True
-            }
-        }
+        # Mock import error
+        with patch('builtins.__import__', side_effect=ImportError("No module named 'boto3'")):
+            with pytest.raises(Exception, match="boto3 library not installed"):
+                upload_to_s3(b'test_audio', 'test.mp3')
+    
+    @patch('uploader.verify_bucket_access')
+    @patch('uploader.get_config')
+    def test_upload_to_s3_bucket_access_failed(self, mock_config, mock_verify_bucket):
+        """Test S3 upload when bucket access fails."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.return_value = 'test-bucket'
+        mock_config.return_value = mock_config_instance
         
-        # Call function
-        result = verify_folder_access('test-folder-id')
+        # Mock bucket verification failure
+        mock_verify_bucket.return_value = False
         
-        # Verify results
-        assert result == True
+        with pytest.raises(Exception, match="Cannot access S3 bucket: test-bucket"):
+            upload_to_s3(b'test_audio', 'test.mp3')
+    
+    @patch('uploader.verify_bucket_access')
+    @patch('uploader.get_config')
+    def test_upload_to_s3_api_error_authentication(self, mock_config, mock_verify_bucket):
+        """Test S3 upload with authentication error."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.return_value = 'test-bucket'
+        mock_config.return_value = mock_config_instance
         
-        # Verify API call
-        mock_service.files().get.assert_called_once_with(
-            fileId='test-folder-id',
-            fields='id,name,parents,capabilities'
-        )
+        # Mock S3 client with authentication error
+        mock_s3_client = MagicMock()
+        mock_s3_client.put_object.side_effect = Exception("InvalidAccessKeyId")
         
-    @patch('uploader.setup_drive_credentials')
-    def test_verify_folder_access_no_write_permission(self, mock_setup_creds):
-        """Test folder access verification when write permission denied."""
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
+        # Mock bucket verification
+        mock_verify_bucket.return_value = True
         
-        # Mock folder response without write permissions
-        mock_service.files().get.return_value.execute.return_value = {
-            'id': 'test-folder-id',
-            'name': 'Read Only Folder',
-            'capabilities': {
-                'canAddChildren': False
-            }
-        }
-        
-        # Call function
-        result = verify_folder_access('test-folder-id')
-        
-        # Verify results
-        assert result == False
-        
-    def test_verify_folder_access_no_folder_id(self):
-        """Test folder access verification with no folder ID provided."""
-        # Call function with None
-        result = verify_folder_access(None)
-        
-        # Should return True (uploads to root directory)
-        assert result == True
-        
-        # Test with empty string
-        result = verify_folder_access('')
-        assert result == True
-        
-    @patch('uploader.setup_drive_credentials')
-    def test_verify_folder_access_folder_not_found(self, mock_setup_creds):
-        """Test folder access verification when folder not found."""
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        
-        # Mock API error - folder not found
-        mock_service.files().get.return_value.execute.side_effect = Exception("File not found (404)")
-        
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            verify_folder_access('invalid-folder-id')
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
             
-        assert "Google Drive folder 'invalid-folder-id' not found" in str(exc_info.value)
-        
-    @patch('uploader.setup_drive_credentials')
-    def test_verify_folder_access_permission_denied(self, mock_setup_creds):
-        """Test folder access verification when permission denied."""
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
-        
-        # Mock API error - permission denied
-        mock_service.files().get.return_value.execute.side_effect = Exception("Forbidden: Insufficient permissions")
-        
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            verify_folder_access('restricted-folder-id')
+            mock_import.side_effect = side_effect
             
-        assert "No permission to access Google Drive folder" in str(exc_info.value)
+            with pytest.raises(Exception, match="Invalid AWS access key"):
+                upload_to_s3(b'test_audio', 'test.mp3')
+    
+    @patch('uploader.verify_bucket_access')
+    @patch('uploader.get_config')
+    def test_upload_to_s3_api_error_bucket_not_found(self, mock_config, mock_verify_bucket):
+        """Test S3 upload with bucket not found error."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.return_value = 'test-bucket'
+        mock_config.return_value = mock_config_instance
         
-    @patch('uploader.setup_drive_credentials')
-    def test_verify_folder_access_generic_error(self, mock_setup_creds):
-        """Test folder access verification with generic error."""
-        # Mock Google Drive service
-        mock_service = MagicMock()
-        mock_setup_creds.return_value = mock_service
+        # Mock S3 client with bucket not found error
+        mock_s3_client = MagicMock()
+        mock_s3_client.put_object.side_effect = Exception("NoSuchBucket")
         
-        # Mock generic API error
-        mock_service.files().get.return_value.execute.side_effect = Exception("Network timeout")
+        # Mock bucket verification
+        mock_verify_bucket.return_value = True
         
-        # Call function and verify error
-        with pytest.raises(Exception) as exc_info:
-            verify_folder_access('test-folder-id')
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
             
-        assert "Failed to verify Google Drive folder access" in str(exc_info.value) 
+            mock_import.side_effect = side_effect
+            
+            with pytest.raises(Exception, match="S3 bucket 'test-bucket' does not exist"):
+                upload_to_s3(b'test_audio', 'test.mp3')
+
+
+class TestVerifyBucketAccess:
+    """Test cases for verify_bucket_access function."""
+    
+    def test_verify_bucket_access_success(self):
+        """Test successful bucket access verification."""
+        # Mock S3 client
+        mock_s3_client = MagicMock()
+        mock_s3_client.get_bucket_location.return_value = {'LocationConstraint': 'us-west-2'}
+        
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            result = verify_bucket_access('test-bucket')
+        
+        assert result is True
+        mock_s3_client.get_bucket_location.assert_called_once_with(Bucket='test-bucket')
+    
+    def test_verify_bucket_access_no_bucket_name(self):
+        """Test bucket access verification with no bucket name."""
+        result = verify_bucket_access(None)
+        assert result is False
+        
+        result = verify_bucket_access('')
+        assert result is False
+    
+    def test_verify_bucket_access_bucket_not_found(self):
+        """Test bucket access verification with bucket not found."""
+        # Mock S3 client with bucket not found error
+        mock_s3_client = MagicMock()
+        mock_s3_client.get_bucket_location.side_effect = Exception("NoSuchBucket")
+        
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            with pytest.raises(Exception, match="S3 bucket 'test-bucket' does not exist"):
+                verify_bucket_access('test-bucket')
+    
+    def test_verify_bucket_access_access_denied(self):
+        """Test bucket access verification with access denied."""
+        # Mock S3 client with access denied error
+        mock_s3_client = MagicMock()
+        mock_s3_client.get_bucket_location.side_effect = Exception("AccessDenied")
+        
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.ClientError = Exception
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            with pytest.raises(Exception, match="No permission to access S3 bucket 'test-bucket'"):
+                verify_bucket_access('test-bucket')
+
+
+class TestSetupS3Credentials:
+    """Test cases for setup_s3_credentials function."""
+    
+    def test_setup_s3_credentials_success(self):
+        """Test successful S3 credentials setup."""
+        mock_s3_client = MagicMock()
+        mock_s3_client.list_buckets.return_value = {'Buckets': []}
+        
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            result = setup_s3_credentials()
+        
+        assert result == mock_s3_client
+        mock_s3_client.list_buckets.assert_called_once()
+    
+    def test_setup_s3_credentials_import_error(self):
+        """Test S3 credentials setup with import error."""
+        with patch('builtins.__import__', side_effect=ImportError("No module named 'boto3'")):
+            with pytest.raises(Exception, match="Required boto3 library not installed"):
+                setup_s3_credentials()
+    
+    def test_setup_s3_credentials_no_credentials(self):
+        """Test S3 credentials setup with no credentials."""
+        mock_s3_client = MagicMock()
+        mock_s3_client.list_buckets.side_effect = Exception("NoCredentialsError")
+        
+        # Mock boto3 import inside the function
+        with patch('builtins.__import__') as mock_import:
+            def side_effect(name, *args, **kwargs):
+                if name == 'boto3':
+                    mock_boto3 = MagicMock()
+                    mock_boto3.client.return_value = mock_s3_client
+                    return mock_boto3
+                elif name == 'botocore.exceptions':
+                    mock_exceptions = MagicMock()
+                    mock_exceptions.NoCredentialsError = Exception
+                    return mock_exceptions
+                return __import__(name, *args, **kwargs)
+            
+            mock_import.side_effect = side_effect
+            
+            with pytest.raises(Exception, match="AWS credentials not found"):
+                setup_s3_credentials() 

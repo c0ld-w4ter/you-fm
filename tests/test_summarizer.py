@@ -9,6 +9,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from data_fetchers import Article, WeatherData, PodcastEpisode
 from summarizer import summarize_articles, create_briefing_script
+from config import get_config
 
 
 class TestSummarizeArticles:
@@ -232,10 +233,10 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
                 title="AI News",
                 source="TechNews",
                 url="https://example.com/ai",
-                content="AI content"
+                content="AI technology is advancing rapidly with new breakthroughs in machine learning, showing promising developments in the tech sector."
             )
         ]
-        articles[0].summary = "AI technology is advancing rapidly with new breakthroughs in machine learning."
+        # Note: No longer pre-populating summary since raw articles are processed in batch
         
         podcast_episodes = [
             PodcastEpisode(
@@ -265,13 +266,20 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
         mock_model_class.assert_called_once_with('gemini-2.5-pro')
         mock_model.generate_content.assert_called_once()
         
-        # Verify prompt contains expected data
+        # Verify prompt contains expected data (now includes full article content for batch processing)
         call_args = mock_model.generate_content.call_args[0][0]
         assert "San Francisco" in call_args
         assert "22°C" in call_args
-        assert "AI News" in call_args
+        assert "AI News" in call_args  # Article title
+        assert "AI technology is advancing rapidly" in call_args  # Article content
+        assert "TechNews" in call_args  # Article source
         assert "Tech Talk" in call_args
         assert "Future of AI" in call_args
+        # Check for batch processing instructions
+        assert "ANALYZE and SUMMARIZE" in call_args
+        assert "SELECT the most important" in call_args
+        assert "editorial judgment" in call_args
+        assert "target duration" in call_args
         
     @patch('summarizer.get_config')
     def test_create_briefing_script_fallback_on_api_failure(self, mock_config):
@@ -294,10 +302,10 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
                 title="Test Article",
                 source="TestSource",
                 url="https://example.com/test",
-                content="Test content"
+                content="Test content for the article that should be truncated in fallback mode when AI processing fails."
             )
         ]
-        articles[0].summary = "Test summary"
+        # Note: No longer pre-populating summary since raw articles are processed in batch
         
         podcast_episodes = [
             PodcastEpisode(
@@ -310,11 +318,12 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
         # Call function
         result = create_briefing_script(weather_data, articles, podcast_episodes)
         
-        # Verify fallback script content
+        # Verify fallback script content (should use truncated article content)
         assert "Good morning!" in result
         assert "Denver" in result
         assert "15°C" in result
-        assert "Test summary" in result
+        assert "Test Article:" in result  # Fallback now includes title
+        assert "Test content for the article" in result  # Fallback uses truncated content
         assert "Daily News" in result
         assert "Have a great day!" in result
         
@@ -373,7 +382,7 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
                 url=f"https://example.com/article{i}",
                 content=f"Content {i}"
             )
-            article.summary = f"Summary {i}"
+            # Note: No longer pre-populating summary since raw articles are processed in batch
             articles.append(article)
             
         podcasts = []
@@ -387,18 +396,24 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
         # Call function
         result = create_briefing_script(None, articles, podcasts)
         
-        # Verify limits are applied in the prompt
+        # Verify limits are applied in the prompt (batch processing limits to 8 articles for context management)
         call_args = mock_model.generate_content.call_args[0][0]
         
-        # Should only include first 5 articles
-        assert "1. Article 0" in call_args
-        assert "5. Article 4" in call_args
-        assert "6. Article 5" not in call_args
+        # Should include up to 8 articles for AI analysis (context management limit)
+        assert "Article 1:" in call_args
+        assert "Article 0" in call_args  # Title
+        assert "Article 8:" in call_args
+        assert "Article 7" in call_args  # Title
+        assert "Article 9:" not in call_args  # Should not include 9th article (context limit)
         
-        # Should only include first 3 podcasts
+        # Should include up to 3 podcasts for AI consideration
         assert "1. 'Episode 0'" in call_args
         assert "3. 'Episode 2'" in call_args
         assert "4. 'Episode 3'" not in call_args
+        
+        # Verify AI has editorial flexibility in the prompt
+        assert "editorial judgment" in call_args
+        assert "how many stories to include" in call_args
         
     @patch('summarizer.get_config')
     def test_create_briefing_script_fallback_minimal_data(self, mock_config):
@@ -413,3 +428,75 @@ That's your briefing for today. Stay informed and have a wonderful day!"""
         assert "Good morning!" in result
         assert "daily briefing" in result
         assert "Have a great day!" in result 
+
+    @patch('summarizer.get_config')
+    def test_create_briefing_script_uses_configurable_duration(self, mock_get_config):
+        """Test that briefing script generation uses configurable duration."""
+        # Mock configuration to trigger fallback
+        mock_get_config.side_effect = Exception("API connection failed")
+        
+        # Create test data
+        weather_data = WeatherData("Test City", "Test Country", 20, "Sunny", 50, 5.0)
+        articles = [Article("Test Article", "Test Source", "http://test.com", "Test content")]
+        podcast_episodes = [PodcastEpisode("Test Podcast", "Test Episode", "http://test.com")]
+        
+        # Call the function - it should fall back to basic script generation
+        result = create_briefing_script(weather_data, articles, podcast_episodes)
+        
+        # Verify the result contains expected content
+        assert "Good morning!" in result
+        assert "Test City" in result
+        assert "Test content" in result
+        assert "Test Podcast" in result
+    
+    def test_create_briefing_script_uses_listener_name(self):
+        """Test that briefing script generation uses listener name when provided."""
+        # Mock configuration to trigger fallback with listener name
+        with patch('summarizer.get_config') as mock_get_config:
+            # Set up mock config for fallback scenario
+            mock_config = MagicMock()
+            mock_config.get_briefing_duration_minutes.return_value = 3
+            mock_config.get_listener_name.return_value = "Alice"
+            
+            # First call fails (triggers fallback), second call succeeds (provides config for fallback)
+            mock_get_config.side_effect = [Exception("API connection failed"), mock_config]
+            
+            # Create test data
+            weather_data = WeatherData("Test City", "Test Country", 20, "Sunny", 50, 5.0)
+            articles = [Article("Test Article", "Test Source", "http://test.com", "Test content")]
+            podcast_episodes = [PodcastEpisode("Test Podcast", "Test Episode", "http://test.com")]
+            
+            # Call function (will use fallback due to API failure)
+            result = create_briefing_script(weather_data, articles, podcast_episodes)
+            
+            # Verify the result contains the listener's name
+            assert "Good morning, Alice!" in result
+            assert "Alice" in result  # Should appear in closing too
+            assert "Test City" in result
+            assert "Test content" in result
+    
+    def test_create_briefing_script_without_listener_name(self):
+        """Test that briefing script generation works without listener name."""
+        # Mock configuration to trigger fallback without listener name
+        with patch('summarizer.get_config') as mock_get_config:
+            # Set up mock config for fallback scenario
+            mock_config = MagicMock()
+            mock_config.get_briefing_duration_minutes.return_value = 3
+            mock_config.get_listener_name.return_value = ""
+            
+            # First call fails (triggers fallback), second call succeeds (provides config for fallback)
+            mock_get_config.side_effect = [Exception("API connection failed"), mock_config]
+            
+            # Create test data
+            weather_data = WeatherData("Test City", "Test Country", 20, "Sunny", 50, 5.0)
+            articles = [Article("Test Article", "Test Source", "http://test.com", "Test content")]
+            podcast_episodes = [PodcastEpisode("Test Podcast", "Test Episode", "http://test.com")]
+            
+            # Call function (will use fallback due to API failure)
+            result = create_briefing_script(weather_data, articles, podcast_episodes)
+            
+            # Verify the result has generic greeting (no specific name)
+            assert "Good morning!" in result
+            assert ", Alice" not in result  # Should not contain specific names
+            assert "Test City" in result
+            assert "Test content" in result 

@@ -36,7 +36,7 @@ The development plan is broken into iterative, testable milestones to facilitate
 * **Podcast Source:** Taddy API (GraphQL)
 * **AI Summarization:** Google Gemini API
 * **Text-to-Speech (TTS):** ElevenLabs API
-* **File Delivery:** Google Drive API v3
+* **File Delivery:** Amazon S3
 
 ---
 
@@ -52,7 +52,7 @@ The application will be organized into a modular structure to ensure a clear sep
 ├── data_fetchers.py        # Contains all functions for calling external data APIs
 ├── summarizer.py           # Interfaces with the Gemini API for summarization
 ├── tts_generator.py        # Interfaces with the ElevenLabs API for audio generation
-├── uploader.py             # Handles the file upload process to Google Drive
+├── uploader.py             # Handles the file upload process to Amazon S3
 |
 ├── tests/                    # Contains all unit and integration tests
 |
@@ -68,6 +68,12 @@ To ensure data consistency between modules, the application will use simple, wel
 * **`Article`**: Contains fields such as `title`, `source`, `url`, `content`, and `summary`.
 * **`PodcastEpisode`**: Contains fields such as `podcast_title`, `episode_title`, and `url`.
 * **`Briefing`**: A list of strings, where each string is a segment of the final script to be spoken.
+
+### Personalization Features
+
+The application supports personalization through configurable options:
+* **`LISTENER_NAME`**: Optional environment variable to personalize greetings and closings in the briefing script
+* **`BRIEFING_DURATION_MINUTES`**: Configurable duration for the audio briefing length
 
 ---
 
@@ -113,11 +119,11 @@ The project will be built using a "text-first" approach, focusing on perfecting 
 * **Goal:** Convert the final text script into an audio file and deliver it to Google Drive.
 * **Tasks:**
     1.  Implement `tts_generator.generate_audio()`.
-    2.  Implement `uploader.upload_to_drive()`.
+    2.  Implement `uploader.upload_to_s3()`.
     3.  Modify `main.py` to orchestrate the text-to-audio-to-upload pipeline, removing the local file save.
 * **Test Plan:**
-    * **Unit Tests:** Mock the API clients for ElevenLabs and Google Drive. Assert that the clients are called with the correct data (script text, API keys, audio data, folder ID).
-    * **Manual Test:** Run `python main.py` and verify a new MP3 file appears in the target Google Drive folder and that its audio content is correct.
+    * **Unit Tests:** Mock the API clients for ElevenLabs and Amazon S3. Assert that the clients are called with the correct data (script text, API keys, audio data, bucket name).
+    * **Manual Test:** Run `python main.py` and verify a new MP3 file appears in the target S3 bucket and that its audio content is correct.
 
 ### **Milestone 4: Cloud Migration & Deployment**
 

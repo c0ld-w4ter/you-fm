@@ -44,7 +44,7 @@ graph TB
     F --> N[ElevenLabs TTS API]
     
     G --> O[Local File System]
-    G --> P[Google Drive API]
+    G --> P[Amazon S3 API]
     
     style B fill:#e1f5fe
     style E fill:#f3e5f5
@@ -75,21 +75,18 @@ flowchart TD
     Phase1 --> A3[Fetch Podcast Episodes]
     
     A1 --> B1[WeatherData Object]
-    A2 --> B2[List of Article Objects]
+    A2 --> B2[List of Raw Article Objects]
     A3 --> B3[List of PodcastEpisode Objects]
     
-    B1 --> Phase2[Phase 2: AI Processing]
+    B1 --> Phase2[Phase 2: Batch AI Processing]
     B2 --> Phase2
     B3 --> Phase2
     
-    Phase2 --> C1[Summarize Articles]
-    Phase2 --> C2[Generate Briefing Script]
+    Phase2 --> C1[Single API Call:<br/>Analyze + Summarize + Generate Script]
     
-    C1 --> D1[Summarized Articles]
-    C2 --> D2[Natural Language Script]
+    C1 --> D1[Complete Natural Language Script]
     
     D1 --> Phase3[Phase 3: Audio Generation]
-    D2 --> Phase3
     
     Phase3 --> E1[Text-to-Speech Conversion]
     E1 --> E2[Audio Data bytes]
@@ -106,7 +103,22 @@ flowchart TD
     style Phase2 fill:#f3e5f5
     style Phase3 fill:#e8f5e8
     style Phase4 fill:#fff3e0
+    style C1 fill:#ffeb3b
 ```
+
+### Performance Optimization: Batch Processing
+
+The system now uses **batch processing optimization** for AI operations:
+
+**Before**: 10 API calls (9 individual article summaries + 1 script generation)
+**After**: 1 API call (integrated analysis, summarization, and script generation)
+
+**Benefits**:
+- **90% reduction** in API call volume
+- **Significantly faster execution** (eliminated network latency)
+- **Better content quality** through cross-article analysis
+- **Cost reduction** in API usage
+- **Improved coherence** in final script
 
 ### Data Structures
 
@@ -188,13 +200,21 @@ graph LR
 **Responsibility**: Content summarization and script generation
 
 **AI Integration**:
-- **Google Gemini 2.5 Pro** for article summarization
-- **Google Gemini 2.5 Pro** for briefing script generation
+- **Google Gemini 2.5 Pro** for integrated article summarization and briefing script generation
+- **Batch Processing Optimization**: Single API call handles both summarization and script creation
+
+**Key Performance Improvement**:
+- **90% reduction in API calls**: From ~10 separate calls (individual summarization + script generation) to 1 batch call
+- **Faster execution**: Eliminated network round trips between individual article processing
+- **Better content coherence**: AI sees all articles simultaneously for intelligent selection and cross-story analysis
 
 **Features**:
-- Intelligent content selection (top 5 articles, top 3 podcasts)
-- Natural language script generation
-- Fallback mechanisms for AI failures
+- Intelligent content selection with batch analysis and editorial judgment
+- AI-driven story prioritization based on importance and time constraints  
+- Flexible summary length based on briefing duration and content quality
+- Cross-article deduplication and priority ranking
+- Natural language script generation with article context awareness
+- Fallback mechanisms for AI failures (uses truncated article content)
 
 ### `tts_generator.py` - Audio Generation
 **Responsibility**: Text-to-speech conversion
@@ -208,9 +228,9 @@ graph LR
 ### `uploader.py` - Delivery Layer
 **Responsibility**: File delivery to cloud storage
 
-**Integration**: Google Drive API v3
-- Service account authentication
-- Folder access verification
+**Integration**: Amazon S3 API
+- AWS credentials authentication
+- Bucket access verification
 - Automatic filename generation
 - Comprehensive error handling
 
@@ -227,7 +247,7 @@ graph LR
 | Taddy | API Key + User ID (Headers) | Not specified | Skip podcast section |
 | Google Gemini | API Key (SDK) | 60 RPM | Fallback summaries |
 | ElevenLabs | API Key (SDK) | 10,000 chars/month | Error message audio |
-| Google Drive | Service Account (OAuth2) | 100 requests/100s | Local file save |
+| Amazon S3 | AWS Credentials | 3500 PUT requests/sec | Local file save |
 
 ### GraphQL Implementation (Taddy API)
 

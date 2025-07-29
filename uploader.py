@@ -2,7 +2,7 @@
 Uploader module for AI Daily Briefing Agent.
 
 This module handles uploading the generated audio file
-to Google Drive for easy streaming and access.
+to Amazon S3 for easy streaming and access.
 """
 
 import logging
@@ -13,239 +13,189 @@ from config import get_config
 logger = logging.getLogger(__name__)
 
 
-def upload_to_drive(audio_data: bytes, filename: str = None) -> str:
+def upload_to_s3(audio_data: bytes, filename: str = None) -> str:
     """
-    Upload audio file to Google Drive.
+    Upload audio file to Amazon S3.
     
     Args:
         audio_data: Audio bytes to upload
         filename: Optional filename (auto-generated if not provided)
         
     Returns:
-        Google Drive file ID of uploaded file
+        S3 object URL of uploaded file
         
     Raises:
-        Exception: If Google Drive API call fails
+        Exception: If S3 upload fails
     """
     if filename is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"daily_briefing_{timestamp}.mp3"
         
-    logger.info(f"Uploading audio to Google Drive: {filename}")
+    logger.info(f"Uploading audio to S3: {filename}")
     
     if not audio_data:
-        raise Exception("Cannot upload empty audio data to Google Drive")
+        raise Exception("Cannot upload empty audio data to S3")
     
     logger.info(f"Audio size: {len(audio_data)} bytes")
     
     try:
-        import io
-        from googleapiclient.discovery import build
-        from googleapiclient.http import MediaIoBaseUpload
-        from google.oauth2 import service_account
+        import boto3
+        from botocore.exceptions import ClientError, NoCredentialsError
         
         # Get configuration
         config = get_config()
-        folder_id = config.get('GOOGLE_DRIVE_FOLDER_ID')
+        bucket_name = config.get('S3_BUCKET_NAME')
         
-        # Set up credentials using service account
-        service = setup_drive_credentials()
+        # Verify bucket access
+        if not verify_bucket_access(bucket_name):
+            raise Exception(f"Cannot access S3 bucket: {bucket_name}")
         
-        # Verify folder access
-        if not verify_folder_access(folder_id):
-            raise Exception(f"Cannot access Google Drive folder: {folder_id}")
+        # Create S3 client
+        s3_client = boto3.client('s3')
         
-        # Create file metadata
-        file_metadata = {
-            'name': filename,
-            'parents': [folder_id] if folder_id else []
-        }
-        
-        # Create media upload from audio bytes
-        audio_io = io.BytesIO(audio_data)
-        media = MediaIoBaseUpload(
-            audio_io,
-            mimetype='audio/mpeg',
-            resumable=True
-        )
-        
-        logger.info("Uploading file to Google Drive...")
+        logger.info("Uploading file to S3...")
         
         # Upload the file
-        request = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id,name,size,webViewLink'
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=filename,
+            Body=audio_data,
+            ContentType='audio/mpeg',
+            Metadata={
+                'Content-Type': 'audio/mpeg',
+                'Generated-By': 'AI-Daily-Briefing-Agent',
+                'Generated-Date': datetime.now().isoformat()
+            }
         )
         
-        response = request.execute()
+        # Generate the S3 URL
+        s3_url = f"https://{bucket_name}.s3.amazonaws.com/{filename}"
         
-        file_id = response.get('id')
-        file_size = response.get('size', 'unknown')
-        web_link = response.get('webViewLink', 'unavailable')
+        logger.info(f"✓ Successfully uploaded to S3")
+        logger.info(f"  Bucket: {bucket_name}")
+        logger.info(f"  Key: {filename}")
+        logger.info(f"  URL: {s3_url}")
         
-        logger.info(f"✓ Successfully uploaded to Google Drive")
-        logger.info(f"  File ID: {file_id}")
-        logger.info(f"  File size: {file_size} bytes")
-        logger.info(f"  Web link: {web_link}")
-        
-        return file_id
+        return s3_url
         
     except ImportError as e:
-        logger.error("Google API libraries not available")
-        raise Exception(f"Google API libraries not installed: {e}")
+        logger.error("boto3 library not available")
+        raise Exception(f"boto3 library not installed: {e}")
         
     except Exception as e:
-        logger.error(f"Failed to upload to Google Drive: {e}")
+        # Handle specific S3 errors first
+        error_message = str(e)
         
-        # Enhanced error handling
-        error_message = str(e).lower()
-        if "credentials" in error_message or "authentication" in error_message:
-            raise Exception("Google Drive authentication failed. Please check your service account credentials.")
-        elif "folder" in error_message or "parent" in error_message:
-            raise Exception(f"Cannot access Google Drive folder '{folder_id}'. Please check folder ID and permissions.")
-        elif "quota" in error_message or "storage" in error_message:
-            raise Exception("Google Drive storage quota exceeded. Please free up space or upgrade your account.")
-        elif "permission" in error_message:
-            raise Exception("Insufficient permissions for Google Drive upload. Please check service account access.")
+        if "NoSuchBucket" in error_message:
+            raise Exception(f"S3 bucket '{bucket_name}' does not exist.")
+        elif "AccessDenied" in error_message:
+            raise Exception(f"Access denied to S3 bucket '{bucket_name}'. Please check IAM permissions.")
+        elif "InvalidAccessKeyId" in error_message:
+            raise Exception("Invalid AWS access key. Please check your AWS credentials.")
+        elif "SignatureDoesNotMatch" in error_message:
+            raise Exception("AWS signature mismatch. Please check your AWS credentials.")
+        elif "NoCredentialsError" in error_message or "Unable to locate credentials" in error_message:
+            raise Exception("AWS credentials not found. Please configure AWS credentials.")
         else:
-            raise Exception(f"Google Drive API error: {e}")
+            raise Exception(f"S3 upload failed: {e}")
 
 
-def setup_drive_credentials():
+def verify_bucket_access(bucket_name: str) -> bool:
     """
-    Set up Google Drive API credentials using service account.
+    Verify that we have write access to the target S3 bucket.
+    
+    Args:
+        bucket_name: S3 bucket name to check
+        
+    Returns:
+        True if bucket is accessible and writable
+        
+    Raises:
+        Exception: If bucket access check fails
+    """
+    logger.info(f"Verifying access to S3 bucket: {bucket_name}")
+    
+    if not bucket_name:
+        logger.warning("No bucket name provided")
+        return False
+    
+    try:
+        import boto3
+        from botocore.exceptions import ClientError, NoCredentialsError
+        
+        # Create S3 client
+        s3_client = boto3.client('s3')
+        
+        # Try to get bucket location to verify it exists and we have access
+        response = s3_client.get_bucket_location(Bucket=bucket_name)
+        
+        region = response.get('LocationConstraint')
+        if region is None:
+            region = 'us-east-1'  # Default region for buckets without location constraint
+            
+        logger.info(f"✓ Successfully verified access to bucket '{bucket_name}' in region '{region}'")
+        return True
+        
+    except Exception as e:
+        # Handle specific S3 errors first
+        error_message = str(e)
+        
+        if "NoSuchBucket" in error_message:
+            logger.error(f"Bucket {bucket_name} does not exist")
+            raise Exception(f"S3 bucket '{bucket_name}' does not exist")
+        elif "AccessDenied" in error_message:
+            logger.error(f"No permission to access bucket {bucket_name}")
+            raise Exception(f"No permission to access S3 bucket '{bucket_name}'")
+        elif "NoCredentialsError" in error_message or "Unable to locate credentials" in error_message:
+            logger.error("AWS credentials not found")
+            raise Exception("AWS credentials not found. Please configure AWS credentials.")
+        else:
+            logger.error(f"Failed to verify bucket access: {error_message}")
+            raise Exception(f"Failed to verify S3 bucket access: {error_message}")
+
+
+def setup_s3_credentials():
+    """
+    Set up AWS S3 credentials.
     
     Returns:
-        Authenticated Google Drive service object
+        Authenticated boto3 S3 client
         
     Raises:
         Exception: If credential setup fails
     """
-    logger.info("Setting up Google Drive credentials...")
+    logger.info("Setting up AWS S3 credentials...")
     
     try:
-        from googleapiclient.discovery import build
-        from google.oauth2 import service_account
-        import json
-        import os
+        import boto3
+        from botocore.exceptions import NoCredentialsError
         
-        config = get_config()
+        # boto3 will automatically use credentials from:
+        # 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+        # 2. AWS credentials file (~/.aws/credentials)
+        # 3. IAM role (when running on AWS)
         
-        # Try to get service account credentials from environment
-        # This supports both file path and direct JSON content
-        service_account_info = None
+        s3_client = boto3.client('s3')
         
-        # Method 1: Check for GOOGLE_SERVICE_ACCOUNT_JSON environment variable (JSON content)
-        service_account_json = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON')
-        if service_account_json:
-            try:
-                service_account_info = json.loads(service_account_json)
-                logger.info("Using service account from GOOGLE_SERVICE_ACCOUNT_JSON environment variable")
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON in GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+        # Test credentials by making a simple API call
+        s3_client.list_buckets()
         
-        # Method 2: Check for GOOGLE_SERVICE_ACCOUNT_FILE environment variable (file path)
-        if not service_account_info:
-            service_account_file = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE')
-            if service_account_file and os.path.exists(service_account_file):
-                with open(service_account_file, 'r') as f:
-                    service_account_info = json.load(f)
-                logger.info(f"Using service account from file: {service_account_file}")
-        
-        # Method 3: Look for credentials.json in current directory (fallback)
-        if not service_account_info:
-            credentials_file = 'service_account.json'
-            if os.path.exists(credentials_file):
-                with open(credentials_file, 'r') as f:
-                    service_account_info = json.load(f)
-                logger.info(f"Using service account from local file: {credentials_file}")
-        
-        if not service_account_info:
-            raise Exception(
-                "Google service account credentials not found. Please set either:\n"
-                "1. GOOGLE_SERVICE_ACCOUNT_JSON environment variable with JSON content, or\n"
-                "2. GOOGLE_SERVICE_ACCOUNT_FILE environment variable with file path, or\n"
-                "3. Place service_account.json file in the project directory"
-            )
-        
-        # Define the scopes needed for Google Drive
-        scopes = ['https://www.googleapis.com/auth/drive.file']
-        
-        # Create credentials from service account info
-        credentials = service_account.Credentials.from_service_account_info(
-            service_account_info,
-            scopes=scopes
-        )
-        
-        # Build the Drive service
-        service = build('drive', 'v3', credentials=credentials)
-        
-        logger.info("✓ Google Drive credentials setup successful")
-        return service
+        logger.info("✓ AWS S3 credentials setup successful")
+        return s3_client
         
     except ImportError as e:
-        logger.error("Google API libraries not available")
-        raise Exception(f"Required Google API libraries not installed: {e}")
+        logger.error("boto3 library not available")
+        raise Exception(f"Required boto3 library not installed: {e}")
+        
+    except NoCredentialsError:
+        logger.error("AWS credentials not found")
+        raise Exception(
+            "AWS credentials not found. Please configure credentials using:\n"
+            "1. Environment variables: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY\n"
+            "2. AWS credentials file: ~/.aws/credentials\n"
+            "3. IAM role (when running on AWS Lambda)"
+        )
         
     except Exception as e:
-        logger.error(f"Failed to setup Google Drive credentials: {e}")
-        raise Exception(f"Google Drive authentication failed: {e}")
-
-
-def verify_folder_access(folder_id: str) -> bool:
-    """
-    Verify that we have write access to the target Google Drive folder.
-    
-    Args:
-        folder_id: Google Drive folder ID to check
-        
-    Returns:
-        True if folder is accessible and writable
-        
-    Raises:
-        Exception: If folder access check fails
-    """
-    logger.info(f"Verifying access to Google Drive folder: {folder_id}")
-    
-    if not folder_id:
-        logger.warning("No folder ID provided - files will be uploaded to root directory")
-        return True
-    
-    try:
-        # Set up credentials and service
-        service = setup_drive_credentials()
-        
-        # Try to get folder metadata to verify it exists and we have access
-        folder = service.files().get(
-            fileId=folder_id,
-            fields='id,name,parents,capabilities'
-        ).execute()
-        
-        folder_name = folder.get('name', 'Unknown')
-        capabilities = folder.get('capabilities', {})
-        
-        # Check if we can add children (upload files) to this folder
-        can_add_children = capabilities.get('canAddChildren', False)
-        
-        if not can_add_children:
-            logger.error(f"No write permission for folder '{folder_name}' ({folder_id})")
-            return False
-        
-        logger.info(f"✓ Successfully verified access to folder '{folder_name}' ({folder_id})")
-        return True
-        
-    except Exception as e:
-        error_message = str(e).lower()
-        
-        if "not found" in error_message or "404" in error_message:
-            logger.error(f"Folder {folder_id} not found or not accessible")
-            raise Exception(f"Google Drive folder '{folder_id}' not found or not accessible")
-        elif "permission" in error_message or "forbidden" in error_message:
-            logger.error(f"No permission to access folder {folder_id}")
-            raise Exception(f"No permission to access Google Drive folder '{folder_id}'")
-        else:
-            logger.error(f"Failed to verify folder access: {e}")
-            raise Exception(f"Failed to verify Google Drive folder access: {e}")
-        
-        return False 
+        logger.error(f"Failed to setup AWS S3 credentials: {e}")
+        raise Exception(f"AWS S3 authentication failed: {e}") 

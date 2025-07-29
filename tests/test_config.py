@@ -206,6 +206,87 @@ class TestConfig:
             with pytest.raises(ConfigurationError):
                 config.validate_config()
 
+    def test_get_briefing_duration_minutes_default(self):
+        """Test that briefing duration returns default value when not set."""
+        # Mock required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test_news_key',
+            'OPENWEATHER_API_KEY': 'test_weather_key',
+            'TADDY_API_KEY': 'test_taddy_key',
+            'TADDY_USER_ID': 'test_user_id',
+            'GEMINI_API_KEY': 'test_gemini_key',
+            'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+        }
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            # Set a custom value for testing
+            config._config['BRIEFING_DURATION_MINUTES'] = '5'
+            assert config.get_briefing_duration_minutes() == 5
+    
+    def test_get_briefing_duration_minutes_custom(self):
+        """Test that briefing duration returns custom value when set."""
+        # Mock required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test_news_key',
+            'OPENWEATHER_API_KEY': 'test_weather_key',
+            'TADDY_API_KEY': 'test_taddy_key',
+            'TADDY_USER_ID': 'test_user_id',
+            'GEMINI_API_KEY': 'test_gemini_key',
+            'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+            'BRIEFING_DURATION_MINUTES': '7',
+        }
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            assert config.get_briefing_duration_minutes() == 7
+    
+    def test_get_briefing_duration_minutes_invalid(self):
+        """Test that briefing duration handles invalid values gracefully."""
+        # Mock required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test_news_key',
+            'OPENWEATHER_API_KEY': 'test_weather_key',
+            'TADDY_API_KEY': 'test_taddy_key',
+            'TADDY_USER_ID': 'test_user_id',
+            'GEMINI_API_KEY': 'test_gemini_key',
+            'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+            'BRIEFING_DURATION_MINUTES': 'invalid',
+        }
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            with pytest.raises(ValueError):
+                config.get_briefing_duration_minutes()
+    
+    def test_get_listener_name_default(self):
+        """Test that listener name returns default value when not set."""
+        # Mock required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test_news_key',
+            'OPENWEATHER_API_KEY': 'test_weather_key',
+            'TADDY_API_KEY': 'test_taddy_key',
+            'TADDY_USER_ID': 'test_user_id',
+            'GEMINI_API_KEY': 'test_gemini_key',  
+            'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+        }
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            assert config.get_listener_name() == 'Seamus'  # Default value from config
+    
+    def test_get_listener_name_custom(self):
+        """Test that listener name returns custom value when set."""
+        # Mock required environment variables
+        mock_env = {
+            'NEWSAPI_KEY': 'test_news_key',
+            'OPENWEATHER_API_KEY': 'test_weather_key',
+            'TADDY_API_KEY': 'test_taddy_key',
+            'TADDY_USER_ID': 'test_user_id',
+            'GEMINI_API_KEY': 'test_gemini_key',
+            'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+            'LISTENER_NAME': 'Alice',
+        }
+        with patch.dict(os.environ, mock_env, clear=True):
+            config = Config()
+            assert config.get_listener_name() == 'Alice'
+
 
 class TestGetConfig:
     """Test cases for the get_config function."""

@@ -53,7 +53,7 @@ A serverless application that generates personalized, AI-powered daily audio new
    export TADDY_USER_ID="your_taddy_user_id_here"
    export GEMINI_API_KEY="your_google_gemini_key_here"
    export ELEVENLABS_API_KEY="your_elevenlabs_key_here"
-   # export GOOGLE_DRIVE_FOLDER_ID="your_folder_id"  # Optional: Currently saves audio locally
+   # export S3_BUCKET_NAME="your_bucket_name"  # Optional: Currently saves audio locally
    ```
 
 ## 🧪 Running Tests
@@ -84,7 +84,7 @@ Current test coverage includes **60 comprehensive tests** covering:
 - ✅ **AI summarization with Google Gemini (10 tests)**
 - ✅ **AI-generated briefing script creation**
 - ✅ **Text-to-Speech generation with ElevenLabs (12 tests)**
-- ✅ **Google Drive upload and authentication (18 tests)**
+- ✅ **Amazon S3 upload and authentication (18 tests)**
 - ✅ **Complete audio pipeline integration**
 - ✅ **Comprehensive error handling and fallbacks**
 
@@ -100,7 +100,33 @@ TADDY_API_KEY=your_taddy_api_key_here
 TADDY_USER_ID=your_taddy_user_id_here
 GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
-GOOGLE_DRIVE_FOLDER_ID=your_google_drive_folder_id_here
+```
+
+### Optional Configuration
+```bash
+# Briefing duration in minutes (default: 3)
+BRIEFING_DURATION_MINUTES=3
+
+# Listener name for personalized greetings (optional)
+LISTENER_NAME=Alice
+
+# Location settings (default: Denver, US)
+LOCATION_CITY=Denver
+LOCATION_COUNTRY=US
+
+# News topics (default: technology,business,science)
+NEWS_TOPICS=technology,business,science
+
+# Maximum articles per topic (default: 3)
+MAX_ARTICLES_PER_TOPIC=3
+
+# Podcast categories (default: Technology,Business,Science)
+PODCAST_CATEGORIES=Technology,Business,Science
+
+# ElevenLabs voice ID (default: default)
+ELEVENLABS_VOICE_ID=default
+```
+S3_BUCKET_NAME=your_s3_bucket_name_here
 ```
 
 ### Optional Configuration (with defaults)
@@ -118,7 +144,7 @@ PODCAST_CATEGORIES=Technology,Business,Science
 3. **Taddy**: Get API key and User ID at [taddy.org](https://taddy.org/developers)
 4. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
 5. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
-6. **Google Drive**: Set up service account and get folder ID
+6. **Amazon S3**: Create S3 bucket and configure permissions
 
 ## 🏃 Running the Application
 
@@ -149,10 +175,31 @@ python main.py
 - ✅ **Local File Output**: Audio and script files saved with timestamps
 - ✅ **Intelligent Selection**: Top 5 articles, top 3 podcasts
 - ✅ **Robust Error Handling**: Fallbacks for all external API failures
+- ✅ **Configurable Duration**: Customize briefing length via `BRIEFING_DURATION_MINUTES`
+- ✅ **Personal Touch**: Personalized greetings using `LISTENER_NAME`
 
 **Note**: You need to set all required environment variables (including `GEMINI_API_KEY` and `ELEVENLABS_API_KEY`) for the complete audio briefing functionality. Google Drive setup is optional - audio files are currently saved locally.
 
-> **💡 TTS Testing Mode**: The application currently saves audio files locally for easy testing. To re-enable Google Drive upload, uncomment the `GOOGLE_DRIVE_FOLDER_ID` line in `config.py` and update the `main.py` import to use `upload_to_drive` instead of `save_audio_locally`.
+> **💡 TTS Testing Mode**: The application currently saves audio files locally for easy testing. To re-enable S3 upload, uncomment the `S3_BUCKET_NAME` line in `config.py` and update the `main.py` import to use `upload_to_s3` instead of `save_audio_locally`.
+
+## ⏱️ Configurable Duration & Personalization
+
+### Duration
+Set `BRIEFING_DURATION_MINUTES` to customize briefing length (default: 3 minutes):
+
+```bash
+export BRIEFING_DURATION_MINUTES=1  # Quick updates
+export BRIEFING_DURATION_MINUTES=5  # Detailed coverage
+```
+
+### Personal Touch
+Set `LISTENER_NAME` to personalize greetings and closings:
+
+```bash
+export LISTENER_NAME="Alice"  # "Good morning, Alice!"
+export LISTENER_NAME="John"   # "Good morning, John!"
+# Leave unset for generic greetings
+```
 
 ### Future Functionality
 After upcoming milestones, the application will:  
@@ -185,13 +232,13 @@ ai-daily-briefing-agent/
 ├── data_fetchers.py        # External API data fetching (✅ Complete)
 ├── summarizer.py           # AI summarization with Gemini API (✅ Complete)
 ├── tts_generator.py        # Text-to-speech with ElevenLabs (✅ Complete)
-├── uploader.py             # Google Drive file upload (✅ Complete)
+├── uploader.py             # Amazon S3 file upload (✅ Complete)
 ├── tests/                  # Unit tests (60 tests)
 │   ├── test_config.py      # Configuration tests (✅ Complete)
 │   ├── test_data_fetchers.py # Data fetching tests (✅ Complete)
 │   ├── test_summarizer.py  # AI summarization tests (✅ Complete)
 │   ├── test_tts_generator.py # Text-to-speech tests (✅ Complete)
-│   └── test_uploader.py    # Google Drive upload tests (✅ Complete)
+│   └── test_uploader.py    # Amazon S3 upload tests (✅ Complete)
 ├── requirements.txt        # Python dependencies
 ├── iam_policy.json         # AWS Lambda execution policy
 └── .gitignore             # Git ignore rules
