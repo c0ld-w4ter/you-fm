@@ -13,7 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 class WebConfig:
-    """Configuration manager that creates Config objects from web form data."""
+    """
+    Configuration manager that creates Config objects from web form data.
+    
+    This class serves as the bridge between web forms and the core Config class.
+    For Milestone 5: This will be extended to support advanced customization options
+    including content filtering, briefing style preferences, and enhanced audio settings.
+    """
     
     @staticmethod
     def create_config_from_form(form_data: Dict[str, Any]) -> Config:

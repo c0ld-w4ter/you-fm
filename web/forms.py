@@ -121,7 +121,12 @@ class SettingsForm(FlaskForm):
 
 
 class BriefingConfigForm(FlaskForm):
-    """Form for configuring daily briefing generation parameters."""
+    """
+    Form for configuring daily briefing generation parameters.
+    
+    NOTE: This is a legacy single-page form maintained for compatibility.
+    For new development, use the multi-page forms: APIKeysForm + SettingsForm.
+    """
     
     # Required API Keys
     newsapi_key = StringField(

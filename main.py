@@ -37,11 +37,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         config = get_config()
         config.validate_config()
         
-        # TODO: Implement workflow for each milestone
-        # Milestone 1: Data aggregation
-        # Milestone 2: AI summarization  
-        # Milestone 3: Audio generation & delivery
-        
+        # Generate daily briefing using complete pipeline
         result = generate_daily_briefing()
         
         return {
