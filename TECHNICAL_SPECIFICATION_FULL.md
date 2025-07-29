@@ -6,6 +6,8 @@
 
 ---
 
+> **📋 Document Purpose**: This specification covers the **complete project roadmap** including all planned milestones and future features. For details on the **current implementation** (Milestone 4), see [TECHNICAL_DESIGN_CURRENT.md](TECHNICAL_DESIGN_CURRENT.md).
+
 ### 1. Project Overview
 
 This document provides a complete technical blueprint for building an AI-powered daily audio news briefing application with a modern web interface. The system has evolved from a serverless CLI application to a comprehensive web-based platform that generates personalized audio briefings through an intuitive user interface.

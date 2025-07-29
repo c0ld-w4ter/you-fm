@@ -1,7 +1,8 @@
 # Technical Design: AI Daily Briefing Agent
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** January 28, 2025
+**Status:** Milestone 4 Complete - Web UI MVP
 
 ---
 
@@ -21,7 +22,7 @@
 
 The AI Daily Briefing Agent follows a **modular, multi-page web architecture** designed for optimal user experience and maintainability. The system provides a modern step-by-step web interface that orchestrates multiple external APIs to create personalized audio news briefings.
 
-### High-Level Architecture (Milestone 4: Web UI MVP)
+### High-Level Architecture (Milestone 4: Web UI MVP - Complete)
 
 ```mermaid
 graph TB
@@ -83,11 +84,11 @@ graph TB
 
 ## System Data Flow
 
-The system processes data through four distinct phases, with each phase transforming the data for the next stage.
+The system processes data through four distinct phases, triggered by user web requests, with each phase transforming the data for the next stage.
 
 ```mermaid
 flowchart TD
-    Start([Daily Trigger]) --> Phase1[Phase 1: Data Aggregation]
+    Start([User Web Request]) --> Phase1[Phase 1: Data Aggregation]
     
     Phase1 --> A1[Fetch Weather Data]
     Phase1 --> A2[Fetch News Articles]
@@ -113,7 +114,7 @@ flowchart TD
     E2 --> Phase4[Phase 4: Delivery]
     
     Phase4 --> F1[Save Locally]
-    Phase4 --> F2[Upload to Cloud]
+    Phase4 --> F2[Web Audio Player]
     
     F1 --> End([Audio File Ready])
     F2 --> End
@@ -127,7 +128,7 @@ flowchart TD
 
 ### Performance Optimization: Batch Processing
 
-The system now uses **batch processing optimization** for AI operations:
+The system uses **batch processing optimization** for AI operations:
 
 **Before**: 10 API calls (9 individual article summaries + 1 script generation)
 **After**: 1 API call (integrated analysis, summarization, and script generation)
@@ -172,7 +173,7 @@ class WeatherData:
 
 ## Module Design
 
-### Web Interface Layer (New - Milestone 4)
+### Web Interface Layer (Milestone 4: Complete)
 
 #### `app.py` - Flask Application Entry Point
 **Responsibility**: Web server initialization and application factory
@@ -180,7 +181,7 @@ class WeatherData:
 **Key Features**:
 - Flask application factory pattern
 - Blueprint registration and error handling
-- Development/testing/production configurations
+- Development configuration
 - CSRF protection and security headers
 - Session management for multi-page flow
 
@@ -240,6 +241,8 @@ graph LR
 - Default value management and inheritance
 - Validation integration with existing Config class
 
+### Core Business Logic Layer
+
 ### `main.py` - Core Business Logic
 **Responsibility**: Orchestration of briefing generation workflow
 
@@ -266,7 +269,6 @@ graph LR
 
 **Design Pattern**: Singleton with lazy initialization
 - Environment variable validation
-- AWS Secrets Manager integration for production
 - Default value management
 - Type-safe configuration access
 
@@ -314,7 +316,7 @@ graph LR
 - Local file saving capabilities
 
 ### `uploader.py` - Delivery Layer
-**Responsibility**: File delivery to cloud storage
+**Responsibility**: File delivery to cloud storage (currently unused in Milestone 4)
 
 **Integration**: Amazon S3 API
 - AWS credentials authentication
@@ -335,7 +337,6 @@ graph LR
 | Taddy | API Key + User ID (Headers) | Not specified | Skip podcast section |
 | Google Gemini | API Key (SDK) | 60 RPM | Fallback summaries |
 | ElevenLabs | API Key (SDK) | 10,000 chars/month | Error message audio |
-| Amazon S3 | AWS Credentials | 3500 PUT requests/sec | Local file save |
 
 ### GraphQL Implementation (Taddy API)
 
@@ -394,7 +395,7 @@ graph TD
 - **News**: Use article content if summarization fails
 - **Podcasts**: Continue without podcast updates
 - **TTS**: Generate error message audio
-- **Upload**: Save locally if cloud upload fails
+- **Upload**: Save locally (cloud upload not implemented in Milestone 4)
 
 ---
 
@@ -468,6 +469,8 @@ The project was developed iteratively through well-defined milestones:
 - Dedicated pages for API keys, settings, generation, and results
 - Real-time loading modal with step-by-step progress indicators
 - Comprehensive web interface testing (21 tests) updated for multi-page architecture
+- Local file system storage for generated audio files
+- Web audio player and download functionality
 
 ---
 
@@ -476,33 +479,18 @@ The project was developed iteratively through well-defined milestones:
 ### Execution Time Optimization
 - Parallel API calls where possible
 - Efficient data processing algorithms  
-- Minimal memory footprint for Lambda
+- Minimal memory footprint
 
 ### Cost Management
-- API call optimization
+- API call optimization (90% reduction through batch processing)
 - Intelligent caching strategies
 - Resource usage monitoring
 
 ### Scalability
-- Stateless design for horizontal scaling
+- Modular architecture ready for horizontal scaling
 - Configurable resource limits
-- Modular architecture for feature expansion
+- Session-based architecture for multi-user preparation
 
 ---
 
-## Future Enhancements
-
-### Short Term
-- Google Drive upload re-integration
-- Configurable podcast selection
-- Audio quality customization
-
-### Long Term
-- Multi-language support
-- Voice cloning capabilities
-- Real-time briefing updates
-- Mobile app integration
-
----
-
-**For implementation details, see individual module documentation and the comprehensive test suite.** 
+**This document reflects the current implementation status as of Milestone 4 completion. For future architecture plans and advanced features, see TECHNICAL_SPECIFICATION_FULL.md.** 

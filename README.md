@@ -209,21 +209,26 @@ After upcoming milestones, the application will:
 - Upload audio files to Google Drive (Milestone 3)
 - Deploy to AWS Lambda for automated daily execution (Milestone 4)
 
-## 🏗️ Technical Design
+## 🏗️ Technical Documentation
 
-For a comprehensive understanding of the system architecture, data flow, and implementation details, see our detailed technical documentation:
+We maintain comprehensive technical documentation in two focused documents:
 
-**📖 [Technical Design Document](TECHNICAL_DESIGN.md)**
+### **📖 Current Implementation**
+**[TECHNICAL_DESIGN_CURRENT.md](TECHNICAL_DESIGN_CURRENT.md)** - Details of what's built (Milestone 4)
+- **System Architecture**: Current Flask web application design with visual diagrams
+- **Data Flow**: Four-phase pipeline from user request to audio delivery
+- **Module Design**: Detailed breakdown of each implemented component
+- **API Integrations**: Current external service integrations with error handling
+- **Testing Architecture**: 81+ comprehensive tests with mocking strategies
 
-This document covers:
-- **System Architecture**: Modular serverless design with visual diagrams
-- **Data Flow**: Four-phase pipeline from data aggregation to audio delivery
-- **Module Design**: Detailed breakdown of each component's responsibilities
-- **API Integrations**: External service integrations with error handling strategies
-- **Testing Architecture**: 60 comprehensive tests with mocking strategies
-- **Performance Considerations**: Optimization and scalability approaches
+### **📋 Complete Project Plan**
+**[TECHNICAL_SPECIFICATION_FULL.md](TECHNICAL_SPECIFICATION_FULL.md)** - Full roadmap and future milestones
+- **Complete Architecture**: Development through production deployment plans
+- **All Milestones**: Detailed roadmap from foundation through advanced features
+- **Technology Stack**: Current and planned technologies for each phase
+- **Scalability Plans**: Database, containerization, and cloud deployment strategies
 
-Perfect for new developers joining the project or understanding the technical implementation details.
+Perfect for new developers joining the project or understanding both current state and future direction.
 
 ## 📁 Project Structure
 
