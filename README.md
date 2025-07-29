@@ -4,8 +4,8 @@ A modern web application that generates personalized, AI-powered daily audio new
 
 ## 🏗️ Project Status
 
-**Current Status**: Milestone 4 ✅ Complete - Web UI MVP  
-**Next**: Milestone 5 - Enhanced Customization
+**Current Status**: Milestone 5 ✅ Complete - Enhanced Customization  
+**Next**: Milestone 6 - Production Deployment
 
 ### Milestone Progress
 - ✅ **Milestone 0**: Secure Setup & Configuration
@@ -13,7 +13,7 @@ A modern web application that generates personalized, AI-powered daily audio new
 - ✅ **Milestone 2**: AI Summarization with Google Gemini
 - ✅ **Milestone 3**: Audio Generation & Delivery
 - ✅ **Milestone 4**: Web UI MVP
-- 🔄 **Milestone 5**: Enhanced Customization
+- ✅ **Milestone 5**: Enhanced Customization
 
 ## 🚀 Quick Start
 
@@ -74,17 +74,18 @@ python -m pytest tests/test_config.py -v
 ```
 
 ### Test Coverage
-Current test coverage includes **81+ comprehensive tests** covering:
-- ✅ Configuration loading and validation (10 tests)
+Current test coverage includes **110+ comprehensive tests** covering:
+- ✅ Configuration loading and validation (21 tests)
 - ✅ Environment variable handling and error cases
 - ✅ Live data fetching from external APIs (10 tests)
 - ✅ API response parsing and validation
 - ✅ Error handling for API failures
-- ✅ **AI summarization with Google Gemini (10 tests)**
-- ✅ **AI-generated briefing script creation**
+- ✅ **AI summarization with Google Gemini (17 tests)**
+- ✅ **Style-aware AI script generation with filtering**
 - ✅ **Text-to-Speech generation with ElevenLabs (12 tests)**
 - ✅ **Amazon S3 upload and authentication (18 tests)**
-- ✅ **Web interface and form validation (21 tests)**
+- ✅ **Web interface and form validation (37 tests)**
+- ✅ **Advanced customization features and preview functionality**
 - ✅ **Route handlers and configuration integration**
 - ✅ **Complete audio pipeline integration**
 - ✅ **Comprehensive error handling and fallbacks**
@@ -115,6 +116,11 @@ The following API keys are required and can be entered through the web form:
 - **Max Articles per Topic**: Number limit (default: 3)
 - **Podcast Categories**: Categories to follow (default: Technology,Business,Science)
 - **Voice Selection**: Choose from multiple ElevenLabs voices
+- **Advanced Customization (Milestone 5)**:
+  - **Briefing Tone**: Professional, Casual, or Energetic
+  - **Content Depth**: Headlines, Balanced, or Detailed Analysis
+  - **Keyword Filtering**: Exclude specific topics (comma-separated)
+  - **Voice Speed**: Slow (0.8x), Normal (1.0x), or Fast (1.2x)
 
 ### Environment Variables (Alternative)
 For automated/CLI usage, you can still use environment variables:
@@ -138,7 +144,7 @@ ELEVENLABS_API_KEY=your_elevenlabs_key_here
 
 ## 🏃 Running the Application
 
-### Current Functionality (Milestone 4 - Web UI MVP)
+### Current Functionality (Milestone 5 - Enhanced Customization)
 The application now provides a modern multi-page web interface for generating personalized audio briefings:
 
 ```bash
@@ -155,14 +161,21 @@ python app.py
 - 🎯 **Multi-Page Flow**: Clean step-by-step process (API Keys → Settings → Generate → Results)
 - 🔄 **Progress Indicators**: Visual progress tracking across all steps
 - 🔑 **Secure API Key Entry**: Dedicated page for API key configuration
-- 👤 **Personal Customization**: Separate settings page for preferences
+- 👤 **Personal Customization**: Separate settings page with organized sections
 - 📰 **Content Control**: Configurable news topics and article limits
-- 🎧 **Audio Options**: Voice selection and duration control
+- 🎧 **Audio Options**: Voice selection, speed control, and duration management
 - 📊 **Real-time Feedback**: Immediate loading modal with step-by-step progress
 - 🎵 **Built-in Player**: Listen to your briefing directly in the browser
 - 📥 **Download Option**: Save audio files for offline listening
 - 📈 **Generation Statistics**: Performance metrics and configuration display
 - 🔒 **Session Management**: Settings persist between pages during configuration
+- **🎛️ Advanced Customization (New in Milestone 5)**:
+  - **📝 Script Preview**: Fast script generation (10-20s) before audio creation
+  - **🎨 Style Control**: Professional, casual, or energetic briefing tones  
+  - **📊 Content Depth**: Headlines-only, balanced, or detailed analysis
+  - **🚫 Keyword Filtering**: Exclude unwanted topics with smart filtering
+  - **⚡ Voice Speed**: Adjustable speech rate for optimal listening
+  - **🎯 Organized UI**: Collapsible sections with logical field grouping
 
 ### Complete Pipeline Features:
 - ✅ **Live Data Aggregation**: Weather, News, and Podcast data fetching

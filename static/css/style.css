@@ -113,6 +113,155 @@ audio::-webkit-media-controls-panel {
     /* Dark mode styles can be added here for future enhancement */
 }
 
+/* Settings sections with collapsible functionality (Iteration 4) */
+.settings-section {
+    margin-bottom: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-section:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.section-header:hover {
+    background: #f3f4f6;
+}
+
+.section-header.collapsed {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-icon {
+    font-size: 1.25rem;
+}
+
+.collapse-indicator {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.section-header:hover .collapse-indicator {
+    background: #d1d5db;
+    color: #374151;
+}
+
+.section-header.collapsed .collapse-indicator {
+    transform: rotate(180deg);
+}
+
+.section-content {
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.section-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.section-content.expanded {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+/* Enhanced form grid for better organization */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Field grouping within sections */
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+/* Section-specific styling */
+.basic-settings .section-header {
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+}
+
+.content-settings .section-header {
+    background: linear-gradient(135deg, #fef3c7, #fffbeb);
+}
+
+.audio-settings .section-header {
+    background: linear-gradient(135deg, #f3e8ff, #faf5ff);
+}
+
+/* Mobile responsive adjustments for sections */
+@media (max-width: 768px) {
+    .settings-section {
+        margin-bottom: 1rem;
+    }
+    
+    .section-header {
+        padding: 0.875rem 1rem;
+    }
+    
+    .section-content {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+    }
+    
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
 /* Print styles */
 @media print {
     .no-print {

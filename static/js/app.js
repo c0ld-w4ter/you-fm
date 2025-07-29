@@ -12,7 +12,165 @@ document.addEventListener('DOMContentLoaded', function() {
     initAudioControls();
     initTooltips();
     initLocalStorage();
+    initSettingsSections(); // New for Iteration 4
 });
+
+/**
+ * Initialize settings sections with collapsible functionality (Iteration 4)
+ */
+function initSettingsSections() {
+    // Restore section states from localStorage
+    restoreSectionStates();
+    
+    // Add keyboard navigation for section headers
+    const sectionHeaders = document.querySelectorAll('.section-header');
+    sectionHeaders.forEach(header => {
+        header.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSection(this);
+            }
+        });
+        
+        // Add tabindex for keyboard navigation
+        header.setAttribute('tabindex', '0');
+    });
+}
+
+/**
+ * Toggle section collapse/expand state
+ */
+function toggleSection(headerElement) {
+    const section = headerElement.parentElement;
+    const content = section.querySelector('.section-content');
+    const indicator = headerElement.querySelector('.collapse-indicator');
+    
+    if (!content || !indicator) return;
+    
+    const isExpanded = content.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // Collapse section
+        content.classList.remove('expanded');
+        content.classList.add('collapsed');
+        headerElement.classList.add('collapsed');
+        indicator.textContent = '+';
+        
+        // Save state
+        saveSectionState(section, false);
+    } else {
+        // Expand section
+        content.classList.remove('collapsed');
+        content.classList.add('expanded');
+        headerElement.classList.remove('collapsed');
+        indicator.textContent = '−';
+        
+        // Save state
+        saveSectionState(section, true);
+    }
+    
+    // Smooth scroll to section header if it's now out of view
+    setTimeout(() => {
+        const rect = headerElement.getBoundingClientRect();
+        if (rect.top < 0) {
+            headerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 300);
+}
+
+/**
+ * Save section state to localStorage
+ */
+function saveSectionState(sectionElement, isExpanded) {
+    const sectionClass = Array.from(sectionElement.classList).find(cls => 
+        cls.includes('-settings')
+    );
+    
+    if (sectionClass) {
+        const states = getSectionStates();
+        states[sectionClass] = isExpanded;
+        localStorage.setItem('settings_section_states', JSON.stringify(states));
+    }
+}
+
+/**
+ * Restore section states from localStorage
+ */
+function restoreSectionStates() {
+    const states = getSectionStates();
+    
+    Object.keys(states).forEach(sectionClass => {
+        const section = document.querySelector(`.${sectionClass}`);
+        if (section) {
+            const header = section.querySelector('.section-header');
+            const content = section.querySelector('.section-content');
+            const indicator = section.querySelector('.collapse-indicator');
+            
+            if (header && content && indicator) {
+                const shouldExpand = states[sectionClass];
+                
+                if (shouldExpand) {
+                    content.classList.remove('collapsed');
+                    content.classList.add('expanded');
+                    header.classList.remove('collapsed');
+                    indicator.textContent = '−';
+                } else {
+                    content.classList.remove('expanded');
+                    content.classList.add('collapsed');
+                    header.classList.add('collapsed');
+                    indicator.textContent = '+';
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Get section states from localStorage
+ */
+function getSectionStates() {
+    try {
+        const states = localStorage.getItem('settings_section_states');
+        return states ? JSON.parse(states) : {
+            'basic-settings': true,      // Default: expanded
+            'content-settings': true,    // Default: expanded
+            'audio-settings': true       // Default: expanded
+        };
+    } catch (error) {
+        console.error('Error loading section states:', error);
+        return {
+            'basic-settings': true,
+            'content-settings': true,
+            'audio-settings': true
+        };
+    }
+}
+
+/**
+ * Collapse all sections
+ */
+function collapseAllSections() {
+    const sections = document.querySelectorAll('.settings-section');
+    sections.forEach(section => {
+        const header = section.querySelector('.section-header');
+        if (header && !header.classList.contains('collapsed')) {
+            toggleSection(header);
+        }
+    });
+}
+
+/**
+ * Expand all sections
+ */
+function expandAllSections() {
+    const sections = document.querySelectorAll('.settings-section');
+    sections.forEach(section => {
+        const header = section.querySelector('.section-header');
+        if (header && header.classList.contains('collapsed')) {
+            toggleSection(header);
+        }
+    });
+}
 
 /**
  * Form validation and enhancement

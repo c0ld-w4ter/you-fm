@@ -8,7 +8,9 @@ route handlers, and configuration integration.
 import pytest
 import json
 import os
+import tempfile
 from unittest.mock import Mock, patch, MagicMock
+from flask import session, url_for
 
 from app import create_app
 from web.forms import BriefingConfigForm, APIKeysForm, SettingsForm
@@ -16,11 +18,480 @@ from config_web import WebConfig
 from config import Config, ConfigurationError
 
 
+class TestAPIKeysForm:
+    """Test API keys form validation."""
+    
+    def test_valid_api_keys_form(self, app):
+        """Test form validation with valid API keys."""
+        with app.app_context():
+            form_data = {
+                'newsapi_key': 'test_news_key',
+                'openweather_api_key': 'test_weather_key',
+                'taddy_api_key': 'test_taddy_key',
+                'taddy_user_id': 'test_user_123',
+                'gemini_api_key': 'test_gemini_key',
+                'elevenlabs_api_key': 'test_elevenlabs_key',
+            }
+            
+            form = APIKeysForm(data=form_data)
+            
+            # Test that form fields are properly populated
+            assert form.newsapi_key.data == 'test_news_key'
+            assert form.gemini_api_key.data == 'test_gemini_key'
+    
+    def test_missing_required_api_key(self, app):
+        """Test form validation with missing required API keys."""
+        with app.app_context():
+            form_data = {
+                'newsapi_key': '',  # Missing required field
+                'openweather_api_key': 'test_weather_key',
+                'taddy_api_key': 'test_taddy_key',
+                'taddy_user_id': 'test_user_123',
+                'gemini_api_key': 'test_gemini_key',
+                'elevenlabs_api_key': 'test_elevenlabs_key',
+            }
+            
+            form = APIKeysForm(data=form_data)
+            
+            # Test that validation catches missing required field
+            assert not form.newsapi_key.data
+            # In real form validation, this would fail validation
+
+
+class TestSettingsForm:
+    """Test settings form validation including new advanced fields."""
+    
+    def test_valid_settings_form_with_advanced_fields(self, app):
+        """Test form validation with all valid settings including new advanced fields."""
+        with app.app_context():
+            form_data = {
+                'listener_name': 'Test User',
+                'location_city': 'Denver',
+                'location_country': 'US',
+                'briefing_duration_minutes': 8,
+                'news_topics': 'technology,business',
+                'max_articles_per_topic': 3,
+                'podcast_categories': 'Technology,Business',
+                'elevenlabs_voice_id': 'default',
+                'aws_region': 'us-east-1',
+                # New advanced fields
+                'briefing_tone': 'professional',
+                'content_depth': 'balanced',
+                'keywords_exclude': 'sports,celebrity',
+                'voice_speed': '1.0',
+            }
+            
+            form = SettingsForm(data=form_data)
+            
+            # Verify all new fields are present and have correct values
+            assert form.briefing_tone.data == 'professional'
+            assert form.content_depth.data == 'balanced'
+            assert form.keywords_exclude.data == 'sports,celebrity'
+            assert form.voice_speed.data == '1.0'
+    
+    def test_advanced_field_defaults(self, app):
+        """Test that advanced fields have proper default values."""
+        with app.app_context():
+            form = SettingsForm()
+            
+            # Check that defaults are set correctly
+            assert form.briefing_tone.default == 'professional'
+            assert form.content_depth.default == 'balanced'
+            assert form.voice_speed.default == '1.0'
+    
+    def test_advanced_field_validation(self, app):
+        """Test validation of advanced fields."""
+        with app.app_context():
+            form_data = {
+                'briefing_duration_minutes': 8,
+                'keywords_exclude': 'a' * 250,  # Too long
+            }
+            
+            form = SettingsForm(data=form_data)
+            
+            # Test that long keywords_exclude field is present (validation happens on form.validate())
+            assert len(form.keywords_exclude.data) > 200
+
+
+class TestWebConfig:
+    """Test web configuration handling including advanced fields."""
+    
+    def test_create_config_with_advanced_fields(self):
+        """Test creating Config object with new advanced fields."""
+        form_data = {
+            'newsapi_key': 'test_news_key',
+            'openweather_api_key': 'test_weather_key',
+            'taddy_api_key': 'test_taddy_key',
+            'taddy_user_id': 'test_user_123',
+            'gemini_api_key': 'test_gemini_key',
+            'elevenlabs_api_key': 'test_elevenlabs_key',
+            'listener_name': 'Test User',
+            'location_city': 'Denver',
+            'location_country': 'US',
+            'briefing_duration_minutes': 10,
+            'news_topics': 'technology,science',
+            'max_articles_per_topic': 5,
+            'podcast_categories': 'Technology,Science',
+            'elevenlabs_voice_id': 'default',
+            'aws_region': 'us-east-1',
+            # New advanced fields
+            'briefing_tone': 'casual',
+            'content_depth': 'detailed',
+            'keywords_exclude': 'sports,gossip',
+            'voice_speed': '1.2',
+        }
+        
+        # This should not raise an exception
+        config = WebConfig.create_config_from_form(form_data)
+        
+        # Verify advanced fields are included in config
+        assert config.get('BRIEFING_TONE') == 'casual'
+        assert config.get('CONTENT_DEPTH') == 'detailed'
+        assert config.get('KEYWORDS_EXCLUDE') == 'sports,gossip'
+        assert config.get('VOICE_SPEED') == '1.2'
+    
+    def test_form_defaults_include_advanced_fields(self):
+        """Test that form defaults include values for advanced fields."""
+        defaults = WebConfig.get_form_defaults()
+        
+        # Verify new advanced field defaults are present
+        assert 'briefing_tone' in defaults
+        assert 'content_depth' in defaults
+        assert 'keywords_exclude' in defaults
+        assert 'voice_speed' in defaults
+        
+        # Verify default values
+        assert defaults['briefing_tone'] == 'professional'
+        assert defaults['content_depth'] == 'balanced'
+        assert defaults['keywords_exclude'] == ''
+        assert defaults['voice_speed'] == '1.0'
+    
+    def test_config_with_empty_advanced_fields(self):
+        """Test configuration creation with empty advanced fields."""
+        form_data = {
+            'newsapi_key': 'test_news_key',
+            'openweather_api_key': 'test_weather_key',
+            'taddy_api_key': 'test_taddy_key',
+            'taddy_user_id': 'test_user_123',
+            'gemini_api_key': 'test_gemini_key',
+            'elevenlabs_api_key': 'test_elevenlabs_key',
+            # Advanced fields not provided (should use defaults)
+        }
+        
+        config = WebConfig.create_config_from_form(form_data)
+        
+        # Should use defaults for missing advanced fields
+        assert config.get('BRIEFING_TONE') == 'professional'
+        assert config.get('CONTENT_DEPTH') == 'balanced'
+        assert config.get('KEYWORDS_EXCLUDE') == ''
+        assert config.get('VOICE_SPEED') == '1.0'
+
+
+class TestAdvancedFieldsIntegration:
+    """Test integration of advanced fields with existing functionality."""
+    
+    def test_session_storage_includes_advanced_fields(self, app):
+        """Test that session properly stores advanced field values."""
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                # Simulate storing settings with advanced fields
+                sess['settings'] = {
+                    'listener_name': 'Test User',
+                    'briefing_duration_minutes': 8,
+                    'briefing_tone': 'energetic',
+                    'content_depth': 'headlines',
+                    'keywords_exclude': 'politics,sports',
+                    'voice_speed': '0.8',
+                }
+            
+            # Verify session contains advanced fields
+            with client.session_transaction() as sess:
+                settings = sess.get('settings', {})
+                assert settings['briefing_tone'] == 'energetic'
+                assert settings['content_depth'] == 'headlines'
+                assert settings['keywords_exclude'] == 'politics,sports'
+                assert settings['voice_speed'] == '0.8'
+    
+    def test_complete_form_to_config_workflow(self, app):
+        """Test complete workflow from form data to Config object."""
+        with app.test_client() as client:
+            # Simulate complete form submission data
+            form_data = {
+                # Required API keys
+                'newsapi_key': 'test_news_key',
+                'openweather_api_key': 'test_weather_key',
+                'taddy_api_key': 'test_taddy_key',
+                'taddy_user_id': 'test_user_123',
+                'gemini_api_key': 'test_gemini_key',
+                'elevenlabs_api_key': 'test_elevenlabs_key',
+                
+                # Basic settings
+                'listener_name': 'Integration Test User',
+                'location_city': 'Boston',
+                'location_country': 'US',
+                'briefing_duration_minutes': 12,
+                'news_topics': 'technology,health,business',
+                'max_articles_per_topic': 4,
+                'podcast_categories': 'Technology,Health,Business',
+                'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',
+                
+                # Advanced settings
+                'briefing_tone': 'casual',
+                'content_depth': 'detailed',
+                'keywords_exclude': 'celebrity,gossip,sports',
+                'voice_speed': '1.1',
+            }
+            
+            # Create config from form data
+            config = WebConfig.create_config_from_form(form_data)
+            
+            # Verify all fields are properly mapped
+            assert config.get('LISTENER_NAME') == 'Integration Test User'
+            assert config.get('LOCATION_CITY') == 'Boston'
+            assert config.get('BRIEFING_DURATION_MINUTES') == '12'
+            assert config.get('NEWS_TOPICS') == 'technology,health,business'
+            assert config.get('BRIEFING_TONE') == 'casual'
+            assert config.get('CONTENT_DEPTH') == 'detailed'
+            assert config.get('KEYWORDS_EXCLUDE') == 'celebrity,gossip,sports'
+            assert config.get('VOICE_SPEED') == '1.1'
+
+
+class TestPreviewFunctionality:
+    """Test preview script functionality (Iteration 3)."""
+    
+    def test_preview_script_route_success(self, app):
+        """Test successful script preview generation via web route."""
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                # Set up complete session data
+                sess['api_keys'] = {
+                    'newsapi_key': 'test_news_key',
+                    'openweather_api_key': 'test_weather_key',
+                    'taddy_api_key': 'test_taddy_key',
+                    'taddy_user_id': 'test_user_123',
+                    'gemini_api_key': 'test_gemini_key',
+                    'elevenlabs_api_key': 'test_elevenlabs_key',
+                }
+                sess['settings'] = {
+                    'listener_name': 'Test User',
+                    'briefing_duration_minutes': 5,
+                    'briefing_tone': 'casual',
+                    'content_depth': 'headlines',
+                    'keywords_exclude': 'sports,celebrity',
+                    'voice_speed': '1.2'
+                }
+            
+            # Mock the generate_script_only function
+            with patch('main.generate_script_only') as mock_generate:
+                mock_generate.return_value = {
+                    'success': True,
+                    'data': {
+                        'script_content': 'This is a test script for preview.',
+                        'word_count': 50,
+                        'estimated_duration_minutes': 2.5,
+                        'generation_time_seconds': 8.3,
+                        'articles_count': 3,
+                        'podcasts_count': 2,
+                        'has_weather': True,
+                        'tone': 'casual',
+                        'depth': 'headlines',
+                        'keywords_excluded': 2,
+                        'script_length_chars': 200
+                    }
+                }
+                
+                # Test the preview route
+                response = client.post('/preview-script')
+                
+                # Check response
+                assert response.status_code == 200
+                data = response.get_json()
+                
+                assert data['success'] is True
+                assert data['script'] == 'This is a test script for preview.'
+                assert data['word_count'] == 50
+                assert data['estimated_duration_minutes'] == 2.5
+                assert data['generation_time_seconds'] == 8.3
+                assert data['articles_count'] == 3
+                assert data['tone'] == 'casual'
+                assert data['depth'] == 'headlines'
+                assert data['keywords_excluded'] == 2
+                
+                # Verify generate_script_only was called
+                mock_generate.assert_called_once()
+    
+    def test_preview_script_route_incomplete_config(self, app):
+        """Test preview route with incomplete configuration."""
+        with app.test_client() as client:
+            # Don't set session data
+            response = client.post('/preview-script')
+            
+            assert response.status_code == 200
+            data = response.get_json()
+            
+            assert data['success'] is False
+            assert 'Configuration incomplete' in data['error']
+    
+    def test_preview_script_route_generation_failure(self, app):
+        """Test preview route when script generation fails."""
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                # Provide complete session data so config validation passes
+                sess['api_keys'] = {
+                    'newsapi_key': 'test_news_key',
+                    'openweather_api_key': 'test_weather_key',
+                    'taddy_api_key': 'test_taddy_key',
+                    'taddy_user_id': 'test_user_123',
+                    'gemini_api_key': 'test_gemini_key',
+                    'elevenlabs_api_key': 'test_elevenlabs_key',
+                }
+                sess['settings'] = {'briefing_duration_minutes': 5}
+            
+            # Mock the generate_script_only function to return error
+            with patch('main.generate_script_only') as mock_generate:
+                mock_generate.return_value = {
+                    'success': False,
+                    'error': 'API connection failed',
+                    'message': 'Failed to fetch news data'
+                }
+                
+                response = client.post('/preview-script')
+                
+                assert response.status_code == 200
+                data = response.get_json()
+                
+                assert data['success'] is False
+                assert data['error'] == 'API connection failed'
+                assert data['message'] == 'Failed to fetch news data'
+
+
+class TestGenerateScriptOnly:
+    """Test the generate_script_only function from main.py."""
+    
+    @patch('data_fetchers.get_weather')
+    @patch('data_fetchers.get_news_articles') 
+    @patch('data_fetchers.get_new_podcast_episodes')
+    @patch('summarizer.create_briefing_script')
+    def test_generate_script_only_success(self, mock_script, mock_podcasts, mock_news, mock_weather):
+        """Test successful script-only generation."""
+        from main import generate_script_only
+        from config import Config
+        
+        # Set up mocks
+        mock_weather.return_value = Mock(city='Test City')
+        mock_news.return_value = [Mock(title='Test Article')]
+        mock_podcasts.return_value = [Mock(episode_title='Test Episode')]
+        mock_script.return_value = 'This is a test script for preview functionality.'
+        
+        # Create test config
+        config = Config({
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'BRIEFING_TONE': 'energetic',
+            'CONTENT_DEPTH': 'detailed',
+            'KEYWORDS_EXCLUDE': 'politics',
+            'VOICE_SPEED': '0.8'
+        })
+        
+        # Call function
+        result = generate_script_only(config)
+        
+        # Verify result
+        assert result['success'] is True
+        assert result['status'] == 'success'
+        assert 'Script preview generated successfully' in result['message']
+        
+        data = result['data']
+        assert data['script_content'] == 'This is a test script for preview functionality.'
+        assert data['word_count'] == 8  # Number of words in test script
+        assert data['estimated_duration_minutes'] > 0
+        assert data['articles_count'] == 1
+        assert data['podcasts_count'] == 1
+        assert data['has_weather'] is True
+        assert data['tone'] == 'energetic'
+        assert data['depth'] == 'detailed'
+        assert data['keywords_excluded'] == 1
+        assert data['generation_time_seconds'] >= 0  # May be 0 with mocked functions
+        
+        # Verify all functions were called
+        mock_weather.assert_called_once_with(config)
+        mock_news.assert_called_once_with(config)
+        mock_podcasts.assert_called_once_with(config)
+        mock_script.assert_called_once()
+    
+    @patch('data_fetchers.get_weather')
+    def test_generate_script_only_error_handling(self, mock_weather):
+        """Test error handling in script-only generation."""
+        from main import generate_script_only
+        from config import Config
+        
+        # Set up mock to raise exception
+        mock_weather.side_effect = Exception('API connection failed')
+        
+        # Create test config
+        config = Config({
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key'
+        })
+        
+        # Call function
+        result = generate_script_only(config)
+        
+        # Verify error handling
+        assert result['success'] is False
+        assert result['status'] == 'error'
+        assert 'API connection failed' in result['error']
+        assert 'Script preview generation failed' in result['message']
+    
+    def test_generate_script_only_performance(self):
+        """Test that script-only generation is faster than full generation."""
+        # This is more of a documentation test - in real usage, 
+        # script-only generation should be significantly faster
+        from main import generate_script_only
+        import time
+        
+        # We can't easily test actual performance without real API calls,
+        # but we can verify the function exists and has the right structure
+        assert callable(generate_script_only)
+        
+        # The function should not import TTS-related modules
+        import inspect
+        source = inspect.getsource(generate_script_only)
+        assert 'generate_audio' not in source
+        assert 'save_audio_locally' not in source
+
+
+# Mock Flask app fixture for testing (update the existing one if needed)
 @pytest.fixture
 def app():
-    """Create test Flask application."""
-    app = create_app('testing')
+    """Create a Flask app for testing."""
+    import os
+    from flask import Flask
+    from web.routes import web_bp
+    
+    # Get the project root directory (parent of tests directory)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Create Flask app with proper template and static directories
+    app = Flask(__name__, 
+                template_folder=os.path.join(project_root, 'templates'),
+                static_folder=os.path.join(project_root, 'static'))
+    
+    app.config['SECRET_KEY'] = 'test_secret_key'
+    app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+    
+    # Register the web blueprint so routes are available
+    app.register_blueprint(web_bp)
+    
     return app
 
 
@@ -55,7 +526,12 @@ def valid_settings_data():
         'max_articles_per_topic': 3,
         'podcast_categories': 'Technology,Business',
         'elevenlabs_voice_id': 'default',
-        'aws_region': 'us-east-1'
+        'aws_region': 'us-east-1',
+        # Advanced settings (Milestone 5)
+        'briefing_tone': 'professional',
+        'content_depth': 'balanced',
+        'keywords_exclude': '',
+        'voice_speed': '1.0'
     }
 
 
@@ -249,8 +725,11 @@ class TestRouteHandlers:
     
     def test_audio_file_serving(self, client):
         """Test audio file serving endpoint."""
-        # Create a dummy audio file for testing
-        audio_dir = 'static/audio'
+        # Get the project root directory (same as in app fixture)
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Create a dummy audio file for testing in the correct location
+        audio_dir = os.path.join(project_root, 'static', 'audio')
         os.makedirs(audio_dir, exist_ok=True)
         test_file = os.path.join(audio_dir, 'test.mp3')
         

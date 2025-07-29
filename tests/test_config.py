@@ -311,3 +311,106 @@ class TestGetConfig:
             instance = get_config()
             assert isinstance(instance, Config)
             assert instance.get('NEWSAPI_KEY') == 'test-newsapi-key' 
+
+
+class TestAdvancedConfigurationGetters:
+    """Test new advanced configuration getter methods."""
+    
+    def test_get_briefing_tone(self):
+        """Test briefing tone getter method."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'BRIEFING_TONE': 'casual'
+        }
+        
+        config = Config(config_dict)
+        assert config.get_briefing_tone() == 'casual'
+    
+    def test_get_content_depth(self):
+        """Test content depth getter method."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'CONTENT_DEPTH': 'detailed'
+        }
+        
+        config = Config(config_dict)
+        assert config.get_content_depth() == 'detailed'
+    
+    def test_get_keywords_exclude_with_values(self):
+        """Test keywords exclude getter with actual keywords."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'KEYWORDS_EXCLUDE': 'sports,Celebrity,POLITICS'
+        }
+        
+        config = Config(config_dict)
+        keywords = config.get_keywords_exclude()
+        
+        # Should return lowercase, trimmed keywords
+        assert keywords == ['sports', 'celebrity', 'politics']
+    
+    def test_get_keywords_exclude_empty(self):
+        """Test keywords exclude getter with empty string."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'KEYWORDS_EXCLUDE': ''
+        }
+        
+        config = Config(config_dict)
+        keywords = config.get_keywords_exclude()
+        
+        # Should return empty list for empty string
+        assert keywords == []
+    
+    def test_get_voice_speed(self):
+        """Test voice speed getter method."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'TADDY_API_KEY': 'test_key',
+            'TADDY_USER_ID': 'test_id',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'VOICE_SPEED': '1.2'
+        }
+        
+        config = Config(config_dict)
+        speed = config.get_voice_speed()
+        
+        # Should return float value
+        assert speed == 1.2
+        assert isinstance(speed, float)
+    
+    def test_advanced_config_defaults_in_class(self):
+        """Test that advanced config defaults are properly set in Config class."""
+        # Test that defaults exist in the class
+        assert 'BRIEFING_TONE' in Config.DEFAULT_VALUES
+        assert 'CONTENT_DEPTH' in Config.DEFAULT_VALUES
+        assert 'KEYWORDS_EXCLUDE' in Config.DEFAULT_VALUES
+        assert 'VOICE_SPEED' in Config.DEFAULT_VALUES
+        
+        # Test default values
+        assert Config.DEFAULT_VALUES['BRIEFING_TONE'] == 'professional'
+        assert Config.DEFAULT_VALUES['CONTENT_DEPTH'] == 'balanced'
+        assert Config.DEFAULT_VALUES['KEYWORDS_EXCLUDE'] == ''
+        assert Config.DEFAULT_VALUES['VOICE_SPEED'] == '1.0' 

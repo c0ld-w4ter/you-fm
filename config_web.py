@@ -77,6 +77,12 @@ class WebConfig:
             'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default').strip(),
             'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 8)),
             'LISTENER_NAME': form_data.get('listener_name', 'Seamus').strip(),
+            
+            # Advanced settings (New for Milestone 5)
+            'BRIEFING_TONE': form_data.get('briefing_tone', 'professional').strip(),
+            'CONTENT_DEPTH': form_data.get('content_depth', 'balanced').strip(),
+            'KEYWORDS_EXCLUDE': form_data.get('keywords_exclude', '').strip(),
+            'VOICE_SPEED': form_data.get('voice_speed', '1.0').strip(),
         }
         
         # Create Config object with custom data
@@ -103,6 +109,12 @@ class WebConfig:
             'elevenlabs_voice_id': 'default',
             'briefing_duration_minutes': 8,
             'listener_name': 'Seamus',
+            
+            # Advanced defaults (New for Milestone 5)
+            'briefing_tone': 'professional',
+            'content_depth': 'balanced',
+            'keywords_exclude': '',
+            'voice_speed': '1.0',
         }
     
     @staticmethod

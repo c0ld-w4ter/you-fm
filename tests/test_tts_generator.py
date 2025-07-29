@@ -22,6 +22,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'ELEVENLABS_VOICE_ID': 'test-voice-id'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client and response
@@ -42,13 +43,19 @@ class TestGenerateAudio:
         assert result == test_audio_data
         assert len(result) > 0
         
-        # Verify API calls
+                # Verify API calls
         mock_elevenlabs_class.assert_called_once_with(api_key='test-elevenlabs-key')
         mock_client.text_to_speech.convert.assert_called_once_with(
             text=script_text,
-            voice_id='test-voice-id',  
+            voice_id='test-voice-id',
             model_id="eleven_multilingual_v2",
-            output_format="mp3_44100_128"
+            output_format="mp3_44100_128",
+            voice_settings={
+                "stability": 0.75,
+                "similarity_boost": 0.75,
+                "style": 0.0,
+                "use_speaker_boost": True
+            }
         )
         
     @patch('elevenlabs.client.ElevenLabs')
@@ -61,6 +68,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'ELEVENLABS_VOICE_ID': 'default'  # Should use Rachel voice
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client and response
@@ -76,7 +84,13 @@ class TestGenerateAudio:
             text="Test script",
             voice_id="JBFqnCBsd6RMkjVDRZzb",  # Rachel voice
             model_id="eleven_multilingual_v2",
-            output_format="mp3_44100_128"
+            output_format="mp3_44100_128",
+            voice_settings={
+                "stability": 0.75,
+                "similarity_boost": 0.75,
+                "style": 0.0,
+                "use_speaker_boost": True
+            }
         )
         
     @patch('elevenlabs.client.ElevenLabs')
@@ -89,6 +103,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'ELEVENLABS_VOICE_ID': 'test-voice-id'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client
@@ -148,6 +163,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'invalid-key',
             'ELEVENLABS_VOICE_ID': 'test-voice'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client that raises authentication error
@@ -171,6 +187,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-key',
             'ELEVENLABS_VOICE_ID': 'invalid-voice-id'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client that raises voice error
@@ -194,6 +211,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-key',
             'ELEVENLABS_VOICE_ID': 'test-voice'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client that raises quota error
@@ -217,6 +235,7 @@ class TestGenerateAudio:
             'ELEVENLABS_API_KEY': 'test-key',
             'ELEVENLABS_VOICE_ID': 'test-voice'
         }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
         mock_config.return_value = mock_config_instance
         
         # Mock ElevenLabs client that raises network error

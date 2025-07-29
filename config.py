@@ -44,6 +44,12 @@ class Config:
         'ELEVENLABS_VOICE_ID': 'default',
         'BRIEFING_DURATION_MINUTES': '8',  # Duration in minutes for the audio briefing
         'LISTENER_NAME': 'Seamus',  # Name of the listener for personalized greetings (optional)
+        
+        # Advanced settings (New for Milestone 5)
+        'BRIEFING_TONE': 'professional',  # Tone of the briefing: professional, casual, energetic
+        'CONTENT_DEPTH': 'balanced',      # Content depth: headlines, balanced, detailed  
+        'KEYWORDS_EXCLUDE': '',           # Keywords to avoid in articles (comma-separated)
+        'VOICE_SPEED': '1.0',            # Speech speed multiplier for TTS
     }
     
     def __init__(self, config_dict: Optional[Dict[str, str]] = None):
@@ -178,6 +184,26 @@ class Config:
     def get_listener_name(self) -> str:
         """Get listener name for personalized greetings."""
         return self.get('LISTENER_NAME')
+    
+    # Advanced configuration getters (New for Milestone 5)
+    def get_briefing_tone(self) -> str:
+        """Get briefing tone setting."""
+        return self.get('BRIEFING_TONE')
+    
+    def get_content_depth(self) -> str:
+        """Get content depth setting."""
+        return self.get('CONTENT_DEPTH')
+    
+    def get_keywords_exclude(self) -> list[str]:
+        """Get keywords to exclude as a list."""
+        keywords_str = self.get('KEYWORDS_EXCLUDE')
+        if not keywords_str.strip():
+            return []
+        return [keyword.strip().lower() for keyword in keywords_str.split(',')]
+    
+    def get_voice_speed(self) -> float:
+        """Get voice speed as float."""
+        return float(self.get('VOICE_SPEED'))
     
     def is_aws_environment(self) -> bool:
         """

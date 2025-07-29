@@ -14,6 +14,81 @@ from config import get_config, Config
 logger = logging.getLogger(__name__)
 
 
+def filter_articles_by_keywords(articles: List[Article], excluded_keywords: List[str]) -> List[Article]:
+    """
+    Filter articles to exclude those containing specified keywords.
+    
+    Args:
+        articles: List of Article objects to filter
+        excluded_keywords: List of keywords to avoid (case-insensitive)
+        
+    Returns:
+        Filtered list of Article objects
+    """
+    if not excluded_keywords:
+        return articles
+    
+    filtered_articles = []
+    excluded_count = 0
+    
+    for article in articles:
+        # Check title and content for excluded keywords (case-insensitive)
+        article_text = f"{article.title} {article.content}".lower()
+        
+        contains_excluded = False
+        for keyword in excluded_keywords:
+            keyword_lower = keyword.lower()
+            if keyword_lower in article_text:
+                contains_excluded = True
+                logger.info(f"Filtering out article '{article.title}' due to keyword: {keyword}")
+                break
+        
+        if not contains_excluded:
+            filtered_articles.append(article)
+        else:
+            excluded_count += 1
+    
+    logger.info(f"Keyword filtering: {len(articles)} → {len(filtered_articles)} articles ({excluded_count} filtered out)")
+    return filtered_articles
+
+
+def generate_style_instructions(tone: str, depth: str, listener_name: str = "") -> dict:
+    """
+    Generate AI prompt instructions based on user style preferences.
+    
+    Args:
+        tone: User's preferred briefing tone
+        depth: User's preferred content depth
+        listener_name: Name for personalization
+        
+    Returns:
+        Dictionary with tone and depth instruction strings
+    """
+    tone_instructions = {
+        'professional': "Maintain a professional, authoritative tone suitable for business news. Use formal language and clear, direct statements.",
+        'casual': "Use a friendly, conversational tone like talking to a friend. Keep it relaxed but informative, with natural transitions.", 
+        'energetic': "Use an upbeat, engaging tone with enthusiasm. Keep the energy high while remaining informative and clear."
+    }
+    
+    depth_instructions = {
+        'headlines': "Focus on headlines and key facts only. Keep each story to 1-2 sentences maximum. Prioritize breadth over depth.",
+        'balanced': "Provide balanced coverage with key details and context. Give each important story 2-3 sentences with essential background.",
+        'detailed': "Include detailed analysis, background context, and implications. Provide comprehensive coverage with 3-4 sentences per major story."
+    }
+    
+    tone_instruction = tone_instructions.get(tone, tone_instructions['professional'])
+    depth_instruction = depth_instructions.get(depth, depth_instructions['balanced'])
+    
+    # Add personalization for non-professional tones
+    if tone in ['casual', 'energetic'] and listener_name:
+        tone_instruction += f" Address {listener_name} directly when appropriate to make it feel personal."
+    
+    return {
+        'tone': tone_instruction,
+        'depth': depth_instruction
+    }
+
+
 def summarize_articles(articles: List[Article]) -> List[Article]:
     """
     Summarize a list of articles using Google Gemini API.
@@ -112,6 +187,22 @@ def create_briefing_script(weather_data, articles: List[Article], podcast_episod
             config = get_config()
         api_key = config.get('GEMINI_API_KEY')
         
+        # Get advanced settings
+        briefing_tone = config.get_briefing_tone()
+        content_depth = config.get_content_depth()
+        excluded_keywords = config.get_keywords_exclude()
+        listener_name = config.get_listener_name()
+        briefing_duration = config.get_briefing_duration_minutes()
+        
+        # Filter articles by excluded keywords
+        if articles and excluded_keywords:
+            articles = filter_articles_by_keywords(articles, excluded_keywords)
+            if not articles:
+                logger.warning("All articles were filtered out by keyword exclusion!")
+        
+        # Generate style-specific instructions
+        style_instructions = generate_style_instructions(briefing_tone, content_depth, listener_name)
+        
         # Configure the Gemini API
         genai.configure(api_key=api_key)
         
@@ -173,11 +264,7 @@ Content: {content}
                 podcast_items.append(f"{i}. '{episode.episode_title}' from {episode.podcast_title}")
             podcast_info = "\n".join(podcast_items)
         
-        # Get briefing duration and listener name from configuration
-        briefing_duration = config.get_briefing_duration_minutes()
-        listener_name = config.get_listener_name()
-        
-        # Create enhanced prompt for combined summarization and script generation
+        # Create enhanced prompt for combined summarization and script generation with style awareness
         listener_greeting = f" for {listener_name}" if listener_name else ""
         prompt = f"""You are an AI assistant creating a personalized daily news briefing script{listener_greeting}. You need to:
 
@@ -188,6 +275,10 @@ Content: {content}
 Date: {current_date}
 Listener: {listener_name if listener_name else "General audience"}
 Target Duration: {briefing_duration} minutes
+
+STYLE PREFERENCES:
+TONE: {style_instructions['tone']}
+DEPTH: {style_instructions['depth']}
 
 AVAILABLE DATA:
 
@@ -201,16 +292,16 @@ PODCAST EPISODES:
 {podcast_info}
 
 SCRIPT GENERATION INSTRUCTIONS:
-1. Create a warm, professional greeting that includes the date{f" and addresses {listener_name} by name" if listener_name else ""}
-2. Present the weather information conversationally, mentioning notable conditions
+1. Create a warm greeting that matches the specified TONE and includes the date{f" and addresses {listener_name} by name" if listener_name else ""}
+2. Present the weather information conversationally, mentioning notable conditions using the specified TONE
 3. INTELLIGENTLY SELECT and SUMMARIZE the most important/interesting news stories from the articles above
-4. Use your editorial judgment to determine how many stories to include and how much detail to provide based on the {briefing_duration}-minute target duration
-5. For each selected story, provide an appropriate summary length that balances comprehensiveness with time constraints
-6. Present stories in order of importance/interest
-7. Include podcast recommendations naturally
-8. End with a positive, encouraging closing{f" that includes {listener_name}'s name" if listener_name else ""}
-9. Use natural transitions between sections
-10. Keep the tone informative but friendly{f" and personal to {listener_name}" if listener_name else ""}
+4. Use your editorial judgment to determine how many stories to include and how much detail to provide based on the {briefing_duration}-minute target duration and DEPTH preference
+5. For each selected story, provide an appropriate summary length that follows the DEPTH guidelines
+6. Present stories in order of importance/interest using the specified TONE
+7. Include podcast recommendations naturally in the specified TONE
+8. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
+9. Use natural transitions between sections that match the TONE
+10. Follow the TONE guidelines throughout the entire script
 11. Make it sound natural when spoken aloud - avoid written language patterns
 12. Handle missing data gracefully without being repetitive
 13. Target the script length to fit comfortably within a {briefing_duration}-minute audio briefing
@@ -222,17 +313,17 @@ EDITORIAL GUIDELINES:
 - Ensure variety across different topics when multiple quality options exist
 - Skip duplicate or very similar stories
 - Focus on stories with clear, factual content
-- Balance depth vs breadth based on available time and story importance
+- Balance depth vs breadth based on available time, story importance, and DEPTH preference
 - Quality over quantity - better to cover fewer stories well than many stories superficially
 
 Generate only the final script text, ready for text-to-speech conversion:"""
 
         # Generate the briefing script with integrated summarization
-        logger.info("Generating briefing script with integrated article summarization...")
+        logger.info(f"Generating briefing script with style preferences: tone={briefing_tone}, depth={content_depth}")
         response = model.generate_content(prompt)
         
         final_script = response.text.strip()
-        logger.info(f"✓ AI-generated briefing script created with batch processing ({len(articles)} articles processed)")
+        logger.info(f"✓ AI-generated briefing script created with style awareness ({len(articles)} articles processed)")
         return final_script
         
     except Exception as e:

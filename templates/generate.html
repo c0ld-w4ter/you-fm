@@ -35,7 +35,7 @@
     <!-- Configuration Summary -->
     <div class="bg-white shadow rounded-lg p-6 mb-8">
         <h3 class="text-lg font-medium text-gray-900 mb-4">📋 Configuration Summary</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
             <div>
                 <h4 class="font-medium text-gray-700 mb-2">Personal Settings</h4>
                 <div class="space-y-1 text-gray-600">
@@ -49,25 +49,97 @@
                 <div class="space-y-1 text-gray-600">
                     <p><span class="font-medium">Topics:</span> {{ session.settings.news_topics or 'Default' }}</p>
                     <p><span class="font-medium">Articles per topic:</span> {{ session.settings.max_articles_per_topic }}</p>
+                    <p><span class="font-medium">Tone:</span> {{ session.settings.briefing_tone or 'professional' | title }}</p>
+                    <p><span class="font-medium">Depth:</span> {{ session.settings.content_depth or 'balanced' | title }}</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-medium text-gray-700 mb-2">Audio Settings</h4>
+                <div class="space-y-1 text-gray-600">
                     <p><span class="font-medium">Voice:</span> {{ session.settings.elevenlabs_voice_id }}</p>
+                    <p><span class="font-medium">Speed:</span> {{ session.settings.voice_speed or '1.0' }}x</p>
+                    {% if session.settings.keywords_exclude %}
+                    <p><span class="font-medium">Excluded:</span> {{ session.settings.keywords_exclude }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Big Generate Button -->
+    <!-- Generation Options -->
     <div class="text-center">
         <div class="bg-white shadow rounded-lg p-8">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 mb-2">Ready to Generate Your Briefing?</h3>
-                <p class="text-gray-600">This will take 1-2 minutes to gather news, weather, and podcasts, then generate your personalized audio briefing.</p>
+                <p class="text-gray-600">Preview the script first for quick iteration, or generate the full audio briefing.</p>
             </div>
             
-            <button id="generate-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg shadow-lg transition duration-200 transform hover:scale-105 text-xl">
-                🎧 Generate Daily Briefing
-            </button>
+            <!-- Buttons Container -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                <!-- Preview Button -->
+                <button id="preview-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
+                    📝 Preview Script
+                </button>
+                
+                <!-- Generate Button -->
+                <button id="generate-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg shadow-lg transition duration-200 transform hover:scale-105 text-xl">
+                    🎧 Generate Full Briefing
+                </button>
+            </div>
             
-            <p class="mt-4 text-sm text-gray-500">Click the button above to start generating your personalized daily briefing</p>
+            <p class="mt-4 text-sm text-gray-500">Preview first to see the script (fast), then generate audio when you're satisfied</p>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center mb-4 pb-4 border-b">
+                <h3 class="text-xl font-bold text-gray-900">📝 Script Preview</h3>
+                <button id="close-preview" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <!-- Preview Stats -->
+            <div id="preview-stats" class="bg-gray-50 rounded-lg p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div class="text-center">
+                    <div class="font-bold text-lg text-blue-600" id="stat-duration">-</div>
+                    <div class="text-gray-600">Est. Duration</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-green-600" id="stat-words">-</div>
+                    <div class="text-gray-600">Words</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-purple-600" id="stat-articles">-</div>
+                    <div class="text-gray-600">Articles</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-orange-600" id="stat-time">-</div>
+                    <div class="text-gray-600">Gen Time</div>
+                </div>
+            </div>
+            
+            <!-- Script Content -->
+            <div class="flex-1 overflow-hidden">
+                <textarea id="preview-script" class="w-full h-full resize-none border border-gray-300 rounded-md p-4 text-sm leading-relaxed" readonly placeholder="Script will appear here..."></textarea>
+            </div>
+            
+            <!-- Modal Actions -->
+            <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                <div class="text-sm text-gray-600" id="preview-info">
+                    Tone: <span class="font-medium" id="preview-tone">-</span> | 
+                    Depth: <span class="font-medium" id="preview-depth">-</span>
+                </div>
+                <div class="flex gap-3">
+                    <button id="generate-from-preview" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        🎧 Generate Audio
+                    </button>
+                    <button id="close-preview-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -105,11 +177,151 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateBtn = document.getElementById('generate-btn');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewModal = document.getElementById('preview-modal');
+    const closePreviewBtn = document.getElementById('close-preview-btn');
+    const previewScript = document.getElementById('preview-script');
+    const previewStats = document.getElementById('preview-stats');
+    const previewInfo = document.getElementById('preview-info');
+    const previewTone = document.getElementById('preview-tone');
+    const previewDepth = document.getElementById('preview-depth');
+    const generateFromPreviewBtn = document.getElementById('generate-from-preview');
     const loadingModal = document.getElementById('loading-modal');
     const loadingStatus = document.getElementById('loading-status');
     const progressBar = document.getElementById('progress-bar');
     const progressSteps = document.getElementById('progress-steps');
     
+    // Close preview modal
+    closePreviewBtn.addEventListener('click', function() {
+        previewModal.classList.add('hidden');
+    });
+
+    document.getElementById('close-preview').addEventListener('click', function() {
+        previewModal.classList.add('hidden');
+    });
+
+    // Preview button listener
+    previewBtn.addEventListener('click', function() {
+        // Show loading state
+        previewBtn.disabled = true;
+        previewBtn.innerHTML = '⏳ Generating Preview...';
+        
+        // Show modal immediately with loading state
+        previewModal.classList.remove('hidden');
+        previewScript.value = 'Generating script preview...\n\nThis may take 10-20 seconds as we fetch the latest news, weather, and podcast data, then create your personalized script.';
+        
+        // Reset stats to loading state
+        document.getElementById('stat-duration').textContent = '...';
+        document.getElementById('stat-words').textContent = '...';
+        document.getElementById('stat-articles').textContent = '...';
+        document.getElementById('stat-time').textContent = '...';
+        previewTone.textContent = '...';
+        previewDepth.textContent = '...';
+        
+        // Fetch the script preview from the server
+        fetch('/preview-script', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update script content
+                previewScript.value = data.script;
+                
+                // Update stats
+                document.getElementById('stat-duration').textContent = data.estimated_duration_minutes + ' min';
+                document.getElementById('stat-words').textContent = data.word_count.toLocaleString();
+                document.getElementById('stat-articles').textContent = data.articles_count;
+                document.getElementById('stat-time').textContent = data.generation_time_seconds + 's';
+                
+                // Update style info
+                previewTone.textContent = data.tone;
+                previewDepth.textContent = data.depth;
+                
+                // Show additional info if available
+                if (data.keywords_excluded > 0) {
+                    document.getElementById('preview-info').innerHTML += ` | <span class="text-orange-600">${data.keywords_excluded} keywords filtered</span>`;
+                }
+            } else {
+                previewScript.value = 'Error generating script preview:\n\n' + (data.error || 'Unknown error occurred');
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            previewScript.value = 'Network error generating script preview:\n\n' + error.message;
+            alert('Error: ' + error.message);
+        })
+        .finally(() => {
+            // Re-enable preview button
+            previewBtn.disabled = false;
+            previewBtn.innerHTML = '📝 Preview Script';
+        });
+    });
+
+    // Generate from preview button listener
+    generateFromPreviewBtn.addEventListener('click', function() {
+        // Show loading modal
+        loadingModal.classList.remove('hidden');
+        
+        // Update initial status
+        loadingStatus.textContent = 'Starting briefing generation...';
+        progressBar.style.width = '10%';
+        progressSteps.innerHTML = '<p>Initializing...</p>';
+        
+        // Progress steps
+        const steps = [
+            { message: 'Fetching weather data...', step: 'Step 1 of 5', progress: 20, delay: 2000 },
+            { message: 'Gathering news articles...', step: 'Step 2 of 5', progress: 40, delay: 6000 },
+            { message: 'Processing podcast episodes...', step: 'Step 3 of 5', progress: 60, delay: 12000 },
+            { message: 'Generating AI briefing script...', step: 'Step 4 of 5', progress: 80, delay: 20000 },
+            { message: 'Converting to audio...', step: 'Step 5 of 5', progress: 95, delay: 30000 }
+        ];
+        
+        // Start progress updates
+        steps.forEach(({ message, step, progress, delay }) => {
+            setTimeout(() => {
+                if (loadingStatus && document.contains(loadingStatus)) {
+                    loadingStatus.textContent = message;
+                }
+                if (progressSteps && document.contains(progressSteps)) {
+                    progressSteps.innerHTML = `<p>${step}: ${message}</p>`;
+                }
+                if (progressBar && document.contains(progressBar)) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, delay);
+        });
+        
+        // Start the actual briefing generation
+        fetch('/create-briefing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to results page
+                window.location.href = data.redirect;
+            } else {
+                // Show error
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+                loadingModal.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+            loadingModal.classList.add('hidden');
+        });
+    });
+
+    // Generate button listener
     generateBtn.addEventListener('click', function() {
         // Show loading modal
         loadingModal.classList.remove('hidden');

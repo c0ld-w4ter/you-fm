@@ -7,7 +7,7 @@ This module defines HTTP endpoints for the web application.
 import os
 import logging
 from datetime import datetime
-from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file, jsonify, session
+from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file, jsonify, session, current_app
 from werkzeug.utils import secure_filename
 
 from web.forms import BriefingConfigForm, APIKeysForm, SettingsForm
@@ -81,6 +81,12 @@ def settings():
                 'podcast_categories': form.podcast_categories.data,
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
                 'aws_region': form.aws_region.data,
+                
+                # Advanced settings (New for Milestone 5)
+                'briefing_tone': form.briefing_tone.data,
+                'content_depth': form.content_depth.data,
+                'keywords_exclude': form.keywords_exclude.data,
+                'voice_speed': form.voice_speed.data,
             }
             flash('Settings saved successfully!', 'success')
             return redirect(url_for('web.generate'))
@@ -99,17 +105,67 @@ def settings():
 
 @web_bp.route('/generate', methods=['GET'])
 def generate():
-    """Page 3: Generate briefing page with big button."""
-    # Check if both API keys and settings are set
-    if 'api_keys' not in session:
-        flash('Please configure your API keys first.', 'error')
+    """Page 3: Generate briefing page."""
+    # Check if settings are configured
+    if 'api_keys' not in session or 'settings' not in session:
+        flash('Please complete the configuration steps first.', 'error')
         return redirect(url_for('web.api_keys'))
     
-    if 'settings' not in session:
-        flash('Please configure your settings first.', 'error')
-        return redirect(url_for('web.settings'))
-    
     return render_template('generate.html')
+
+
+@web_bp.route('/preview-script', methods=['POST'])
+def preview_script():
+    """AJAX endpoint to generate script preview without audio generation."""
+    try:
+        # Check if configuration is complete
+        if 'api_keys' not in session or 'settings' not in session:
+            return jsonify({
+                'success': False, 
+                'error': 'Configuration incomplete. Please complete API keys and settings first.'
+            })
+        
+        # Combine session data into config
+        session_data = {**session.get('api_keys', {}), **session.get('settings', {})}
+        config = WebConfig.create_config_from_form(session_data)
+        
+        # Import the new script-only generation function
+        from main import generate_script_only
+        
+        # Generate script preview (much faster than full generation)
+        logger.info("Generating script preview via web interface...")
+        result = generate_script_only(config)
+        
+        if result['success']:
+            data = result['data']
+            return jsonify({
+                'success': True,
+                'script': data['script_content'],
+                'word_count': data['word_count'],
+                'estimated_duration_minutes': data['estimated_duration_minutes'],
+                'generation_time_seconds': data['generation_time_seconds'],
+                'articles_count': data['articles_count'],
+                'podcasts_count': data['podcasts_count'],
+                'has_weather': data['has_weather'],
+                'tone': data['tone'],
+                'depth': data['depth'],
+                'keywords_excluded': data['keywords_excluded'],
+                'char_count': data['script_length_chars']
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result['error'],
+                'message': result['message']
+            })
+            
+    except Exception as e:
+        logger.error(f"Preview script generation failed: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Failed to generate script preview'
+        })
 
 
 @web_bp.route('/loading', methods=['GET'])
@@ -170,7 +226,10 @@ def results():
 def serve_audio(filename):
     """Serve audio files from the static/audio directory."""
     try:
-        audio_path = os.path.join('static', 'audio', filename)
+        # Use absolute path based on Flask app's root directory
+        audio_path = os.path.join(current_app.root_path, '..', 'static', 'audio', filename)
+        audio_path = os.path.abspath(audio_path)  # Resolve the absolute path
+        
         if os.path.exists(audio_path):
             return send_file(audio_path, mimetype='audio/mpeg')
         else:
@@ -186,7 +245,10 @@ def serve_audio(filename):
 def download_audio(filename):
     """Download audio files."""
     try:
-        audio_path = os.path.join('static', 'audio', filename)
+        # Use absolute path based on Flask app's root directory
+        audio_path = os.path.join(current_app.root_path, '..', 'static', 'audio', filename)
+        audio_path = os.path.abspath(audio_path)  # Resolve the absolute path
+        
         if os.path.exists(audio_path):
             return send_file(audio_path, 
                            mimetype='audio/mpeg',

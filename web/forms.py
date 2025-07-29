@@ -100,6 +100,35 @@ class SettingsForm(FlaskForm):
         render_kw={'placeholder': 'e.g., Technology,Business,Science'}
     )
     
+    # Advanced Content Settings (New for Milestone 5)
+    briefing_tone = SelectField(
+        'Briefing Tone',
+        choices=[
+            ('professional', 'Professional'),
+            ('casual', 'Casual'),
+            ('energetic', 'Energetic')
+        ],
+        default='professional',
+        validators=[Optional()]
+    )
+    
+    content_depth = SelectField(
+        'Content Depth',
+        choices=[
+            ('headlines', 'Headlines Only'),
+            ('balanced', 'Balanced'),
+            ('detailed', 'Detailed Analysis')
+        ],
+        default='balanced',
+        validators=[Optional()]
+    )
+    
+    keywords_exclude = StringField(
+        'Keywords to Avoid',
+        validators=[Optional(), Length(max=200)],
+        render_kw={'placeholder': 'e.g., sports,celebrity,gossip'}
+    )
+    
     # Audio Settings
     elevenlabs_voice_id = SelectField(
         'Voice Selection',
@@ -111,6 +140,18 @@ class SettingsForm(FlaskForm):
             ('yoZ06aMxZJJ28mfd3POQ', 'Sam'),
         ],
         default='default',
+        validators=[Optional()]
+    )
+    
+    # Advanced Audio Settings (New for Milestone 5)
+    voice_speed = SelectField(
+        'Speech Speed',
+        choices=[
+            ('0.8', 'Slow'),
+            ('1.0', 'Normal'),
+            ('1.2', 'Fast')
+        ],
+        default='1.0',
         validators=[Optional()]
     )
     

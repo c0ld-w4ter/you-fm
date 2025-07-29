@@ -72,6 +72,87 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
 
 
+def generate_script_only(config: Config = None) -> Dict[str, Any]:
+    """
+    Generate only the briefing script without audio generation for preview functionality.
+    
+    This is a lightweight version of generate_daily_briefing() that stops after script generation,
+    enabling fast iteration and preview capabilities.
+    
+    Args:
+        config: Optional Config object. If None, loads from environment variables.
+    
+    Returns:
+        Dictionary containing script and metadata without audio data
+    """
+    logger.info("Generating script preview (no audio)...")
+    
+    # Use provided config or load from environment
+    if config is None:
+        config = get_config()
+        config.validate_config()
+    
+    try:
+        # Import required functions
+        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from summarizer import create_briefing_script
+        
+        import time
+
+        # Fetch all raw data (same as full generation)
+        logger.info("Fetching data for script preview...")
+        t0 = time.perf_counter()
+        
+        weather_data = get_weather(config)
+        news_articles = get_news_articles(config)
+        podcast_episodes = get_new_podcast_episodes(config)
+        
+        t1 = time.perf_counter()
+        logger.info(f"Data fetched for preview in {t1 - t0:.2f} seconds.")
+
+        # Create briefing script (with style-aware processing)
+        logger.info("Creating briefing script preview...")
+        t2 = time.perf_counter()
+        briefing_script = create_briefing_script(weather_data, news_articles, podcast_episodes, config)
+        t3 = time.perf_counter()
+        logger.info(f"Script preview generated in {t3 - t2:.2f} seconds.")
+        
+        # Calculate word count and estimated duration
+        word_count = len(briefing_script.split())
+        estimated_duration_minutes = word_count / 150  # Average speaking pace
+        
+        total_time = t3 - t0
+        logger.info(f"✓ Script preview completed in {total_time:.2f} seconds!")
+        
+        return {
+            'success': True,
+            'status': 'success',
+            'message': 'Script preview generated successfully',
+            'data': {
+                'script_content': briefing_script,
+                'script_length_chars': len(briefing_script),
+                'word_count': word_count,
+                'estimated_duration_minutes': round(estimated_duration_minutes, 1),
+                'articles_count': len(news_articles),
+                'podcasts_count': len(podcast_episodes),
+                'has_weather': weather_data is not None,
+                'generation_time_seconds': round(total_time, 2),
+                'tone': config.get_briefing_tone(),
+                'depth': config.get_content_depth(),
+                'keywords_excluded': len(config.get_keywords_exclude())
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to generate script preview: {e}")
+        return {
+            'success': False,
+            'status': 'error',
+            'error': str(e),
+            'message': f'Script preview generation failed: {e}'
+        }
+
+
 def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
     """
     Generate the complete daily briefing.
