@@ -139,7 +139,7 @@ ELEVENLABS_API_KEY=your_elevenlabs_key_here
 ## 🏃 Running the Application
 
 ### Current Functionality (Milestone 4 - Web UI MVP)
-The application now provides a modern web interface for generating personalized audio briefings:
+The application now provides a modern multi-page web interface for generating personalized audio briefings:
 
 ```bash
 # Activate virtual environment
@@ -152,22 +152,24 @@ python app.py
 **Then open your browser and go to: `http://localhost:8080`**
 
 ### Web Interface Features:
-- 🎯 **Intuitive Configuration**: Web form for all settings and API keys
-- 🔑 **Secure API Key Entry**: Password fields with proper handling
-- 👤 **Personal Customization**: Name, location, and preference settings
+- 🎯 **Multi-Page Flow**: Clean step-by-step process (API Keys → Settings → Generate → Results)
+- 🔄 **Progress Indicators**: Visual progress tracking across all steps
+- 🔑 **Secure API Key Entry**: Dedicated page for API key configuration
+- 👤 **Personal Customization**: Separate settings page for preferences
 - 📰 **Content Control**: Configurable news topics and article limits
 - 🎧 **Audio Options**: Voice selection and duration control
-- 📊 **Real-time Feedback**: Progress indicators and validation messages
+- 📊 **Real-time Feedback**: Immediate loading modal with step-by-step progress
 - 🎵 **Built-in Player**: Listen to your briefing directly in the browser
 - 📥 **Download Option**: Save audio files for offline listening
 - 📈 **Generation Statistics**: Performance metrics and configuration display
+- 🔒 **Session Management**: Settings persist between pages during configuration
 
 ### Complete Pipeline Features:
 - ✅ **Live Data Aggregation**: Weather, News, and Podcast data fetching
 - ✅ **AI Summarization**: Google Gemini 2.5 Pro for article summaries
 - ✅ **AI Script Generation**: Natural, professional briefing scripts
 - ✅ **Text-to-Speech**: High-quality audio generation via ElevenLabs
-- ✅ **Web-based Interface**: No command-line or environment variables needed
+- ✅ **Multi-Page Interface**: Intuitive step-by-step configuration process
 - ✅ **Local File Storage**: Audio files saved in `static/audio/` directory
 - ✅ **Intelligent Selection**: AI-powered story prioritization
 - ✅ **Robust Error Handling**: Fallbacks for all external API failures
@@ -176,9 +178,11 @@ python app.py
 ### Usage Workflow:
 1. **Start the application**: `python app.py`
 2. **Open browser**: Navigate to `http://localhost:8080`
-3. **Configure settings**: Fill in API keys and preferences
-4. **Generate briefing**: Click "Generate Daily Briefing"
-5. **Listen and download**: Use the built-in player or download the MP3
+3. **Page 1 - API Keys**: Enter all required API keys → "Save API Keys & Continue"
+4. **Page 2 - Settings**: Configure personal preferences → "Save Settings & Continue"  
+5. **Page 3 - Generate**: Review configuration → Click "🎧 Generate Daily Briefing"
+6. **Loading Screen**: Real-time progress bar with step-by-step updates
+7. **Page 4 - Results**: Listen with built-in player or download the MP3
 
 ## ⏱️ Configurable Duration & Personalization
 
@@ -229,13 +233,15 @@ ai-daily-briefing-agent/
 ├── config_web.py           # Web form to config mapping (✅ Milestone 4)
 ├── web/                    # Web interface modules (✅ Milestone 4)
 │   ├── __init__.py         # Web module initialization
-│   ├── routes.py           # Flask route handlers
-│   ├── forms.py            # Web form validation
+│   ├── routes.py           # Flask route handlers with multi-page flow
+│   ├── forms.py            # Web form validation (APIKeysForm, SettingsForm)
 │   └── utils.py            # Web utility functions
 ├── templates/              # Jinja2 HTML templates (✅ Milestone 4)
 │   ├── base.html           # Base template with Tailwind CSS
-│   ├── index.html          # Configuration form page
-│   └── generate.html       # Results and audio player page
+│   ├── api_keys.html       # Page 1: API Keys configuration
+│   ├── settings.html       # Page 2: Personal settings
+│   ├── generate.html       # Page 3: Generate briefing with big button
+│   └── results.html        # Page 4: Results and audio player
 ├── static/                 # Static web assets (✅ Milestone 4)
 │   ├── css/style.css       # Custom styling
 │   ├── js/app.js           # JavaScript enhancements
@@ -311,8 +317,9 @@ python -m pytest tests/test_<module>.py -v
 - Check what's using the port: `lsof -i :8080`
 
 **"Missing required API keys" in web interface**
-- Fill in all required API key fields in the web form
-- API keys are validated when you submit the form
+- Fill in all required API key fields on Page 1 (API Keys)
+- API keys are validated when you submit each page
+- The multi-page flow guides you through: API Keys → Settings → Generate → Results
 - No need to set environment variables when using the web interface
 
 **"ModuleNotFoundError"**
@@ -324,21 +331,25 @@ python -m pytest tests/test_<module>.py -v
 - Verify the application started successfully: look for "Running on http://localhost:8080"
 - Check browser console for JavaScript errors
 - Try accessing `http://127.0.0.1:8080` instead of localhost
+- The home page (/) redirects to /api-keys automatically
 
 **Audio generation fails**
-- Verify all API keys are entered correctly in the web form
-- Check browser network tab for API errors
+- Verify all API keys are entered correctly on the API Keys page
+- Check browser network tab for API errors during generation
+- The loading modal should show step-by-step progress during generation
 - ElevenLabs API has usage limits - check your account status
 
 **Tests failing**
 - Check Python version (3.11+ required)
 - Ensure pytest is installed: `pip install pytest`
 - Run tests from project root directory: `python -m pytest tests/ -v`
+- Note: Tests have been updated for the new multi-page architecture
 
 **Performance issues**
-- Audio generation can take 30-60 seconds depending on content length
-- The web interface shows progress indicators during generation
+- Audio generation can take 60-90 seconds depending on content length
+- The loading modal shows real-time progress with 5 distinct steps
 - Large news articles may increase processing time
+- The multi-page flow prevents accidental navigation during generation
 
 ## 📄 License
 

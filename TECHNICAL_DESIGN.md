@@ -19,57 +19,65 @@
 
 ## Architecture Overview
 
-The AI Daily Briefing Agent follows a **modular, web-based architecture** designed for user-friendly interaction and maintainability. The system provides a modern web interface that orchestrates multiple external APIs to create personalized audio news briefings.
+The AI Daily Briefing Agent follows a **modular, multi-page web architecture** designed for optimal user experience and maintainability. The system provides a modern step-by-step web interface that orchestrates multiple external APIs to create personalized audio news briefings.
 
 ### High-Level Architecture (Milestone 4: Web UI MVP)
 
 ```mermaid
 graph TB
     A[User Browser] --> B[Flask Web Application :8080]
-    B --> C[Web Interface Layer]
-    B --> D[Configuration Manager]
-    B --> E[Data Aggregation Layer]
-    B --> F[AI Processing Layer]
-    B --> G[Audio Generation Layer]
-    B --> H[File Delivery Layer]
+    B --> C[Multi-Page Interface Layer]
+    B --> D[Session Management]
+    B --> E[Configuration Manager]
+    B --> F[Data Aggregation Layer]
+    B --> G[AI Processing Layer]
+    B --> H[Audio Generation Layer]
+    B --> I[File Delivery Layer]
     
-    C --> C1[HTML Templates]
-    C --> C2[JavaScript/CSS]
-    C --> C3[Form Validation]
+    C --> C1[Page 1: API Keys]
+    C --> C2[Page 2: Settings]
+    C --> C3[Page 3: Generate]
+    C --> C4[Page 4: Results] 
+    C --> C5[Loading Modal]
     
-    D --> D1[Web Form Configuration]
-    D --> D2[Environment Variables]
+    D --> D1[Flask Sessions]
+    D --> D2[Multi-Page State]
     
-    E --> E1[NewsAPI]
-    E --> E2[OpenWeatherMap]
-    E --> E3[Taddy Podcast API]
+    E --> E1[Web Form Configuration]
+    E --> E2[Environment Variables]
     
-    F --> F1[Google Gemini API]
+    F --> F1[NewsAPI]
+    F --> F2[OpenWeatherMap]
+    F --> F3[Taddy Podcast API]
     
-    G --> G1[ElevenLabs TTS API]
+    G --> G1[Google Gemini API]
     
-    H --> H1[Local File System]
-    H --> H2[Web Audio Player]
-    H --> H3[Download Service]
+    H --> H1[ElevenLabs TTS API]
     
-    A -.-> H2
-    A -.-> H3
+    I --> I1[Local File System]
+    I --> I2[Web Audio Player]
+    I --> I3[Download Service]
+    
+    A -.-> I2
+    A -.-> I3
     
     style B fill:#e1f5fe
     style C fill:#e8f5e8
-    style F fill:#f3e5f5
-    style G fill:#e8f5e8
-    style H fill:#fff3e0
+    style D fill:#fff3e0
+    style G fill:#f3e5f5
+    style H fill:#e8f5e8
+    style I fill:#fff3e0
 ```
 
 ### Core Design Principles
 
 - **Separation of Concerns**: Each module has a single, well-defined responsibility
-- **Web-First Design**: Modern, responsive web interface with progressive enhancement
-- **User Experience**: Intuitive configuration through forms rather than environment variables
+- **Multi-Page User Experience**: Step-by-step interface with clear navigation flow
+- **Session-Based State Management**: Secure data persistence across page transitions
+- **Progressive Disclosure**: Information presented when needed, reducing cognitive load
 - **Graceful Degradation**: System continues operation even if non-critical APIs fail
 - **Testability**: All modules are designed for comprehensive unit testing with 81+ tests
-- **Security**: API keys handled securely through web forms with proper validation
+- **Security**: API keys handled securely through dedicated pages with proper validation
 
 ---
 
@@ -174,43 +182,62 @@ class WeatherData:
 - Blueprint registration and error handling
 - Development/testing/production configurations
 - CSRF protection and security headers
+- Session management for multi-page flow
 
-#### `web/routes.py` - HTTP Route Handlers
-**Responsibility**: Handle HTTP requests and responses
+#### `web/routes.py` - Multi-Page HTTP Route Handlers
+**Responsibility**: Handle HTTP requests and multi-page navigation
 
 ```mermaid
 graph LR
     A[HTTP Request] --> B[Route Handler]
-    B --> C[Form Validation]
-    C --> D[Configuration Creation]
-    D --> E[Business Logic]
-    E --> F[Template Rendering]
+    B --> C[Session Check]
+    C --> D[Form Validation]
+    D --> E[Session Update]
+    E --> F[Page Redirect/Render]
     F --> G[HTTP Response]
     
     style B fill:#e8f5e8
+    style C fill:#fff3e0
 ```
 
-**Key Features**:
-- Configuration form handling (GET/POST)
-- Audio file serving and downloads
-- API validation endpoints  
-- Health check and monitoring
+**Multi-Page Route Structure**:
+- `GET /` → Redirects to `/api-keys`
+- `GET/POST /api-keys` → Page 1: API Keys configuration
+- `GET/POST /settings` → Page 2: Personal settings  
+- `GET /generate` → Page 3: Generate briefing page
+- `POST /create-briefing` → AJAX endpoint for briefing generation
+- `GET /results` → Page 4: Results and audio player
+- `GET /audio/<filename>` → Audio file serving
+- `GET /download/<filename>` → Audio file downloads
 
-#### `web/forms.py` - Form Validation
-**Responsibility**: Input validation and sanitization
+**Key Features**:
+- Session-based state management across pages
+- Progressive validation and error handling
+- AJAX generation endpoint with JSON responses
+- Audio file serving and download capabilities
+- Navigation flow enforcement (prevents skipping steps)
+
+#### `web/forms.py` - Multi-Page Form Validation
+**Responsibility**: Page-specific input validation and sanitization
+
+**Form Classes**:
+- `APIKeysForm`: Page 1 validation (all required API keys)
+- `SettingsForm`: Page 2 validation (personal preferences)
+- `BriefingConfigForm`: Legacy single-page form (maintained for compatibility)
 
 **Key Features**:
-- Flask-WTF form classes with validation
-- API key security handling
-- Custom validators for complex rules
+- Flask-WTF form classes with field-specific validation
+- API key security handling with proper input sanitization
+- Custom validators for complex rules (country codes, numeric ranges)
 - Real-time client-side validation support
 
 #### `config_web.py` - Web Configuration Mapping
-**Responsibility**: Convert web form data to Config objects
+**Responsibility**: Convert multi-page form data to Config objects
 
 **Key Features**:
+- Session data aggregation from multiple pages
 - Form data to configuration dictionary mapping
-- Default value management
+- Default value management and inheritance
 - Validation integration with existing Config class
 
 ### `main.py` - Core Business Logic
@@ -436,10 +463,11 @@ The project was developed iteratively through well-defined milestones:
 - Complete audio generation workflow
 
 ### Milestone 4: Web UI MVP ✅
-- Flask web application with modern interface
-- Form-based configuration replacing environment variables
-- Audio player and download functionality
-- Comprehensive web interface testing (21 tests)
+- Multi-page Flask web application with intuitive step-by-step flow
+- Session-based state management across page transitions
+- Dedicated pages for API keys, settings, generation, and results
+- Real-time loading modal with step-by-step progress indicators
+- Comprehensive web interface testing (21 tests) updated for multi-page architecture
 
 ---
 
