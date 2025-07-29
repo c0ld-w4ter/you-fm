@@ -7,17 +7,18 @@ the briefing script text into high-quality audio.
 
 import logging
 
-from config import get_config
+from config import get_config, Config
 
 logger = logging.getLogger(__name__)
 
 
-def generate_audio(script_text: str) -> bytes:
+def generate_audio(script_text: str, config=None) -> bytes:
     """
     Convert text script to audio using ElevenLabs API.
     
     Args:
         script_text: The complete briefing script text
+        config: Optional Config object. If None, loads from environment.
         
     Returns:
         Audio data as bytes (MP3 format)
@@ -36,7 +37,8 @@ def generate_audio(script_text: str) -> bytes:
         from elevenlabs.client import ElevenLabs
         
         # Get configuration
-        config = get_config()
+        if config is None:
+            config = get_config()
         api_key = config.get('ELEVENLABS_API_KEY')
         voice_id = config.get('ELEVENLABS_VOICE_ID', 'default')
         

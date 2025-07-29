@@ -226,7 +226,7 @@ The first four milestones established the core functionality:
 **Manual Tests**:
 1. **Basic Functionality**:
    - Start Flask app locally (`python app.py`)
-   - Navigate to `http://localhost:5000`
+   - Navigate to `http://localhost:8080`
    - Fill configuration form with valid API keys
    - Click "Generate Briefing" button
    - Verify briefing generation completes successfully

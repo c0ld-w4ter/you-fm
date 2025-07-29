@@ -46,10 +46,19 @@ class Config:
         'LISTENER_NAME': 'Seamus',  # Name of the listener for personalized greetings (optional)
     }
     
-    def __init__(self):
-        """Initialize configuration by loading from environment variables."""
+    def __init__(self, config_dict: Optional[Dict[str, str]] = None):
+        """
+        Initialize configuration from environment variables or provided dictionary.
+        
+        Args:
+            config_dict: Optional dictionary of configuration values.
+                        If None, loads from environment variables.
+        """
         self._config: Dict[str, str] = {}
-        self._load_config()
+        if config_dict is not None:
+            self._load_from_dict(config_dict)
+        else:
+            self._load_config()
     
     def _load_config(self) -> None:
         """Load configuration from environment variables."""
@@ -79,6 +88,52 @@ class Config:
             raise ConfigurationError(error_msg)
         
         logger.info("✓ Configuration loaded successfully")
+    
+    def _load_from_dict(self, config_dict: Dict[str, str]) -> None:
+        """
+        Load configuration from provided dictionary.
+        
+        Args:
+            config_dict: Dictionary containing configuration values
+        """
+        logger.info("Loading configuration from provided dictionary...")
+        
+        # Validate required variables
+        missing_vars = []
+        for var in self.REQUIRED_VARS:
+            if var in config_dict and config_dict[var]:
+                self._config[var] = config_dict[var]
+                logger.info(f"✓ Loaded {var}")
+            else:
+                missing_vars.append(var)
+                logger.warning(f"✗ Missing required variable: {var}")
+        
+        # Load optional variables with defaults
+        for var, default in self.DEFAULT_VALUES.items():
+            value = config_dict.get(var, default)
+            self._config[var] = value
+            logger.info(f"✓ Loaded {var} = {value}")
+        
+        # Raise error if any required variables are missing
+        if missing_vars:
+            error_msg = f"Missing required configuration values: {', '.join(missing_vars)}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg)
+        
+        logger.info("✓ Configuration loaded successfully from dictionary")
+    
+    @classmethod
+    def from_dict(cls, config_dict: Dict[str, str]) -> 'Config':
+        """
+        Create a Config instance from a dictionary.
+        
+        Args:
+            config_dict: Dictionary containing configuration values
+            
+        Returns:
+            New Config instance
+        """
+        return cls(config_dict=config_dict)
     
     def get(self, key: str, default: Optional[str] = None) -> str:
         """

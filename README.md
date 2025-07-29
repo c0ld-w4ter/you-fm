@@ -1,18 +1,19 @@
 # AI Daily Briefing Agent
 
-A serverless application that generates personalized, AI-powered daily audio news briefings. The system automatically fetches content from multiple sources, summarizes it using AI, converts it to speech, and delivers it as an audio file.
+A modern web application that generates personalized, AI-powered daily audio news briefings. The system features an intuitive web interface where users can configure their preferences and generate custom audio briefings from multiple data sources including news, weather, and podcasts.
 
 ## 🏗️ Project Status
 
-**Current Status**: Milestone 3 ✅ Complete  
-**Next**: Milestone 4 - Cloud Migration & Deployment
+**Current Status**: Milestone 4 ✅ Complete - Web UI MVP  
+**Next**: Milestone 5 - Enhanced Customization
 
 ### Milestone Progress
 - ✅ **Milestone 0**: Secure Setup & Configuration
 - ✅ **Milestone 1**: Live Data Aggregation  
 - ✅ **Milestone 2**: AI Summarization with Google Gemini
 - ✅ **Milestone 3**: Audio Generation & Delivery
-- 🔄 **Milestone 4**: Cloud Migration & Deployment
+- ✅ **Milestone 4**: Web UI MVP
+- 🔄 **Milestone 5**: Enhanced Customization
 
 ## 🚀 Quick Start
 
@@ -43,18 +44,16 @@ A serverless application that generates personalized, AI-powered daily audio new
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables** (required for full functionality):
-   
-   Set the following environment variables in your shell:
+4. **Start the web application**:
    ```bash
-   export NEWSAPI_KEY="your_newsapi_key_here"
-   export OPENWEATHER_API_KEY="your_openweather_key_here"
-   export TADDY_API_KEY="your_taddy_api_key_here"
-   export TADDY_USER_ID="your_taddy_user_id_here"
-   export GEMINI_API_KEY="your_google_gemini_key_here"
-   export ELEVENLABS_API_KEY="your_elevenlabs_key_here"
-   # export S3_BUCKET_NAME="your_bucket_name"  # Optional: Currently saves audio locally
+   source venv/bin/activate  # If not already activated
+   python app.py
    ```
+
+5. **Access the web interface**:
+   - Open your browser and navigate to: `http://localhost:8080`
+   - Fill in your API keys through the web form (see Getting API Keys section below)
+   - Configure your preferences and generate your first briefing!
 
 ## 🧪 Running Tests
 
@@ -75,7 +74,7 @@ python -m pytest tests/test_config.py -v
 ```
 
 ### Test Coverage
-Current test coverage includes **60 comprehensive tests** covering:
+Current test coverage includes **81+ comprehensive tests** covering:
 - ✅ Configuration loading and validation (10 tests)
 - ✅ Environment variable handling and error cases
 - ✅ Live data fetching from external APIs (10 tests)
@@ -85,14 +84,40 @@ Current test coverage includes **60 comprehensive tests** covering:
 - ✅ **AI-generated briefing script creation**
 - ✅ **Text-to-Speech generation with ElevenLabs (12 tests)**
 - ✅ **Amazon S3 upload and authentication (18 tests)**
+- ✅ **Web interface and form validation (21 tests)**
+- ✅ **Route handlers and configuration integration**
 - ✅ **Complete audio pipeline integration**
 - ✅ **Comprehensive error handling and fallbacks**
 
 ## 🔧 Configuration
 
-The application requires several API keys to function fully:
+The application can be configured through the **web interface** or via environment variables. The web interface is the recommended approach for ease of use.
 
-### Required Environment Variables
+### Web Interface Configuration
+1. Start the application with `python app.py`
+2. Navigate to `http://localhost:8080`
+3. Fill out the configuration form with your API keys and preferences
+4. All settings are configured through the intuitive web form
+
+### Required API Keys
+The following API keys are required and can be entered through the web form:
+- **NewsAPI Key**: For fetching news articles
+- **OpenWeatherMap API Key**: For weather data
+- **Taddy API Key & User ID**: For podcast episode data
+- **Google Gemini API Key**: For AI summarization and script generation
+- **ElevenLabs API Key**: For text-to-speech conversion
+
+### Optional Configuration (via Web Interface)
+- **Listener Name**: For personalized greetings (default: "Seamus")
+- **Location**: City and country code (default: Denver, US)
+- **Briefing Duration**: Target length in minutes (default: 8)
+- **News Topics**: Comma-separated topics (default: technology,business,science)
+- **Max Articles per Topic**: Number limit (default: 3)
+- **Podcast Categories**: Categories to follow (default: Technology,Business,Science)
+- **Voice Selection**: Choose from multiple ElevenLabs voices
+
+### Environment Variables (Alternative)
+For automated/CLI usage, you can still use environment variables:
 ```bash
 NEWSAPI_KEY=your_newsapi_key_here
 OPENWEATHER_API_KEY=your_openweather_key_here
@@ -100,42 +125,7 @@ TADDY_API_KEY=your_taddy_api_key_here
 TADDY_USER_ID=your_taddy_user_id_here
 GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
-```
-
-### Optional Configuration
-```bash
-# Briefing duration in minutes (default: 3)
-BRIEFING_DURATION_MINUTES=3
-
-# Listener name for personalized greetings (optional)
-LISTENER_NAME=Alice
-
-# Location settings (default: Denver, US)
-LOCATION_CITY=Denver
-LOCATION_COUNTRY=US
-
-# News topics (default: technology,business,science)
-NEWS_TOPICS=technology,business,science
-
-# Maximum articles per topic (default: 3)
-MAX_ARTICLES_PER_TOPIC=3
-
-# Podcast categories (default: Technology,Business,Science)
-PODCAST_CATEGORIES=Technology,Business,Science
-
-# ElevenLabs voice ID (default: default)
-ELEVENLABS_VOICE_ID=default
-```
-S3_BUCKET_NAME=your_s3_bucket_name_here
-```
-
-### Optional Configuration (with defaults)
-```bash
-LOCATION_CITY=San Francisco
-LOCATION_COUNTRY=US
-NEWS_TOPICS=technology,business,science
-MAX_ARTICLES_PER_TOPIC=3
-PODCAST_CATEGORIES=Technology,Business,Science
+# Optional settings...
 ```
 
 ### Getting API Keys
@@ -148,39 +138,47 @@ PODCAST_CATEGORIES=Technology,Business,Science
 
 ## 🏃 Running the Application
 
-### Current Functionality (Milestone 3)
-The application now provides a complete end-to-end audio briefing solution:
+### Current Functionality (Milestone 4 - Web UI MVP)
+The application now provides a modern web interface for generating personalized audio briefings:
 
 ```bash
 # Activate virtual environment
 source venv/bin/activate
 
-# Run the main application (requires API keys to be set)
-python main.py
+# Start the web application
+python app.py
 ```
 
-**Expected Output**: 
-- Console logs showing the complete audio generation pipeline
-- AI script generated from live data (weather, news, podcasts)
-- High-quality audio file generated using ElevenLabs TTS
-- Audio file saved locally (e.g., `daily_briefing_20250128_140000.mp3`)
-- Text script saved locally (`briefing_script.txt`)
-- Success message with local file paths and audio details
+**Then open your browser and go to: `http://localhost:8080`**
 
-**Complete Features**:
+### Web Interface Features:
+- 🎯 **Intuitive Configuration**: Web form for all settings and API keys
+- 🔑 **Secure API Key Entry**: Password fields with proper handling
+- 👤 **Personal Customization**: Name, location, and preference settings
+- 📰 **Content Control**: Configurable news topics and article limits
+- 🎧 **Audio Options**: Voice selection and duration control
+- 📊 **Real-time Feedback**: Progress indicators and validation messages
+- 🎵 **Built-in Player**: Listen to your briefing directly in the browser
+- 📥 **Download Option**: Save audio files for offline listening
+- 📈 **Generation Statistics**: Performance metrics and configuration display
+
+### Complete Pipeline Features:
 - ✅ **Live Data Aggregation**: Weather, News, and Podcast data fetching
 - ✅ **AI Summarization**: Google Gemini 2.5 Pro for article summaries
 - ✅ **AI Script Generation**: Natural, professional briefing scripts
 - ✅ **Text-to-Speech**: High-quality audio generation via ElevenLabs
-- ✅ **Local File Output**: Audio and script files saved with timestamps
-- ✅ **Intelligent Selection**: Top 5 articles, top 3 podcasts
+- ✅ **Web-based Interface**: No command-line or environment variables needed
+- ✅ **Local File Storage**: Audio files saved in `static/audio/` directory
+- ✅ **Intelligent Selection**: AI-powered story prioritization
 - ✅ **Robust Error Handling**: Fallbacks for all external API failures
-- ✅ **Configurable Duration**: Customize briefing length via `BRIEFING_DURATION_MINUTES`
-- ✅ **Personal Touch**: Personalized greetings using `LISTENER_NAME`
+- ✅ **Personal Touch**: Fully customizable personalization options
 
-**Note**: You need to set all required environment variables (including `GEMINI_API_KEY` and `ELEVENLABS_API_KEY`) for the complete audio briefing functionality. Google Drive setup is optional - audio files are currently saved locally.
-
-> **💡 TTS Testing Mode**: The application currently saves audio files locally for easy testing. To re-enable S3 upload, uncomment the `S3_BUCKET_NAME` line in `config.py` and update the `main.py` import to use `upload_to_s3` instead of `save_audio_locally`.
+### Usage Workflow:
+1. **Start the application**: `python app.py`
+2. **Open browser**: Navigate to `http://localhost:8080`
+3. **Configure settings**: Fill in API keys and preferences
+4. **Generate briefing**: Click "Generate Daily Briefing"
+5. **Listen and download**: Use the built-in player or download the MP3
 
 ## ⏱️ Configurable Duration & Personalization
 
@@ -227,19 +225,35 @@ Perfect for new developers joining the project or understanding the technical im
 
 ```
 ai-daily-briefing-agent/
-├── main.py                 # Main Lambda handler and orchestration (✅ Milestone 3)
+├── app.py                  # Flask application entry point (✅ Milestone 4)
+├── config_web.py           # Web form to config mapping (✅ Milestone 4)
+├── web/                    # Web interface modules (✅ Milestone 4)
+│   ├── __init__.py         # Web module initialization
+│   ├── routes.py           # Flask route handlers
+│   ├── forms.py            # Web form validation
+│   └── utils.py            # Web utility functions
+├── templates/              # Jinja2 HTML templates (✅ Milestone 4)
+│   ├── base.html           # Base template with Tailwind CSS
+│   ├── index.html          # Configuration form page
+│   └── generate.html       # Results and audio player page
+├── static/                 # Static web assets (✅ Milestone 4)
+│   ├── css/style.css       # Custom styling
+│   ├── js/app.js           # JavaScript enhancements
+│   └── audio/              # Generated audio files
+├── main.py                 # Core business logic (✅ Milestone 3)
 ├── config.py               # Configuration management (✅ Complete)
 ├── data_fetchers.py        # External API data fetching (✅ Complete)
 ├── summarizer.py           # AI summarization with Gemini API (✅ Complete)
 ├── tts_generator.py        # Text-to-speech with ElevenLabs (✅ Complete)
 ├── uploader.py             # Amazon S3 file upload (✅ Complete)
-├── tests/                  # Unit tests (60 tests)
+├── tests/                  # Unit tests (81+ tests)
 │   ├── test_config.py      # Configuration tests (✅ Complete)
 │   ├── test_data_fetchers.py # Data fetching tests (✅ Complete)
 │   ├── test_summarizer.py  # AI summarization tests (✅ Complete)
 │   ├── test_tts_generator.py # Text-to-speech tests (✅ Complete)
-│   └── test_uploader.py    # Amazon S3 upload tests (✅ Complete)
-├── requirements.txt        # Python dependencies
+│   ├── test_uploader.py    # Amazon S3 upload tests (✅ Complete)
+│   └── test_web.py         # Web interface tests (✅ Milestone 4)
+├── requirements.txt        # Python dependencies (updated for Flask)
 ├── iam_policy.json         # AWS Lambda execution policy
 └── .gitignore             # Git ignore rules
 ```
@@ -269,40 +283,62 @@ python -m pytest tests/test_<module>.py -v
 
 ## 📋 Next Steps
 
-1. **Milestone 4**: Cloud Migration & Deployment
-   - Migrate environment variables to AWS Secrets Manager
-   - Deploy application to AWS Lambda with EventBridge scheduling
-   - Set up automated daily execution in the cloud
+1. **Milestone 5**: Enhanced Customization
+   - Advanced configuration options for filtering and style
+   - Extended AI prompt generation based on user preferences
+   - Voice parameter customization and preview mode
+   - Multi-tab interface for complex configuration management
 
-2. **Production Setup**: Configure AWS infrastructure
-   - Create AWS Lambda function
-   - Set up EventBridge daily trigger
-   - Configure IAM roles and permissions
+2. **Future Milestones**: Production Deployment
+   - **Milestone 6**: AWS deployment with database migration (ECS Fargate + RDS)
+   - **Milestone 7**: Multi-user support with authentication
+   - **Milestone 8**: Scheduled briefing generation and automation
+   - **Milestone 9**: Extended data sources (RSS, Reddit, financial data)
+   - **Milestone 10**: Advanced features and security hardening
 
-3. **Monitor Deployment**: Verify scheduled execution and CloudWatch logs
+3. **Immediate Improvements Available**:
+   - Enhanced voice selection and audio customization
+   - Content filtering by keywords and sources
+   - Style and tone customization for briefing scripts
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-**"Missing required environment variables"**
-- Ensure all required API keys are set in your environment
-- Check `.env` file exists and is properly formatted
-- Verify virtual environment is activated
+**"Port 5000 is in use by another program"**
+- The application now uses port 8080 instead of 5000
+- If port 8080 is also in use, modify the port in `app.py`
+- Check what's using the port: `lsof -i :8080`
+
+**"Missing required API keys" in web interface**
+- Fill in all required API key fields in the web form
+- API keys are validated when you submit the form
+- No need to set environment variables when using the web interface
 
 **"ModuleNotFoundError"**
 - Ensure virtual environment is activated: `source venv/bin/activate`
 - Install dependencies: `pip install -r requirements.txt`
+- Check you're running Python 3.11+
+
+**Web interface not loading**
+- Verify the application started successfully: look for "Running on http://localhost:8080"
+- Check browser console for JavaScript errors
+- Try accessing `http://127.0.0.1:8080` instead of localhost
+
+**Audio generation fails**
+- Verify all API keys are entered correctly in the web form
+- Check browser network tab for API errors
+- ElevenLabs API has usage limits - check your account status
 
 **Tests failing**
 - Check Python version (3.11+ required)
 - Ensure pytest is installed: `pip install pytest`
-- Run tests from project root directory
+- Run tests from project root directory: `python -m pytest tests/ -v`
 
-**"Configuration error" when running application**
-- This is expected without API keys set
-- The application will work when you provide the required API keys
-- You can still run unit tests without API keys
+**Performance issues**
+- Audio generation can take 30-60 seconds depending on content length
+- The web interface shows progress indicators during generation
+- Large news articles may increase processing time
 
 ## 📄 License
 
@@ -310,4 +346,4 @@ This project is part of a technical specification implementation for an AI Daily
 
 ---
 
-*Last updated: Milestone 1 completion* 
+*Last updated: Milestone 4 completion - Web UI MVP* 

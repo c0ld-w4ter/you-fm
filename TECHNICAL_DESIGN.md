@@ -19,46 +19,57 @@
 
 ## Architecture Overview
 
-The AI Daily Briefing Agent follows a **modular, serverless architecture** designed for scalability and maintainability. The system orchestrates multiple external APIs to create a personalized audio news briefing.
+The AI Daily Briefing Agent follows a **modular, web-based architecture** designed for user-friendly interaction and maintainability. The system provides a modern web interface that orchestrates multiple external APIs to create personalized audio news briefings.
 
-### High-Level Architecture
+### High-Level Architecture (Milestone 4: Web UI MVP)
 
 ```mermaid
 graph TB
-    A[AWS EventBridge Scheduler] --> B[AWS Lambda Handler]
-    B --> C[Configuration Manager]
-    B --> D[Data Aggregation Layer]
-    B --> E[AI Processing Layer]
-    B --> F[Audio Generation Layer]
-    B --> G[Delivery Layer]
+    A[User Browser] --> B[Flask Web Application :8080]
+    B --> C[Web Interface Layer]
+    B --> D[Configuration Manager]
+    B --> E[Data Aggregation Layer]
+    B --> F[AI Processing Layer]
+    B --> G[Audio Generation Layer]
+    B --> H[File Delivery Layer]
     
-    C --> H[Environment Variables]
-    C --> I[AWS Secrets Manager]
+    C --> C1[HTML Templates]
+    C --> C2[JavaScript/CSS]
+    C --> C3[Form Validation]
     
-    D --> J[NewsAPI]
-    D --> K[OpenWeatherMap]
-    D --> L[Taddy Podcast API]
+    D --> D1[Web Form Configuration]
+    D --> D2[Environment Variables]
     
-    E --> M[Google Gemini API]
+    E --> E1[NewsAPI]
+    E --> E2[OpenWeatherMap]
+    E --> E3[Taddy Podcast API]
     
-    F --> N[ElevenLabs TTS API]
+    F --> F1[Google Gemini API]
     
-    G --> O[Local File System]
-    G --> P[Amazon S3 API]
+    G --> G1[ElevenLabs TTS API]
+    
+    H --> H1[Local File System]
+    H --> H2[Web Audio Player]
+    H --> H3[Download Service]
+    
+    A -.-> H2
+    A -.-> H3
     
     style B fill:#e1f5fe
-    style E fill:#f3e5f5
-    style F fill:#e8f5e8
-    style G fill:#fff3e0
+    style C fill:#e8f5e8
+    style F fill:#f3e5f5
+    style G fill:#e8f5e8
+    style H fill:#fff3e0
 ```
 
 ### Core Design Principles
 
 - **Separation of Concerns**: Each module has a single, well-defined responsibility
-- **Dependency Injection**: External dependencies are injected through configuration
+- **Web-First Design**: Modern, responsive web interface with progressive enhancement
+- **User Experience**: Intuitive configuration through forms rather than environment variables
 - **Graceful Degradation**: System continues operation even if non-critical APIs fail
-- **Testability**: All modules are designed for comprehensive unit testing
-- **Idempotency**: Operations can be safely retried without side effects
+- **Testability**: All modules are designed for comprehensive unit testing with 81+ tests
+- **Security**: API keys handled securely through web forms with proper validation
 
 ---
 
@@ -153,25 +164,75 @@ class WeatherData:
 
 ## Module Design
 
-### `main.py` - Orchestration Layer
-**Responsibility**: Entry point and workflow coordination
+### Web Interface Layer (New - Milestone 4)
+
+#### `app.py` - Flask Application Entry Point
+**Responsibility**: Web server initialization and application factory
+
+**Key Features**:
+- Flask application factory pattern
+- Blueprint registration and error handling
+- Development/testing/production configurations
+- CSRF protection and security headers
+
+#### `web/routes.py` - HTTP Route Handlers
+**Responsibility**: Handle HTTP requests and responses
 
 ```mermaid
 graph LR
-    A[Lambda Handler] --> B[Load Configuration]
-    B --> C[Data Aggregation]
-    C --> D[AI Processing]
-    D --> E[Audio Generation]
-    E --> F[Delivery]
-    F --> G[Return Results]
+    A[HTTP Request] --> B[Route Handler]
+    B --> C[Form Validation]
+    C --> D[Configuration Creation]
+    D --> E[Business Logic]
+    E --> F[Template Rendering]
+    F --> G[HTTP Response]
     
-    style A fill:#e1f5fe
+    style B fill:#e8f5e8
 ```
 
 **Key Features**:
+- Configuration form handling (GET/POST)
+- Audio file serving and downloads
+- API validation endpoints  
+- Health check and monitoring
+
+#### `web/forms.py` - Form Validation
+**Responsibility**: Input validation and sanitization
+
+**Key Features**:
+- Flask-WTF form classes with validation
+- API key security handling
+- Custom validators for complex rules
+- Real-time client-side validation support
+
+#### `config_web.py` - Web Configuration Mapping
+**Responsibility**: Convert web form data to Config objects
+
+**Key Features**:
+- Form data to configuration dictionary mapping
+- Default value management
+- Validation integration with existing Config class
+
+### `main.py` - Core Business Logic
+**Responsibility**: Orchestration of briefing generation workflow
+
+```mermaid
+graph LR
+    A[Web Request] --> B[Load Configuration]
+    B --> C[Data Aggregation]
+    C --> D[AI Processing]
+    D --> E[Audio Generation]
+    E --> F[File Storage]
+    F --> G[Return Results]
+    
+    style A fill:#e8f5e8
+```
+
+**Key Features**:
+- Enhanced to accept Config objects from web interface
 - Error handling with detailed logging
 - Phase-by-phase execution tracking
-- Comprehensive result reporting
+- Comprehensive result reporting with web-friendly format
 
 ### `config.py` - Configuration Management
 **Responsibility**: Secure configuration loading and validation
@@ -312,7 +373,7 @@ graph TD
 
 ## Testing Architecture
 
-### Test Coverage: 60 Comprehensive Tests
+### Test Coverage: 81+ Comprehensive Tests
 
 ```mermaid
 graph LR
@@ -321,8 +382,16 @@ graph LR
     A --> D[Summarizer: 11 tests]
     A --> E[TTS Generator: 12 tests]
     A --> F[Uploader: 18 tests]
+    A --> G[Web Interface: 21 tests]
+    
+    G --> G1[Form Validation: 5 tests]
+    G --> G2[Route Handlers: 6 tests] 
+    G --> G3[Config Integration: 4 tests]
+    G --> G4[Mock Integration: 3 tests]
+    G --> G5[API Validation: 3 tests]
     
     style A fill:#e8f5e8
+    style G fill:#e1f5fe
 ```
 
 ### Testing Strategy
@@ -338,6 +407,7 @@ graph LR
 3. **Complete Failure**: All external dependencies failing
 4. **Edge Cases**: Empty responses, malformed data
 5. **Integration**: End-to-end workflow testing
+6. **Web Interface**: Form validation, route handlers, and user interactions
 
 ---
 
@@ -365,10 +435,11 @@ The project was developed iteratively through well-defined milestones:
 - Local file output
 - Complete audio generation workflow
 
-### Milestone 4: Cloud Deployment 🔄
-- AWS Lambda deployment
-- EventBridge scheduling
-- Production secret management
+### Milestone 4: Web UI MVP ✅
+- Flask web application with modern interface
+- Form-based configuration replacing environment variables
+- Audio player and download functionality
+- Comprehensive web interface testing (21 tests)
 
 ---
 

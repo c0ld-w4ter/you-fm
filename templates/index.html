@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Briefing - AI Daily Briefing Agent{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">Generate Daily Briefing</h2>
+        <p class="mt-2 text-gray-600">
+            Configure your API keys and preferences to generate a personalized daily audio briefing.
+        </p>
+    </div>
+
+    <!-- Configuration Form -->
+    <form method="POST" class="space-y-8" onsubmit="return handleFormSubmission(event)">
+        {{ form.hidden_tag() }}
+        
+        <!-- API Keys Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🔑 API Keys (Required)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- NewsAPI Key -->
+                <div>
+                    {{ form.newsapi_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.newsapi_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.newsapi_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.newsapi_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://newsapi.org/" class="text-blue-600 hover:underline" target="_blank">newsapi.org</a></p>
+                </div>
+
+                <!-- OpenWeather API Key -->
+                <div>
+                    {{ form.openweather_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.openweather_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.openweather_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.openweather_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://openweathermap.org/api" class="text-blue-600 hover:underline" target="_blank">openweathermap.org</a></p>
+                </div>
+
+                <!-- Taddy API Key -->
+                <div>
+                    {{ form.taddy_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.taddy_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.taddy_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.taddy_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://taddy.org/developers" class="text-blue-600 hover:underline" target="_blank">taddy.org</a></p>
+                </div>
+
+                <!-- Taddy User ID -->
+                <div>
+                    {{ form.taddy_user_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.taddy_user_id(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.taddy_user_id.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.taddy_user_id.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Google Gemini API Key -->
+                <div>
+                    {{ form.gemini_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.gemini_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.gemini_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.gemini_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://makersuite.google.com/" class="text-blue-600 hover:underline" target="_blank">Google AI Studio</a></p>
+                </div>
+
+                <!-- ElevenLabs API Key -->
+                <div>
+                    {{ form.elevenlabs_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.elevenlabs_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.elevenlabs_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://elevenlabs.io/" class="text-blue-600 hover:underline" target="_blank">elevenlabs.io</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">👤 Personal Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Listener Name -->
+                <div>
+                    {{ form.listener_name.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.listener_name(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.listener_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.listener_name.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- City -->
+                <div>
+                    {{ form.location_city.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.location_city(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.location_city.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location_city.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Country -->
+                <div>
+                    {{ form.location_country.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.location_country(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.location_country.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location_country.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">2-letter country code (e.g., US, CA, GB)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">📰 Content Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Briefing Duration -->
+                <div>
+                    {{ form.briefing_duration_minutes.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.briefing_duration_minutes(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.briefing_duration_minutes.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.briefing_duration_minutes.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Target duration for your briefing (1-30 minutes)</p>
+                </div>
+
+                <!-- Max Articles per Topic -->
+                <div>
+                    {{ form.max_articles_per_topic.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.max_articles_per_topic(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.max_articles_per_topic.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.max_articles_per_topic.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- News Topics -->
+                <div>
+                    {{ form.news_topics.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.news_topics(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.news_topics.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.news_topics.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated topics (e.g., technology,business,science)</p>
+                </div>
+
+                <!-- Podcast Categories -->
+                <div>
+                    {{ form.podcast_categories.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.podcast_categories(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.podcast_categories.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.podcast_categories.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated categories</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🎧 Audio Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Voice Selection -->
+                <div>
+                    {{ form.elevenlabs_voice_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.elevenlabs_voice_id(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.elevenlabs_voice_id.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_voice_id.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Choose the voice for your briefing</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Fields -->
+        {{ form.aws_region() }}
+
+        <!-- Submit Button -->
+        <div class="flex justify-center">
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105", id="generate-btn") }}
+        </div>
+    </form>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-lg p-8 shadow-2xl max-w-md w-full mx-4">
+            <div class="text-center">
+                <!-- Spinner -->
+                <div class="flex justify-center mb-4">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-3 border-blue-600"></div>
+                </div>
+                
+                <!-- Status Message -->
+                <div class="mb-6">
+                    <p id="loading-status" class="text-lg font-medium text-gray-900 mb-2">Generating your briefing...</p>
+                    <p class="text-sm text-gray-600">This may take 30-60 seconds</p>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 10%"></div>
+                </div>
+                
+                <!-- Progress Steps -->
+                <div id="progress-steps" class="text-xs text-gray-500">
+                    <p>Step 1 of 5: Validating configuration...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize form validation and event handlers
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form auto-save and validation  
+        initFormAutoSave();
+        initFormValidation();
+        
+        // The form submission is handled by the onsubmit event with handleFormSubmission()
+        // Loading indicator will be shown only after validation passes
+    });
+</script>
+{% endblock %} 

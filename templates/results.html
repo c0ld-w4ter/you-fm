@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Briefing Results - AI Daily Briefing Agent{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-green-600">✅ Your Daily Briefing is Ready!</h2>
+        <p class="mt-2 text-gray-600">
+            Your personalized daily briefing has been generated successfully. Listen below or download for later.
+        </p>
+    </div>
+
+    <!-- Audio Player Section -->
+    <div class="bg-white shadow rounded-lg p-6 mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">🎧 Your Daily Briefing</h3>
+        
+        {% if result.success and result.data.audio_filename %}
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <audio controls class="w-full">
+                    <source src="{{ url_for('web.serve_audio', filename=result.data.audio_filename) }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ url_for('web.download_audio', filename=result.data.audio_filename) }}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                    📥 Download MP3
+                </a>
+                <a href="{{ url_for('web.generate') }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                    🔄 Generate New Briefing
+                </a>
+                <a href="{{ url_for('web.api_keys') }}" 
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                    ⚙️ Change Settings
+                </a>
+            </div>
+        {% else %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-red-800">❌ Audio file not available. Please try generating again.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('web.generate') }}" 
+                       class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        🔄 Try Again
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Briefing Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Performance Statistics -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">📊 Generation Statistics</h3>
+            {% if result.data %}
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Processing Time:</span>
+                        <span class="font-medium">{{ result.data.total_processing_time_seconds }}s</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">News Articles:</span>
+                        <span class="font-medium">{{ result.data.articles_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Podcast Episodes:</span>
+                        <span class="font-medium">{{ result.data.podcasts_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Script Length:</span>
+                        <span class="font-medium">{{ result.data.script_length_chars }} chars</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Audio Size:</span>
+                        <span class="font-medium">{{ "%.1f"|format(result.data.audio_size_bytes / 1024 / 1024) }} MB</span>
+                    </div>
+                </div>
+                
+                {% if result.performance_improvement %}
+                    <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-sm text-green-800">
+                            💡 <strong>Performance:</strong> {{ result.performance_improvement }}
+                        </p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Configuration Used -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">⚙️ Configuration Used</h3>
+            {% if config %}
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Listener:</span>
+                        <span class="font-medium">{{ config.listener_name or 'Default' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Location:</span>
+                        <span class="font-medium">{{ config.location_city }}, {{ config.location_country }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Duration:</span>
+                        <span class="font-medium">{{ config.briefing_duration_minutes }} min</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Voice:</span>
+                        <span class="font-medium">{{ config.elevenlabs_voice_id }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Topics:</span>
+                        <span class="font-medium text-right ml-4">{{ config.news_topics }}</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Weather Information -->
+    {% if result.data and result.data.weather %}
+        <div class="bg-white shadow rounded-lg p-6 mt-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🌤️ Weather Information</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                    <p class="text-2xl font-bold text-blue-600">{{ result.data.weather.temperature }}°C</p>
+                    <p class="text-sm text-gray-600">Temperature</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium capitalize">{{ result.data.weather.description }}</p>
+                    <p class="text-sm text-gray-600">Conditions</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium">{{ result.data.weather.humidity }}%</p>
+                    <p class="text-sm text-gray-600">Humidity</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium">{{ result.data.weather.wind_speed }} m/s</p>
+                    <p class="text-sm text-gray-600">Wind Speed</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Script Preview -->
+    {% if result.data and result.data.script_content %}
+        <div class="bg-white shadow rounded-lg p-6 mt-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">📄 Briefing Script Preview</h3>
+            <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ result.data.script_content[:1000] }}{% if result.data.script_content|length > 1000 %}...
+
+[Script truncated for preview. Full script was used for audio generation.]{% endif %}</pre>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Error Information -->
+    {% if not result.success %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mt-8">
+            <h3 class="text-lg font-medium text-red-800 mb-2">❌ Generation Error</h3>
+            <p class="text-red-700">{{ result.message or result.error }}</p>
+            <div class="mt-4">
+                <a href="{{ url_for('web.generate') }}" 
+                   class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                    🔄 Try Again
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 500);
+        });
+    }, 5000);
+</script>
+{% endblock %} 

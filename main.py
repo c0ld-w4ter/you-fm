@@ -12,7 +12,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any
 
-from config import get_config, ConfigurationError
+from config import get_config, ConfigurationError, Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -76,7 +76,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
 
 
-def generate_daily_briefing() -> Dict[str, Any]:
+def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
     """
     Generate the complete daily briefing.
     
@@ -85,10 +85,18 @@ def generate_daily_briefing() -> Dict[str, Any]:
     - Milestone 2: Add AI summarization ✅
     - Milestone 3: Add audio generation and upload ✅
     
+    Args:
+        config: Optional Config object. If None, loads from environment variables.
+    
     Returns:
-        Dictionary containing briefing results
+        Dictionary containing briefing results with success/error status
     """
     logger.info("Generating daily briefing...")
+    
+    # Use provided config or load from environment
+    if config is None:
+        config = get_config()
+        config.validate_config()
     
     try:
         # Import all required functions
@@ -102,19 +110,19 @@ def generate_daily_briefing() -> Dict[str, Any]:
         # Milestone 1: Fetch all raw data
         logger.info("Fetching weather data...")
         t0 = time.perf_counter()
-        weather_data = get_weather()
+        weather_data = get_weather(config)
         t1 = time.perf_counter()
         logger.info(f"Weather data fetched in {t1 - t0:.2f} seconds.")
 
         logger.info("Fetching news articles...")
         t2 = time.perf_counter()
-        news_articles = get_news_articles()
+        news_articles = get_news_articles(config)
         t3 = time.perf_counter()
         logger.info(f"News articles fetched in {t3 - t2:.2f} seconds.")
 
         logger.info("Fetching podcast episodes...")
         t4 = time.perf_counter()
-        podcast_episodes = get_new_podcast_episodes()
+        podcast_episodes = get_new_podcast_episodes(config)
         t5 = time.perf_counter()
         logger.info(f"Podcast episodes fetched in {t5 - t4:.2f} seconds.")
 
@@ -123,7 +131,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
         # AI now handles both summarization AND script generation in single call
         logger.info("Creating briefing script with batch AI processing...")
         t6 = time.perf_counter()
-        briefing_script = create_briefing_script(weather_data, news_articles, podcast_episodes)
+        briefing_script = create_briefing_script(weather_data, news_articles, podcast_episodes, config)
         t7 = time.perf_counter()
         logger.info(f"Briefing script created with batch processing in {t7 - t6:.2f} seconds.")
         logger.info(f"Performance improvement: Single API call instead of {len(news_articles) + 1} separate calls")
@@ -131,16 +139,22 @@ def generate_daily_briefing() -> Dict[str, Any]:
         # Milestone 3: Audio Generation and Local Save
         logger.info("Generating audio from briefing script...")
         t8 = time.perf_counter()
-        audio_data = generate_audio(briefing_script)
+        audio_data = generate_audio(briefing_script, config)
         t9 = time.perf_counter()
         logger.info(f"Audio generated in {t9 - t8:.2f} seconds.")
 
         logger.info("Saving audio file locally...")
         from datetime import datetime
+        import os
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         audio_filename = f"daily_briefing_{timestamp}.mp3"
+        
+        # Ensure static/audio directory exists for web serving
+        os.makedirs("static/audio", exist_ok=True)
+        web_audio_path = os.path.join("static", "audio", audio_filename)
+        
         t10 = time.perf_counter()
-        audio_file_path = save_audio_locally(audio_data, audio_filename)
+        audio_file_path = save_audio_locally(audio_data, web_audio_path)
         t11 = time.perf_counter()
         logger.info(f"Audio file saved locally in {t11 - t10:.2f} seconds.")
         
@@ -157,6 +171,7 @@ def generate_daily_briefing() -> Dict[str, Any]:
         logger.info(f"✓ Batch processing optimization: ~90% reduction in API calls")
         
         return {
+            'success': True,
             'status': 'success',
             'message': f'Complete audio daily briefing generated with batch processing optimization',
             'milestone': 3,
@@ -166,7 +181,9 @@ def generate_daily_briefing() -> Dict[str, Any]:
                 'articles_count': len(news_articles),
                 'podcasts_count': len(podcast_episodes),
                 'audio_file_path': audio_file_path,
+                'audio_filename': audio_filename,  # For web URL generation
                 'audio_size_bytes': len(audio_data),
+                'script_content': briefing_script,
                 'script_length_chars': len(briefing_script),
                 'script_file': script_file,
                 'total_processing_time_seconds': round(total_time, 2)
@@ -176,7 +193,9 @@ def generate_daily_briefing() -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to generate daily briefing: {e}")
         return {
+            'success': False,
             'status': 'error',
+            'error': str(e),
             'message': f'Briefing generation failed: {e}',
             'milestone': 3
         }

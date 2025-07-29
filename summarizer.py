@@ -9,7 +9,7 @@ import logging
 from typing import List
 from data_fetchers import Article
 
-from config import get_config
+from config import get_config, Config
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ Summary:"""
         raise Exception(f"Failed to summarize articles with Gemini API: {e}")
 
 
-def create_briefing_script(weather_data, articles: List[Article], podcast_episodes) -> str:
+def create_briefing_script(weather_data, articles: List[Article], podcast_episodes, config=None) -> str:
     """
     Create the final briefing script from all data sources using AI.
     Performs both article summarization and script generation in a single API call for optimal performance.
@@ -96,6 +96,7 @@ def create_briefing_script(weather_data, articles: List[Article], podcast_episod
         weather_data: WeatherData object
         articles: List of raw Article objects (not pre-summarized)
         podcast_episodes: List of PodcastEpisode objects
+        config: Optional Config object. If None, loads from environment.
         
     Returns:
         Complete script text ready for text-to-speech
@@ -107,7 +108,8 @@ def create_briefing_script(weather_data, articles: List[Article], podcast_episod
         from datetime import datetime
         
         # Get configuration
-        config = get_config()
+        if config is None:
+            config = get_config()
         api_key = config.get('GEMINI_API_KEY')
         
         # Configure the Gemini API

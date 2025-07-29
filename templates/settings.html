@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AI Daily Briefing Agent{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">⚙️ Step 2: Personal Settings</h2>
+        <p class="mt-2 text-gray-600">
+            Configure your personal preferences and content settings for your daily briefing.
+        </p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center space-x-4">
+            <div class="flex items-center">
+                <div class="bg-green-600 text-white rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">✓</div>
+                <span class="ml-2 text-sm font-medium text-green-600">API Keys</span>
+            </div>
+            <div class="w-8 h-0.5 bg-blue-600"></div>
+            <div class="flex items-center">
+                <div class="bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">2</div>
+                <span class="ml-2 text-sm font-medium text-blue-600">Settings</span>
+            </div>
+            <div class="w-8 h-0.5 bg-gray-300"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">3</div>
+                <span class="ml-2 text-sm font-medium text-gray-500">Generate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Form -->
+    <form method="POST" class="space-y-8">
+        {{ form.hidden_tag() }}
+        
+        <!-- Personal Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">👤 Personal Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Listener Name -->
+                <div>
+                    {{ form.listener_name.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.listener_name(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.listener_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.listener_name.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- City -->
+                <div>
+                    {{ form.location_city.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.location_city(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.location_city.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location_city.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Country -->
+                <div>
+                    {{ form.location_country.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.location_country(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.location_country.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location_country.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">2-letter country code (e.g., US, CA, GB)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">📰 Content Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Briefing Duration -->
+                <div>
+                    {{ form.briefing_duration_minutes.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.briefing_duration_minutes(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.briefing_duration_minutes.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.briefing_duration_minutes.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Target duration: 1-30 minutes</p>
+                </div>
+
+                <!-- Max Articles per Topic -->
+                <div>
+                    {{ form.max_articles_per_topic.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.max_articles_per_topic(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.max_articles_per_topic.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.max_articles_per_topic.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- News Topics -->
+                <div class="md:col-span-2">
+                    {{ form.news_topics.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.news_topics(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.news_topics.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.news_topics.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated topics</p>
+                </div>
+
+                <!-- Podcast Categories -->
+                <div class="md:col-span-2">
+                    {{ form.podcast_categories.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.podcast_categories(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.podcast_categories.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.podcast_categories.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated categories</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Settings Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🎧 Audio Settings</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Voice Selection -->
+                <div>
+                    {{ form.elevenlabs_voice_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.elevenlabs_voice_id(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.elevenlabs_voice_id.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_voice_id.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Choose the voice for your briefing</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center">
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105") }}
+        </div>
+    </form>
+</div>
+{% endblock %} 

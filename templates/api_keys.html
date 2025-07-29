@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}API Keys - AI Daily Briefing Agent{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">🔑 Step 1: API Keys</h2>
+        <p class="mt-2 text-gray-600">
+            Configure your API keys to enable data fetching and AI processing.
+        </p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center space-x-4">
+            <div class="flex items-center">
+                <div class="bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">1</div>
+                <span class="ml-2 text-sm font-medium text-blue-600">API Keys</span>
+            </div>
+            <div class="w-8 h-0.5 bg-gray-300"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">2</div>
+                <span class="ml-2 text-sm font-medium text-gray-500">Settings</span>
+            </div>
+            <div class="w-8 h-0.5 bg-gray-300"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold">3</div>
+                <span class="ml-2 text-sm font-medium text-gray-500">Generate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Keys Form -->
+    <form method="POST" class="space-y-8">
+        {{ form.hidden_tag() }}
+        
+        <!-- API Keys Section -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🔑 Required API Keys</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- NewsAPI Key -->
+                <div>
+                    {{ form.newsapi_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.newsapi_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.newsapi_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.newsapi_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://newsapi.org/" class="text-blue-600 hover:underline" target="_blank">newsapi.org</a></p>
+                </div>
+
+                <!-- OpenWeather API Key -->
+                <div>
+                    {{ form.openweather_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.openweather_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.openweather_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.openweather_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://openweathermap.org/api" class="text-blue-600 hover:underline" target="_blank">openweathermap.org</a></p>
+                </div>
+
+                <!-- Taddy API Key -->
+                <div>
+                    {{ form.taddy_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.taddy_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.taddy_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.taddy_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://taddy.org/developers" class="text-blue-600 hover:underline" target="_blank">taddy.org</a></p>
+                </div>
+
+                <!-- Taddy User ID -->
+                <div>
+                    {{ form.taddy_user_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.taddy_user_id(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.taddy_user_id.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.taddy_user_id.errors[0] }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Google Gemini API Key -->
+                <div>
+                    {{ form.gemini_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.gemini_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.gemini_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.gemini_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://makersuite.google.com/" class="text-blue-600 hover:underline" target="_blank">Google AI Studio</a></p>
+                </div>
+
+                <!-- ElevenLabs API Key -->
+                <div>
+                    {{ form.elevenlabs_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.elevenlabs_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {% if form.elevenlabs_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://elevenlabs.io/" class="text-blue-600 hover:underline" target="_blank">elevenlabs.io</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center">
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105") }}
+        </div>
+    </form>
+</div>
+{% endblock %} 

@@ -1,0 +1,125 @@
+/* Custom CSS for AI Daily Briefing Agent Web Interface */
+
+/* Smooth animations */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Form focus states */
+.form-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading spinner enhancement */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Audio player custom styling */
+audio {
+    outline: none;
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: #f9fafb;
+}
+
+/* Custom scrollbar for script preview */
+.script-preview::-webkit-scrollbar {
+    width: 6px;
+}
+
+.script-preview::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.script-preview::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.script-preview::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Flash message animations */
+.alert {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button hover effects */
+.btn-hover {
+    transition: all 0.2s ease;
+}
+
+.btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Form section spacing */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+/* Progress bar for form submission */
+.progress-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+    background-size: 200% 100%;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Mobile-responsive improvements */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-title {
+        font-size: 1rem;
+    }
+    
+    .audio-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Dark mode support (for future enhancement) */
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles can be added here for future enhancement */
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-only {
+        display: block !important;
+    }
+} 

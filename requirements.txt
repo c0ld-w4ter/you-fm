@@ -12,5 +12,9 @@ elevenlabs>=0.2.0
 pytest>=7.4.0
 pytest-mock>=3.11.0
 
+# Web framework and form handling
+flask>=2.3.0
+flask-wtf>=1.1.0
+
 # Development utilities
 python-dotenv>=1.0.0  # For local .env file support during development 

@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from config import get_config
+from config import get_config, Config
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +46,12 @@ class WeatherData:
     wind_speed: float
 
 
-def get_weather() -> WeatherData:
+def get_weather(config=None) -> WeatherData:
     """
     Fetch current weather data from OpenWeatherMap API.
+    
+    Args:
+        config: Optional Config object. If None, loads from environment.
     
     Returns:
         WeatherData object with current conditions
@@ -58,7 +61,8 @@ def get_weather() -> WeatherData:
     """
     logger.info("Fetching weather data...")
     
-    config = get_config()
+    if config is None:
+        config = get_config()
     api_key = config.get('OPENWEATHER_API_KEY')
     city = config.get('LOCATION_CITY')
     country = config.get('LOCATION_COUNTRY')
@@ -110,9 +114,12 @@ def get_weather() -> WeatherData:
         raise
 
 
-def get_news_articles() -> List[Article]:
+def get_news_articles(config=None) -> List[Article]:
     """
     Fetch news articles from NewsAPI for configured topics.
+    
+    Args:
+        config: Optional Config object. If None, loads from environment.
     
     Returns:
         List of Article objects
@@ -122,7 +129,8 @@ def get_news_articles() -> List[Article]:
     """
     logger.info("Fetching news articles...")
     
-    config = get_config()
+    if config is None:
+        config = get_config()
     api_key = config.get('NEWSAPI_KEY')
     topics = config.get_news_topics()
     max_articles = config.get_max_articles_per_topic()
@@ -191,9 +199,12 @@ def get_news_articles() -> List[Article]:
         raise
 
 
-def get_new_podcast_episodes() -> List[PodcastEpisode]:
+def get_new_podcast_episodes(config=None) -> List[PodcastEpisode]:
     """
     Fetch new podcast episodes from Taddy GraphQL API.
+    
+    Args:
+        config: Optional Config object. If None, loads from environment.
     
     Returns:
         List of PodcastEpisode objects
@@ -203,7 +214,8 @@ def get_new_podcast_episodes() -> List[PodcastEpisode]:
     """
     logger.info("Fetching new podcast episodes...")
     
-    config = get_config()
+    if config is None:
+        config = get_config()
     api_key = config.get('TADDY_API_KEY')
     user_id = config.get('TADDY_USER_ID')
     
