@@ -34,15 +34,32 @@ def api_keys():
     
     if request.method == 'POST':
         if form.validate_on_submit():
-            # Store API keys in session
-            session['api_keys'] = {
-                'newsapi_key': form.newsapi_key.data,
-                'openweather_api_key': form.openweather_api_key.data,
-                'taddy_api_key': form.taddy_api_key.data,
-                'taddy_user_id': form.taddy_user_id.data,
-                'gemini_api_key': form.gemini_api_key.data,
-                'elevenlabs_api_key': form.elevenlabs_api_key.data,
+            # Only store API keys in session if they're not available from environment
+            api_keys_to_store = {}
+            env_fallbacks = {
+                'newsapi_key': 'NEWSAPI_KEY',
+                'openweather_api_key': 'OPENWEATHER_API_KEY',
+                'taddy_api_key': 'TADDY_API_KEY',
+                'taddy_user_id': 'TADDY_USER_ID',
+                'gemini_api_key': 'GEMINI_API_KEY',
+                'elevenlabs_api_key': 'ELEVENLABS_API_KEY',
             }
+            
+            for form_field, env_key in env_fallbacks.items():
+                form_value = getattr(form, form_field).data
+                env_value = os.environ.get(env_key, '').strip()
+                
+                # Only store in session if not available from environment
+                if form_value and not env_value:
+                    api_keys_to_store[form_field] = form_value
+                elif form_value and env_value:
+                    # If both are available, prefer form value but don't store to reduce session size
+                    api_keys_to_store[form_field] = form_value
+            
+            # Store minimal API keys in session
+            session['api_keys'] = api_keys_to_store
+            logger.info(f"Stored {len(api_keys_to_store)} API keys in session (optimization)")
+            
             flash('API keys saved successfully!', 'success')
             return redirect(url_for('web.settings'))
         else:
@@ -129,17 +146,24 @@ def generate():
 
 @web_bp.route('/preview-script', methods=['POST'])
 def preview_script():
-    """AJAX endpoint to generate script preview without audio generation."""
+    """AJAX endpoint to generate a preview of the briefing script."""
     try:
         # Check if configuration is complete
         if 'api_keys' not in session or 'settings' not in session:
+            logger.warning(f"Session keys available: {list(session.keys())}")
             return jsonify({
-                'success': False, 
+                'success': False,
                 'error': 'Configuration incomplete. Please complete API keys and settings first.'
             })
         
+        # Debug session data
+        logger.debug(f"Session api_keys keys: {list(session.get('api_keys', {}).keys())}")
+        logger.debug(f"Session settings keys: {list(session.get('settings', {}).keys())}")
+        
         # Combine session data into config
         session_data = {**session.get('api_keys', {}), **session.get('settings', {})}
+        logger.debug(f"Combined session data keys: {list(session_data.keys())}")
+        
         config = WebConfig.create_config_from_form(session_data)
         
         # Import the new script-only generation function
@@ -187,13 +211,20 @@ def data_report():
     try:
         # Check if configuration is complete
         if 'api_keys' not in session or 'settings' not in session:
+            logger.warning(f"Session keys available: {list(session.keys())}")
             return jsonify({
                 'success': False, 
                 'error': 'Configuration incomplete. Please complete API keys and settings first.'
             })
         
+        # Debug session data
+        logger.debug(f"Session api_keys keys: {list(session.get('api_keys', {}).keys())}")
+        logger.debug(f"Session settings keys: {list(session.get('settings', {}).keys())}")
+        
         # Combine session data into config
         session_data = {**session.get('api_keys', {}), **session.get('settings', {})}
+        logger.debug(f"Combined session data keys: {list(session_data.keys())}")
+        
         config = WebConfig.create_config_from_form(session_data)
         
         # Import data fetchers
@@ -257,16 +288,13 @@ def data_report():
             
             articles_by_topic = {}
             for article in news_articles:
-                # Try to match article to topic (simplified approach)
-                matched_topic = "General"
-                for topic in topics:
-                    if topic.lower() in article.title.lower() or topic.lower() in article.content.lower():
-                        matched_topic = topic.title()
-                        break
+                # Use the category that was set when the article was fetched
+                category = article.category or "General"
+                category_display = category.title()
                 
-                if matched_topic not in articles_by_topic:
-                    articles_by_topic[matched_topic] = []
-                articles_by_topic[matched_topic].append(article)
+                if category_display not in articles_by_topic:
+                    articles_by_topic[category_display] = []
+                articles_by_topic[category_display].append(article)
             
             for topic, articles in articles_by_topic.items():
                 report_lines.append(f"\nTopic: {topic} ({len(articles)} articles)")
@@ -434,11 +462,17 @@ def create_briefing():
     """API endpoint to start briefing generation."""
     # Check if both API keys and settings are set
     if 'api_keys' not in session or 'settings' not in session:
+        logger.warning(f"Session keys available: {list(session.keys())}")
         return jsonify({'error': 'Configuration incomplete'}), 400
     
     try:
+        # Debug session data
+        logger.debug(f"Session api_keys keys: {list(session.get('api_keys', {}).keys())}")
+        logger.debug(f"Session settings keys: {list(session.get('settings', {}).keys())}")
+        
         # Combine API keys and settings
         form_data = {**session['api_keys'], **session['settings']}
+        logger.debug(f"Combined form data keys: {list(form_data.keys())}")
         
         # Create configuration from form data
         config = WebConfig.create_config_from_form(form_data)

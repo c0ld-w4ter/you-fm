@@ -38,8 +38,9 @@ class WebConfig:
             ConfigurationError: If required fields are missing or invalid
         """
         logger.info("Creating configuration from web form data...")
+        logger.debug(f"Form data keys available: {list(form_data.keys())}")
         
-        # Validate required fields
+        # Validate required fields with environment variable fallback
         required_fields = [
             'newsapi_key',
             'openweather_api_key', 
@@ -51,12 +52,21 @@ class WebConfig:
         
         missing_fields = []
         for field in required_fields:
-            if not form_data.get(field, '').strip():
+            form_value = form_data.get(field, '').strip()
+            env_key = field.upper().replace('_KEY', '_KEY').replace('TADDY_USER_ID', 'TADDY_USER_ID')
+            env_value = os.environ.get(env_key, '').strip()
+            
+            if not form_value and not env_value:
                 missing_fields.append(field)
+            elif not form_value and env_value:
+                # Use environment variable as fallback
+                form_data[field] = env_value
+                logger.info(f"Using environment variable fallback for {field}")
         
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
             logger.error(error_msg)
+            logger.error(f"Available form data: {[k for k, v in form_data.items() if v]}")
             raise ConfigurationError(error_msg)
         
         # Convert checkbox lists to comma-separated strings
@@ -116,8 +126,8 @@ class WebConfig:
             'aws_region': 'us-east-1',
             'location_city': 'Denver',
             'location_country': 'US',
-            'news_topics': ['technology', 'business', 'science'],  # Changed to list for checkboxes
-            'max_articles_per_topic': 3,
+            'news_topics': ['technology', 'business', 'science'],  # Real NewsAPI categories only
+            'max_articles_per_topic': 50,  # Increased default but not maxed out
             'podcast_categories': ['Technology', 'Business', 'Science'],  # Changed to list for checkboxes
             'elevenlabs_voice_id': 'default',
             'briefing_duration_minutes': 8,

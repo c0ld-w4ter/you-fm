@@ -27,25 +27,29 @@ def create_test_articles() -> List[Article]:
             title="Tech Innovation in Sports",
             source="TechNews",
             url="https://test.com/1",
-            content="New technology revolutionizes sports performance tracking and analysis."
+            content="New technology revolutionizes sports performance tracking and analysis.",
+            category="technology"
         ),
         Article(
             title="Celebrity Gossip Update", 
             source="Entertainment",
             url="https://test.com/2",
-            content="Latest celebrity news and gossip from Hollywood events."
+            content="Latest celebrity news and gossip from Hollywood events.",
+            category="entertainment"
         ),
         Article(
             title="Business Merger Announcement",
             source="BusinessDaily",
             url="https://test.com/3", 
-            content="Major technology companies announce merger to enhance innovation."
+            content="Major technology companies announce merger to enhance innovation.",
+            category="business"
         ),
         Article(
             title="Political Election Results",
             source="NewsChannel",
             url="https://test.com/4",
-            content="Election results show significant changes in political landscape."
+            content="Election results show significant changes in political landscape.",
+            category="general"
         )
     ]
 
@@ -99,7 +103,8 @@ class TestKeywordFiltering:
                 title="Sports Celebrity Politics News",
                 source="MultiTopic",
                 url="https://test.com/multi",
-                content="This article covers sports, celebrity news, and politics all together."
+                content="This article covers sports, celebrity news, and politics all together.",
+                category="general"
             )
         ]
         excluded_keywords = ['sports', 'celebrity', 'politics']
@@ -116,7 +121,8 @@ class TestKeywordFiltering:
                 title="Technology News",
                 source="TechDaily",
                 url="https://test.com/content",
-                content="This article discusses the latest celebrity gossip and entertainment news."
+                content="This article discusses the latest celebrity gossip and entertainment news.",
+                category="technology"
             )
         ]
         excluded_keywords = ['gossip']

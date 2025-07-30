@@ -6,7 +6,7 @@ This module defines form classes for user input validation and processing.
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SelectField, SelectMultipleField, SubmitField, HiddenField
-from wtforms.validators import DataRequired, Optional, NumberRange, Length, Regexp
+from wtforms.validators import DataRequired, Optional, NumberRange, Length, Regexp, ValidationError
 
 
 class APIKeysForm(FlaskForm):
@@ -132,25 +132,17 @@ class SettingsForm(FlaskForm):
         render_kw={'min': 1, 'max': 30}
     )
     
-    # Enhanced: News Topics as checkboxes
+    # Enhanced: News Topics as checkboxes - ONLY REAL NEWSAPI CATEGORIES
     news_topics = SelectMultipleField(
         'News Topics',
         choices=[
-            ('technology', 'Technology'),
             ('business', 'Business'),
-            ('science', 'Science'),
-            ('health', 'Health'),
-            ('sports', 'Sports'),
             ('entertainment', 'Entertainment'),
-            ('politics', 'Politics'),
-            ('world', 'World News'),
-            ('national', 'National News'),
-            ('economics', 'Economics'), 
-            ('environment', 'Environment'),
-            ('education', 'Education'),
-            ('automotive', 'Automotive'),
-            ('travel', 'Travel'),
-            ('finance', 'Finance'),
+            ('general', 'General'),
+            ('health', 'Health'),
+            ('science', 'Science'),
+            ('sports', 'Sports'),
+            ('technology', 'Technology'),
         ],
         default=['technology', 'business', 'science'],
         validators=[Optional()]
@@ -158,8 +150,8 @@ class SettingsForm(FlaskForm):
     
     max_articles_per_topic = IntegerField(
         'Max Articles per Topic',
-        validators=[NumberRange(min=1, max=10, message='Must be between 1 and 10')],
-        render_kw={'min': 1, 'max': 10}
+        validators=[NumberRange(min=1, max=100, message='Must be between 1 and 100')],
+        render_kw={'min': 1, 'max': 100}
     )
     
     # Enhanced: Podcast Categories as checkboxes

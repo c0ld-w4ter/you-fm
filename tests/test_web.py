@@ -683,9 +683,9 @@ class TestFormValidation:
                 'location_city': 'Denver',
                 'location_country': 'US',
                 'briefing_duration_minutes': 5,
-                'news_topics': 'tech',
+                'news_topics': ['technology'],  # Fixed: use list format and valid category
                 'max_articles_per_topic': 3,
-                'podcast_categories': 'Tech',
+                'podcast_categories': ['Technology'],  # Fixed: use list format
                 'elevenlabs_voice_id': 'default'
             }
             form = SettingsForm(data=valid_data)
@@ -879,12 +879,14 @@ class TestConfigurationIntegration:
         config = WebConfig.create_config_from_form(valid_form_data)
         config.validate_config()  # Should not raise exception
         
-        # Test invalid configuration
-        invalid_data = valid_form_data.copy()
-        del invalid_data['newsapi_key']
+        # Test configuration without form API keys (should fallback to environment)
+        form_data_without_api_key = valid_form_data.copy()
+        del form_data_without_api_key['newsapi_key']
         
-        with pytest.raises(ConfigurationError):
-            WebConfig.create_config_from_form(invalid_data)
+        # Should NOT raise exception because environment fallback exists
+        config_with_fallback = WebConfig.create_config_from_form(form_data_without_api_key)
+        assert config_with_fallback is not None
+        assert config_with_fallback.get('NEWSAPI_KEY')  # Should be populated from environment
     
     def test_form_data_validation(self, valid_form_data):
         """Test form data validation function."""

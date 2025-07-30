@@ -45,8 +45,8 @@ class Config:
         'AWS_REGION': 'us-east-1',
         'LOCATION_CITY': 'Denver',
         'LOCATION_COUNTRY': 'US',
-        'NEWS_TOPICS': 'technology,business,science',
-        'MAX_ARTICLES_PER_TOPIC': '3',
+        'NEWS_TOPICS': 'technology,business,science',  # Real NewsAPI categories only
+        'MAX_ARTICLES_PER_TOPIC': '50',  # Increased default but not maxed out
         'PODCAST_CATEGORIES': 'Technology,Business,Science',
         'ELEVENLABS_VOICE_ID': 'default',
         'BRIEFING_DURATION_MINUTES': '8',  # Duration in minutes for the audio briefing

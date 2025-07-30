@@ -24,6 +24,7 @@ class Article:
     source: str
     url: str
     content: str
+    category: str = ""  # NewsAPI category (technology, business, etc.)
     summary: str = ""
 
 
@@ -116,7 +117,8 @@ def get_weather(config=None) -> WeatherData:
 
 def get_news_articles(config=None) -> List[Article]:
     """
-    Fetch news articles from NewsAPI for configured topics.
+    Fetch news articles from NewsAPI top headlines for configured categories.
+    Only fetches articles from the past 24 hours.
     
     Args:
         config: Optional Config object. If None, loads from environment.
@@ -127,26 +129,31 @@ def get_news_articles(config=None) -> List[Article]:
     Raises:
         Exception: If API call fails
     """
-    logger.info("Fetching news articles...")
+    logger.info("Fetching news articles from top headlines...")
     
     if config is None:
         config = get_config()
     api_key = config.get('NEWSAPI_KEY')
-    topics = config.get_news_topics()
+    topics = config.get_news_topics()  # These are now real NewsAPI categories
     max_articles = config.get_max_articles_per_topic()
+    
+    # Calculate date for past 24 hours
+    from_date = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
     
     all_articles = []
     
     try:
         import requests
         
-        for topic in topics:
-            logger.info(f"Fetching articles for topic: {topic}")
+        for category in topics:
+            logger.info(f"Fetching top headlines for category: {category}")
             
-            # NewsAPI Everything endpoint
-            url = "https://newsapi.org/v2/everything"
+            # NewsAPI Top Headlines endpoint with date filtering
+            url = "https://newsapi.org/v2/top-headlines"
             params = {
-                'q': topic,
+                'category': category,      # Use category instead of query search
+                'country': 'us',          # Focus on US news for now
+                'from': from_date,        # Only articles from past 24 hours
                 'apiKey': api_key,
                 'sortBy': 'publishedAt',
                 'pageSize': max_articles,
@@ -159,10 +166,11 @@ def get_news_articles(config=None) -> List[Article]:
             data = response.json()
             
             if data['status'] != 'ok':
-                logger.warning(f"NewsAPI returned non-ok status for topic {topic}: {data.get('message', 'Unknown error')}")
+                logger.warning(f"NewsAPI returned non-ok status for category {category}: {data.get('message', 'Unknown error')}")
                 continue
             
             # Parse articles
+            articles_count = 0
             for article_data in data.get('articles', []):
                 # Skip articles with null/empty essential fields
                 if not article_data.get('title') or not article_data.get('url'):
@@ -172,12 +180,16 @@ def get_news_articles(config=None) -> List[Article]:
                     title=article_data['title'],
                     source=article_data.get('source', {}).get('name', 'Unknown Source'),
                     url=article_data['url'],
-                    content=article_data.get('content', '') or article_data.get('description', ''),
+                    content=(article_data.get('content') or article_data.get('description') or ''),
+                    category=category, # Assign the category
                     summary=""  # Will be populated in Milestone 2
                 )
                 all_articles.append(article)
+                articles_count += 1
+            
+            logger.info(f"✓ Fetched {articles_count} articles for category '{category}'")
         
-        logger.info(f"✓ Fetched {len(all_articles)} news articles across {len(topics)} topics")
+        logger.info(f"✓ Fetched {len(all_articles)} total news articles across {len(topics)} categories (past 24 hours)")
         return all_articles
         
     except requests.exceptions.RequestException as e:
