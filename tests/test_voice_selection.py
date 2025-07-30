@@ -54,8 +54,6 @@ def full_config_data():
     return {
         'NEWSAPI_KEY': 'test_newsapi_key',
         'OPENWEATHER_API_KEY': 'test_openweather_key',
-        'TADDY_API_KEY': 'test_taddy_key',
-        'TADDY_USER_ID': 'test_taddy_user',
         'GEMINI_API_KEY': 'test_gemini_key',
         'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
         'ELEVENLABS_VOICE_ID': 'EXAVITQu4vr4xnSDxMaL'  # Will be overridden in specific tests
@@ -68,11 +66,15 @@ def form_data():
     return {
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
-        'taddy_api_key': 'test_taddy_key',
-        'taddy_user_id': 'test_taddy_user',
         'gemini_api_key': 'test_gemini_key',
         'elevenlabs_api_key': 'test_elevenlabs_key',
-        'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL'  # Will be overridden in specific tests
+        'elevenlabs_voice_id': 'VR6AewLTigWG4xSOukaG',  # Arnold voice
+        'listener_name': 'Test User',
+        'location_city': 'Denver',
+        'location_country': 'US',
+        'briefing_duration_minutes': 5,
+        'news_topics': ['technology', 'business'],
+        'max_articles_per_topic': 3
     }
 
 

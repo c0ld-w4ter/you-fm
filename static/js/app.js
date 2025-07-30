@@ -477,7 +477,6 @@ function initAudioControls() {
 function initTooltips() {
     const helpTexts = {
         'newsapi_key': 'Get a free API key from NewsAPI.org. Required for fetching news articles.',
-        'taddy_api_key': 'Taddy provides podcast data. Sign up at taddy.org for free API access.',
         'gemini_api_key': 'Google Gemini API is used for AI summarization. Get key from Google AI Studio.',
         'elevenlabs_api_key': 'ElevenLabs provides text-to-speech conversion. Sign up for free credits.'
     };
@@ -499,7 +498,7 @@ function initLocalStorage() {
     // Auto-save form data as user types (for non-sensitive fields)
     const nonSensitiveFields = document.querySelectorAll(
         'input[name="listener_name"], input[name="location_city"], input[name="location_country"], ' +
-        'input[name="news_topics"], input[name="podcast_categories"], select[name="elevenlabs_voice_id"]'
+        'input[name="news_topics"], select[name="elevenlabs_voice_id"]'
     );
     
     nonSensitiveFields.forEach(field => {
@@ -514,7 +513,7 @@ function saveNonSensitiveData() {
     const formData = {};
     const nonSensitiveFields = document.querySelectorAll(
         'input[name="listener_name"], input[name="location_city"], input[name="location_country"], ' +
-        'input[name="news_topics"], input[name="podcast_categories"], select[name="elevenlabs_voice_id"], ' +
+        'input[name="news_topics"], select[name="elevenlabs_voice_id"], ' +
         'input[name="briefing_duration_minutes"], input[name="max_articles_per_topic"]'
     );
     
@@ -558,7 +557,7 @@ function saveFormData(form) {
     // Only save non-sensitive data for recovery
     const nonSensitiveFields = [
         'listener_name', 'location_city', 'location_country',
-        'news_topics', 'podcast_categories', 'elevenlabs_voice_id',
+        'news_topics', 'elevenlabs_voice_id',
         'briefing_duration_minutes', 'max_articles_per_topic'
     ];
     

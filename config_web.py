@@ -43,9 +43,7 @@ class WebConfig:
         # Validate required fields with environment variable fallback
         required_fields = [
             'newsapi_key',
-            'openweather_api_key', 
-            'taddy_api_key',
-            'taddy_user_id',
+            'openweather_api_key',
             'gemini_api_key',
             'elevenlabs_api_key'
         ]
@@ -53,7 +51,7 @@ class WebConfig:
         missing_fields = []
         for field in required_fields:
             form_value = form_data.get(field, '').strip()
-            env_key = field.upper().replace('_KEY', '_KEY').replace('TADDY_USER_ID', 'TADDY_USER_ID')
+            env_key = field.upper().replace('_KEY', '_KEY')
             env_value = os.environ.get(env_key, '').strip()
             
             if not form_value and not env_value:
@@ -69,39 +67,37 @@ class WebConfig:
             logger.error(f"Available form data: {[k for k, v in form_data.items() if v]}")
             raise ConfigurationError(error_msg)
         
-        # Convert checkbox lists to comma-separated strings
+        # Convert form data to config dictionary
+        # Handle news topics (convert list to comma-separated string)
         news_topics = form_data.get('news_topics', ['technology', 'business', 'science'])
         if isinstance(news_topics, list):
             news_topics_str = ','.join(news_topics)
         else:
             news_topics_str = news_topics or 'technology,business,science'
-            
-        podcast_categories = form_data.get('podcast_categories', ['Technology', 'Business', 'Science'])
-        if isinstance(podcast_categories, list):
-            podcast_categories_str = ','.join(podcast_categories)
-        else:
-            podcast_categories_str = podcast_categories or 'Technology,Business,Science'
         
-        # Create configuration dictionary in the format expected by Config
         config_dict = {
-            # Required API keys
+            # API Keys
             'NEWSAPI_KEY': form_data['newsapi_key'],
             'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
-            'TADDY_API_KEY': form_data['taddy_api_key'],
-            'TADDY_USER_ID': form_data['taddy_user_id'],
             'GEMINI_API_KEY': form_data['gemini_api_key'],
             'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'],
             
-            # Optional configuration
-            'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
+            # Personal Settings
+            'LISTENER_NAME': form_data.get('listener_name', ''),
             'LOCATION_CITY': form_data.get('location_city', 'Denver'),
             'LOCATION_COUNTRY': form_data.get('location_country', 'US'),
+            
+            # Content Settings
+            'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 3)),
             'NEWS_TOPICS': news_topics_str,
             'MAX_ARTICLES_PER_TOPIC': str(form_data.get('max_articles_per_topic', 3)),
-            'PODCAST_CATEGORIES': podcast_categories_str,
+            
+            # Audio Settings
             'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
-            'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 8)),
-            'LISTENER_NAME': form_data.get('listener_name', 'Seamus'),
+            
+            # AWS Settings
+            'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
+            'S3_BUCKET_NAME': form_data.get('s3_bucket_name', ''),
             
             # Advanced customization options (New for Milestone 5)
             'BRIEFING_TONE': form_data.get('briefing_tone', 'professional'),
@@ -127,11 +123,10 @@ class WebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             'news_topics': ['technology', 'business', 'science'],  # Real NewsAPI categories only
-            'max_articles_per_topic': 50,  # Increased default but not maxed out
-            'podcast_categories': ['Technology', 'Business', 'Science'],  # Changed to list for checkboxes
+            'max_articles_per_topic': 3,  # Reasonable default
             'elevenlabs_voice_id': 'default',
-            'briefing_duration_minutes': 8,
-            'listener_name': 'Seamus',
+            'briefing_duration_minutes': 3,
+            'listener_name': '',
             
             # Advanced defaults (New for Milestone 5)
             'briefing_tone': 'professional',
@@ -145,8 +140,6 @@ class WebConfig:
         api_key_defaults = {
             'newsapi_key': os.environ.get('NEWSAPI_KEY', ''),
             'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
-            'taddy_api_key': os.environ.get('TADDY_API_KEY', ''),
-            'taddy_user_id': os.environ.get('TADDY_USER_ID', ''),
             'gemini_api_key': os.environ.get('GEMINI_API_KEY', ''),
             'elevenlabs_api_key': os.environ.get('ELEVENLABS_API_KEY', ''),
         }
@@ -171,8 +164,6 @@ class WebConfig:
         required_fields = {
             'newsapi_key': 'NewsAPI Key is required',
             'openweather_api_key': 'OpenWeather API Key is required',
-            'taddy_api_key': 'Taddy API Key is required',
-            'taddy_user_id': 'Taddy User ID is required',
             'gemini_api_key': 'Google Gemini API Key is required',
             'elevenlabs_api_key': 'ElevenLabs API Key is required'
         }

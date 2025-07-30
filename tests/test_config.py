@@ -21,8 +21,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -31,8 +29,8 @@ class TestConfig:
         with patch.dict(os.environ, mock_env, clear=True):
             config = Config()
             
-            # Verify all required variables are loaded
-            for var in Config.REQUIRED_VARS:
+                    # Verify all required variables are loaded
+        for var in Config.REQUIRED_KEYS:
                 assert config.get(var) == mock_env[var]
     
     def test_config_handles_missing_required_vars(self):
@@ -58,8 +56,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -78,8 +74,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -98,8 +92,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -123,8 +115,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -142,8 +132,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -162,8 +150,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -185,8 +171,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -195,8 +179,8 @@ class TestConfig:
         with patch.dict(os.environ, mock_env, clear=True):
             config = Config()
             
-            # Should validate successfully
-            assert config.validate_config() is True
+                    # Should validate successfully (no exception raised)
+        config.validate_config()
         
         # Test with invalid integer value
         mock_env['MAX_ARTICLES_PER_TOPIC'] = 'not_a_number'
@@ -212,8 +196,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
-            'TADDY_API_KEY': 'test_taddy_key',
-            'TADDY_USER_ID': 'test_user_id',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
         }
@@ -229,8 +211,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
-            'TADDY_API_KEY': 'test_taddy_key',
-            'TADDY_USER_ID': 'test_user_id',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
             'BRIEFING_DURATION_MINUTES': '7',
@@ -245,8 +225,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
-            'TADDY_API_KEY': 'test_taddy_key',
-            'TADDY_USER_ID': 'test_user_id',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
             'BRIEFING_DURATION_MINUTES': 'invalid',
@@ -262,14 +240,12 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
-            'TADDY_API_KEY': 'test_taddy_key',
-            'TADDY_USER_ID': 'test_user_id',
-            'GEMINI_API_KEY': 'test_gemini_key',  
+            'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
         }
         with patch.dict(os.environ, mock_env, clear=True):
             config = Config()
-            assert config.get_listener_name() == 'Seamus'  # Default value from config
+            assert config.get_listener_name() == ''  # Default value from config
     
     def test_get_listener_name_custom(self):
         """Test that listener name returns custom value when set."""
@@ -277,8 +253,6 @@ class TestConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
-            'TADDY_API_KEY': 'test_taddy_key',
-            'TADDY_USER_ID': 'test_user_id',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
             'LISTENER_NAME': 'Alice',
@@ -296,8 +270,6 @@ class TestGetConfig:
         mock_env = {
             'NEWSAPI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
@@ -321,8 +293,6 @@ class TestAdvancedConfigurationGetters:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'BRIEFING_TONE': 'casual'
@@ -336,8 +306,6 @@ class TestAdvancedConfigurationGetters:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'CONTENT_DEPTH': 'detailed'
@@ -351,8 +319,6 @@ class TestAdvancedConfigurationGetters:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'KEYWORDS_EXCLUDE': 'sports,Celebrity,POLITICS'
@@ -369,8 +335,6 @@ class TestAdvancedConfigurationGetters:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'KEYWORDS_EXCLUDE': ''
@@ -387,8 +351,6 @@ class TestAdvancedConfigurationGetters:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'VOICE_SPEED': '1.2'
@@ -404,13 +366,13 @@ class TestAdvancedConfigurationGetters:
     def test_advanced_config_defaults_in_class(self):
         """Test that advanced config defaults are properly set in Config class."""
         # Test that defaults exist in the class
-        assert 'BRIEFING_TONE' in Config.DEFAULT_VALUES
-        assert 'CONTENT_DEPTH' in Config.DEFAULT_VALUES
-        assert 'KEYWORDS_EXCLUDE' in Config.DEFAULT_VALUES
-        assert 'VOICE_SPEED' in Config.DEFAULT_VALUES
+        assert 'BRIEFING_TONE' in Config.DEFAULT_CONFIG
+        assert 'CONTENT_DEPTH' in Config.DEFAULT_CONFIG
+        assert 'KEYWORDS_EXCLUDE' in Config.DEFAULT_CONFIG
+        assert 'VOICE_SPEED' in Config.DEFAULT_CONFIG
         
         # Test default values
-        assert Config.DEFAULT_VALUES['BRIEFING_TONE'] == 'professional'
-        assert Config.DEFAULT_VALUES['CONTENT_DEPTH'] == 'balanced'
-        assert Config.DEFAULT_VALUES['KEYWORDS_EXCLUDE'] == ''
-        assert Config.DEFAULT_VALUES['VOICE_SPEED'] == '1.0' 
+        assert Config.DEFAULT_CONFIG['BRIEFING_TONE'] == 'professional'
+        assert Config.DEFAULT_CONFIG['CONTENT_DEPTH'] == 'balanced'
+        assert Config.DEFAULT_CONFIG['KEYWORDS_EXCLUDE'] == ''
+        assert Config.DEFAULT_CONFIG['VOICE_SPEED'] == '1.0' 

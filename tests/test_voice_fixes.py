@@ -21,14 +21,9 @@ class TestVoiceFixes:
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key', 
-            'taddy_user_id': 'test_id',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'default',
-            'listener_name': 'Test User',
-            'location_city': 'Denver',
-            'location_country': 'US',
+            'elevenlabs_voice_id': 'default'  # Testing default voice
         }
         
         config = WebConfig.create_config_from_form(form_data)
@@ -56,14 +51,9 @@ class TestVoiceFixes:
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key',
-            'taddy_user_id': 'test_id', 
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Bella
-            'listener_name': 'Test User',
-            'location_city': 'Denver',
-            'location_country': 'US',
+            'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL'  # Bella voice
         }
         
         config = WebConfig.create_config_from_form(form_data)

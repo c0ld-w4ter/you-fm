@@ -94,7 +94,7 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
     
     try:
         # Import required functions
-        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_articles
         from summarizer import create_briefing_script
         
         import time
@@ -105,7 +105,6 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
         
         weather_data = get_weather(config)
         news_articles = get_news_articles(config)
-        podcast_episodes = get_new_podcast_episodes(config)
         
         t1 = time.perf_counter()
         logger.info(f"Data fetched for preview in {t1 - t0:.2f} seconds.")
@@ -113,7 +112,7 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
         # Create briefing script (with style-aware processing)
         logger.info("Creating briefing script preview...")
         t2 = time.perf_counter()
-        briefing_script = create_briefing_script(weather_data, news_articles, podcast_episodes, config)
+        briefing_script = create_briefing_script(weather_data, news_articles, config)
         t3 = time.perf_counter()
         logger.info(f"Script preview generated in {t3 - t2:.2f} seconds.")
         
@@ -134,7 +133,6 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
                 'word_count': word_count,
                 'estimated_duration_minutes': round(estimated_duration_minutes, 1),
                 'articles_count': len(news_articles),
-                'podcasts_count': len(podcast_episodes),
                 'has_weather': weather_data is not None,
                 'generation_time_seconds': round(total_time, 2),
                 'tone': config.get_briefing_tone(),
@@ -177,7 +175,7 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
     
     try:
         # Import all required functions
-        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_articles
         from summarizer import create_briefing_script  # Note: summarize_articles no longer needed
         from tts_generator import generate_audio, save_audio_locally
         # from uploader import upload_to_s3  # Uncomment for S3 upload
@@ -197,28 +195,22 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
         t3 = time.perf_counter()
         logger.info(f"News articles fetched in {t3 - t2:.2f} seconds.")
 
-        logger.info("Fetching podcast episodes...")
-        t4 = time.perf_counter()
-        podcast_episodes = get_new_podcast_episodes(config)
-        t5 = time.perf_counter()
-        logger.info(f"Podcast episodes fetched in {t5 - t4:.2f} seconds.")
-
         # Milestone 2: AI Processing (Batch Optimization)
         # Note: Individual article summarization skipped for performance
         # AI now handles both summarization AND script generation in single call
         logger.info("Creating briefing script with batch AI processing...")
-        t6 = time.perf_counter()
-        briefing_script = create_briefing_script(weather_data, news_articles, podcast_episodes, config)
-        t7 = time.perf_counter()
-        logger.info(f"Briefing script created with batch processing in {t7 - t6:.2f} seconds.")
+        t4 = time.perf_counter()
+        briefing_script = create_briefing_script(weather_data, news_articles, config)
+        t5 = time.perf_counter()
+        logger.info(f"Briefing script created with batch processing in {t5 - t4:.2f} seconds.")
         logger.info(f"Performance improvement: Single API call instead of {len(news_articles) + 1} separate calls")
 
         # Milestone 3: Audio Generation and Local Save
         logger.info("Generating audio from briefing script...")
-        t8 = time.perf_counter()
+        t6 = time.perf_counter()
         audio_data = generate_audio(briefing_script, config)
-        t9 = time.perf_counter()
-        logger.info(f"Audio generated in {t9 - t8:.2f} seconds.")
+        t7 = time.perf_counter()
+        logger.info(f"Audio generated in {t7 - t6:.2f} seconds.")
 
         logger.info("Saving audio file locally...")
         from datetime import datetime
@@ -230,10 +222,10 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
         os.makedirs("static/audio", exist_ok=True)
         web_audio_path = os.path.join("static", "audio", audio_filename)
         
-        t10 = time.perf_counter()
+        t8 = time.perf_counter()
         audio_file_path = save_audio_locally(audio_data, web_audio_path)
-        t11 = time.perf_counter()
-        logger.info(f"Audio file saved locally in {t11 - t10:.2f} seconds.")
+        t9 = time.perf_counter()
+        logger.info(f"Audio file saved locally in {t9 - t8:.2f} seconds.")
         
         # Save script locally for reference
         script_file = "briefing_script.txt"
@@ -241,7 +233,7 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
             f.write(briefing_script)
         
         # Calculate total processing time improvement
-        total_time = t11 - t0
+        total_time = t9 - t0
         logger.info(f"✓ Complete audio briefing workflow finished successfully in {total_time:.2f} seconds!")
         logger.info(f"✓ Audio saved locally: {audio_file_path}")
         logger.info(f"✓ Script saved locally: {script_file}")
@@ -256,7 +248,6 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
             'data': {
                 'weather': weather_data,
                 'articles_count': len(news_articles),
-                'podcasts_count': len(podcast_episodes),
                 'audio_file_path': audio_file_path,
                 'audio_filename': audio_filename,  # For web URL generation
                 'audio_size_bytes': len(audio_data),
@@ -297,14 +288,13 @@ def main():
         traceback.print_exc()
 
 
-def assemble_briefing_text(weather_data, news_articles, podcast_episodes) -> str:
+def assemble_briefing_text(weather_data, news_articles) -> str:
     """
     Assemble raw data into a cohesive text briefing.
     
     Args:
         weather_data: WeatherData object
         news_articles: List of Article objects
-        podcast_episodes: List of PodcastEpisode objects
         
     Returns:
         Complete briefing text
@@ -350,23 +340,6 @@ def assemble_briefing_text(weather_data, news_articles, podcast_episodes) -> str
             ])
     else:
         briefing_parts.extend(["No news articles available.", ""])
-    
-    # Podcast section
-    briefing_parts.extend([
-        "🎧 NEW PODCAST EPISODES",
-        "-" * 30
-    ])
-    
-    if podcast_episodes:
-        for i, episode in enumerate(podcast_episodes, 1):
-            briefing_parts.extend([
-                f"{i}. {episode.episode_title}",
-                f"   Podcast: {episode.podcast_title}",
-                f"   URL: {episode.url}",
-                ""
-            ])
-    else:
-        briefing_parts.extend(["No new podcast episodes available.", ""])
     
     # Footer
     briefing_parts.extend([

@@ -1,6 +1,6 @@
 # AI Daily Briefing Agent
 
-A modern web application that generates personalized, AI-powered daily audio news briefings. The system features an intuitive web interface where users can configure their preferences and generate custom audio briefings from multiple data sources including news, weather, and podcasts.
+A modern web application that generates personalized, AI-powered daily audio news briefings. The system features an intuitive web interface where users can configure their preferences and generate custom audio briefings from multiple data sources including news and weather.
 
 ## 🏗️ Project Status
 
@@ -104,7 +104,6 @@ The application can be configured through the **web interface** or via environme
 The following API keys are required and can be entered through the web form:
 - **NewsAPI Key**: For fetching news articles
 - **OpenWeatherMap API Key**: For weather data
-- **Taddy API Key & User ID**: For podcast episode data
 - **Google Gemini API Key**: For AI summarization and script generation
 - **ElevenLabs API Key**: For text-to-speech conversion
 
@@ -114,7 +113,7 @@ The following API keys are required and can be entered through the web form:
 - **Briefing Duration**: Target length in minutes (default: 8)
 - **News Topics**: Comma-separated topics (default: technology,business,science)
 - **Max Articles per Topic**: Number limit (default: 3)
-- **Podcast Categories**: Categories to follow (default: Technology,Business,Science)
+
 - **Voice Selection**: Choose from multiple ElevenLabs voices
 - **Advanced Customization (Milestone 5)**:
   - **Briefing Tone**: Professional, Casual, or Energetic
@@ -127,8 +126,6 @@ For automated/CLI usage, you can still use environment variables:
 ```bash
 NEWSAPI_KEY=your_newsapi_key_here
 OPENWEATHER_API_KEY=your_openweather_key_here
-TADDY_API_KEY=your_taddy_api_key_here
-TADDY_USER_ID=your_taddy_user_id_here
 GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
 # Optional settings...
@@ -137,10 +134,9 @@ ELEVENLABS_API_KEY=your_elevenlabs_key_here
 ### Getting API Keys
 1. **NewsAPI**: Register at [newsapi.org](https://newsapi.org/)
 2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
-3. **Taddy**: Get API key and User ID at [taddy.org](https://taddy.org/developers)
-4. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
-5. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
-6. **Amazon S3**: Create S3 bucket and configure permissions
+3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
+4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
+5. **Amazon S3**: Create S3 bucket and configure permissions (optional)
 
 ## 🏃 Running the Application
 
@@ -178,7 +174,7 @@ python app.py
   - **🎯 Organized UI**: Collapsible sections with logical field grouping
 
 ### Complete Pipeline Features:
-- ✅ **Live Data Aggregation**: Weather, News, and Podcast data fetching
+- ✅ **Live Data Aggregation**: Weather and News data fetching
 - ✅ **AI Summarization**: Google Gemini 2.5 Pro for article summaries
 - ✅ **AI Script Generation**: Natural, professional briefing scripts
 - ✅ **Text-to-Speech**: High-quality audio generation via ElevenLabs

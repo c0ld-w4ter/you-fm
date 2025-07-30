@@ -143,24 +143,7 @@
                         <p class="field-description mt-2">Select the news topics you're interested in</p>
                     </div>
 
-                    <!-- Enhanced: Podcast Categories as checkboxes -->
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        {{ form.podcast_categories.label(class="block text-sm font-medium text-gray-700 mb-3") }}
-                        {% if form.podcast_categories.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.podcast_categories.errors[0] }}</p>
-                        {% endif %}
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {% for value, label in form.podcast_categories.choices %}
-                                <label class="flex items-center space-x-2 p-2 rounded border cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="checkbox" name="podcast_categories" value="{{ value }}" 
-                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                           {% if value in form.podcast_categories.data %}checked{% endif %}>
-                                    <span class="text-sm text-gray-700">{{ label }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                        <p class="field-description mt-2">Select the podcast categories you enjoy</p>
-                    </div>
+
 
                     <!-- Enhanced: Keywords to Avoid with better description -->
                     <div class="field-group" style="grid-column: 1 / -1;">

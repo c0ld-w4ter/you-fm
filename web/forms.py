@@ -25,18 +25,6 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your OpenWeatherMap API key'}
     )
     
-    taddy_api_key = StringField(
-        'Taddy API Key',
-        validators=[DataRequired(message='Taddy API Key is required')],
-        render_kw={'placeholder': 'Enter your Taddy API key'}
-    )
-    
-    taddy_user_id = StringField(
-        'Taddy User ID',
-        validators=[DataRequired(message='Taddy User ID is required')],
-        render_kw={'placeholder': 'Enter your Taddy User ID'}
-    )
-    
     gemini_api_key = StringField(
         'Google Gemini API Key',
         validators=[DataRequired(message='Google Gemini API Key is required')],
@@ -154,30 +142,6 @@ class SettingsForm(FlaskForm):
         render_kw={'min': 1, 'max': 100}
     )
     
-    # Enhanced: Podcast Categories as checkboxes
-    podcast_categories = SelectMultipleField(
-        'Podcast Categories',
-        choices=[
-            ('Technology', 'Technology'),
-            ('Business', 'Business'),
-            ('Science', 'Science'),
-            ('Health & Fitness', 'Health & Fitness'),
-            ('Sports', 'Sports'),
-            ('Comedy', 'Comedy'),
-            ('News', 'News'),
-            ('True Crime', 'True Crime'),
-            ('Education', 'Education'),
-            ('Arts', 'Arts'),
-            ('History', 'History'),
-            ('Society & Culture', 'Society & Culture'),
-            ('Personal Development', 'Personal Development'),
-            ('Investing', 'Investing'),
-            ('Entrepreneurship', 'Entrepreneurship'),
-        ],
-        default=['Technology', 'Business', 'Science'],
-        validators=[Optional()]
-    )
-    
     # Advanced Content Settings (New for Milestone 5)
     briefing_tone = SelectField(
         'Briefing Tone',
@@ -274,18 +238,6 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'placeholder': 'Enter your OpenWeatherMap API key'}
     )
     
-    taddy_api_key = StringField(
-        'Taddy API Key',
-        validators=[DataRequired(message='Taddy API Key is required')],
-        render_kw={'placeholder': 'Enter your Taddy API key'}
-    )
-    
-    taddy_user_id = StringField(
-        'Taddy User ID',
-        validators=[DataRequired(message='Taddy User ID is required')],
-        render_kw={'placeholder': 'Enter your Taddy User ID'}
-    )
-    
     gemini_api_key = StringField(
         'Google Gemini API Key',
         validators=[DataRequired(message='Google Gemini API Key is required')],
@@ -336,12 +288,6 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'min': 1, 'max': 10}
     )
     
-    podcast_categories = StringField(
-        'Podcast Categories',
-        validators=[Optional(), Length(max=200)],
-        render_kw={'placeholder': 'e.g., Technology,Business,Science'}
-    )
-    
     # Audio Settings
     elevenlabs_voice_id = SelectField(
         'Voice Selection',
@@ -382,12 +328,6 @@ class BriefingConfigForm(FlaskForm):
             topics = [topic.strip() for topic in self.news_topics.data.split(',')]
             if not all(topic for topic in topics):
                 self.news_topics.errors.append('Topics cannot be empty')
-                return False
-        
-        if self.podcast_categories.data:
-            categories = [cat.strip() for cat in self.podcast_categories.data.split(',')]
-            if not all(category for category in categories):
-                self.podcast_categories.errors.append('Categories cannot be empty')
                 return False
         
         return True 
