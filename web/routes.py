@@ -181,6 +181,161 @@ def preview_script():
         })
 
 
+@web_bp.route('/data-report', methods=['POST'])
+def data_report():
+    """AJAX endpoint to generate raw data input report for debugging and observability."""
+    try:
+        # Check if configuration is complete
+        if 'api_keys' not in session or 'settings' not in session:
+            return jsonify({
+                'success': False, 
+                'error': 'Configuration incomplete. Please complete API keys and settings first.'
+            })
+        
+        # Combine session data into config
+        session_data = {**session.get('api_keys', {}), **session.get('settings', {})}
+        config = WebConfig.create_config_from_form(session_data)
+        
+        # Import data fetchers
+        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from datetime import datetime
+        import time
+        
+        logger.info("Generating data input report via web interface...")
+        
+        # Track timing
+        start_time = time.perf_counter()
+        report_lines = []
+        
+        # Header
+        report_lines.append("=" * 60)
+        report_lines.append("AI DAILY BRIEFING - DATA INPUT REPORT")
+        report_lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(f"Configuration: {config.get('LISTENER_NAME', 'Default')} | {config.get('LOCATION_CITY', 'Unknown')}, {config.get('LOCATION_COUNTRY', 'Unknown')}")
+        report_lines.append("=" * 60)
+        report_lines.append("")
+        
+        # Initialize counters
+        weather_status = "N/A"
+        news_count = 0
+        podcast_count = 0
+        
+        # Fetch Weather Data
+        try:
+            logger.info("Fetching weather data for report...")
+            weather_data = get_weather(config)
+            weather_status = "✓"
+            
+            report_lines.append("WEATHER DATA")
+            report_lines.append("-" * 12)
+            report_lines.append(f"Location: {weather_data.city}, {weather_data.country}")
+            report_lines.append(f"Temperature: {weather_data.temperature:.1f}°C")
+            report_lines.append(f"Conditions: {weather_data.description.title()}")
+            report_lines.append(f"Humidity: {weather_data.humidity}%")
+            report_lines.append(f"Wind Speed: {weather_data.wind_speed} m/s")
+            report_lines.append("")
+            
+        except Exception as e:
+            weather_status = "✗"
+            report_lines.append("WEATHER DATA")
+            report_lines.append("-" * 12)
+            report_lines.append(f"Error fetching weather data: {str(e)}")
+            report_lines.append("")
+        
+        # Fetch News Articles
+        try:
+            logger.info("Fetching news articles for report...")
+            news_articles = get_news_articles(config)
+            news_count = len(news_articles)
+            
+            # Group articles by topic
+            topics = config.get_news_topics()
+            max_articles_per_topic = config.get_max_articles_per_topic()
+            
+            report_lines.append(f"NEWS ARTICLES ({news_count} articles)")
+            report_lines.append("-" * 20)
+            
+            articles_by_topic = {}
+            for article in news_articles:
+                # Try to match article to topic (simplified approach)
+                matched_topic = "General"
+                for topic in topics:
+                    if topic.lower() in article.title.lower() or topic.lower() in article.content.lower():
+                        matched_topic = topic.title()
+                        break
+                
+                if matched_topic not in articles_by_topic:
+                    articles_by_topic[matched_topic] = []
+                articles_by_topic[matched_topic].append(article)
+            
+            for topic, articles in articles_by_topic.items():
+                report_lines.append(f"\nTopic: {topic} ({len(articles)} articles)")
+                for i, article in enumerate(articles, 1):
+                    report_lines.append(f"  {i}. {article.title}")
+                    report_lines.append(f"     Source: {article.source}")
+                    report_lines.append(f"     URL: {article.url}")
+                    content_preview = article.content[:200] + "..." if len(article.content) > 200 else article.content
+                    report_lines.append(f"     Content Preview: {content_preview}")
+                    report_lines.append("")
+            
+        except Exception as e:
+            report_lines.append(f"NEWS ARTICLES (Error)")
+            report_lines.append("-" * 20)
+            report_lines.append(f"Error fetching news articles: {str(e)}")
+            report_lines.append("")
+        
+        # Fetch Podcast Episodes
+        try:
+            logger.info("Fetching podcast episodes for report...")
+            podcast_episodes = get_new_podcast_episodes(config)
+            podcast_count = len(podcast_episodes)
+            
+            report_lines.append(f"PODCAST EPISODES ({podcast_count} episodes)")
+            report_lines.append("-" * 25)
+            
+            for i, episode in enumerate(podcast_episodes, 1):
+                report_lines.append(f"  {i}. {episode.podcast_title} - {episode.episode_title}")
+                report_lines.append(f"     URL: {episode.url}")
+                report_lines.append("")
+            
+        except Exception as e:
+            report_lines.append(f"PODCAST EPISODES (Error)")
+            report_lines.append("-" * 25)
+            report_lines.append(f"Error fetching podcast episodes: {str(e)}")
+            report_lines.append("")
+        
+        # Footer
+        end_time = time.perf_counter()
+        fetch_time = round(end_time - start_time, 2)
+        
+        report_lines.append("=" * 60)
+        report_lines.append(f"Total Data Points: Weather: {weather_status} | News: {news_count} | Podcasts: {podcast_count}")
+        report_lines.append(f"Data Fetch Time: {fetch_time} seconds")
+        report_lines.append(f"Next Step: AI Processing & Audio Generation")
+        report_lines.append("=" * 60)
+        
+        # Join all lines into final report
+        report_content = "\n".join(report_lines)
+        
+        return jsonify({
+            'success': True,
+            'report_content': report_content,
+            'weather_status': weather_status,
+            'news_count': news_count,
+            'podcast_count': podcast_count,
+            'fetch_time_seconds': fetch_time,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+            
+    except Exception as e:
+        logger.error(f"Error during data report generation: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to generate data report',
+            'message': str(e)
+        })
+
+
 @web_bp.route('/preview-voice', methods=['POST'])
 def preview_voice():
     """AJAX endpoint to generate voice preview audio."""

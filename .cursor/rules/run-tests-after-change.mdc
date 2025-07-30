@@ -1,0 +1,5 @@
+---
+description: Apply this rule after making any significant change to the code. 
+alwaysApply: false
+---
+Always run the unit tests and ensure they pass after making a change to the main code. 

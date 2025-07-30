@@ -806,12 +806,53 @@ class TestRouteHandlers:
     
     def test_briefing_generation_without_config(self, client):
         """Test briefing generation without proper configuration."""
-        response = client.post('/create-briefing')
-        assert response.status_code == 400
+        response = client.post('/create-briefing',
+                              headers={'Content-Type': 'application/json'})
         
-        data = json.loads(response.data)
+        assert response.status_code == 400
+        data = response.get_json()
         assert 'error' in data
         assert 'Configuration incomplete' in data['error']
+
+    def test_data_report_endpoint(self, client):
+        """Test data report generation endpoint."""
+        # Test without configuration
+        response = client.post('/data-report',
+                              headers={'Content-Type': 'application/json'})
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is False
+        assert 'Configuration incomplete' in data['error']
+        
+        # Test with mock configuration (would need mock data fetchers for full test)
+        with client.session_transaction() as sess:
+            sess['api_keys'] = {
+                'newsapi_key': 'test_key',
+                'openweather_api_key': 'test_key',
+                'taddy_api_key': 'test_key',
+                'taddy_user_id': 'test_user',
+                'gemini_api_key': 'test_key',
+                'elevenlabs_api_key': 'test_key'
+            }
+            sess['settings'] = {
+                'listener_name': 'Test User',
+                'location_city': 'Test City',
+                'location_country': 'US',
+                'briefing_duration_minutes': 3,
+                'news_topics': 'technology',
+                'max_articles_per_topic': 3,
+                'elevenlabs_voice_id': 'test_voice'
+            }
+        
+        # This would fail due to invalid API keys, but we're testing the endpoint exists
+        response = client.post('/data-report',
+                              headers={'Content-Type': 'application/json'})
+        
+        assert response.status_code == 200
+        data = response.get_json()
+        # Should either succeed or fail gracefully with specific error message
+        assert 'success' in data
 
 
 class TestConfigurationIntegration:

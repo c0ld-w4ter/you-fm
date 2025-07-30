@@ -81,13 +81,18 @@
                     📝 Preview Script
                 </button>
                 
+                <!-- Data Report Button -->
+                <button id="data-report-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
+                    📊 View Data Report
+                </button>
+                
                 <!-- Generate Button -->
                 <button id="generate-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-6 px-12 rounded-lg shadow-lg transition duration-200 transform hover:scale-105 text-xl">
                     🎧 Generate Full Briefing
                 </button>
             </div>
             
-            <p class="mt-4 text-sm text-gray-500">Preview first to see the script (fast), then generate audio when you're satisfied</p>
+            <p class="mt-4 text-sm text-gray-500">Preview script or view raw data for quick iteration, then generate audio when ready</p>
         </div>
     </div>
 
@@ -143,6 +148,60 @@
         </div>
     </div>
 
+    <!-- Data Report Modal -->
+    <div id="data-report-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center mb-4 pb-4 border-b">
+                <h3 class="text-xl font-bold text-gray-900">📊 Data Input Report</h3>
+                <button id="close-data-report" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <!-- Report Stats -->
+            <div id="data-report-stats" class="bg-gray-50 rounded-lg p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div class="text-center">
+                    <div class="font-bold text-lg text-blue-600" id="stat-weather">-</div>
+                    <div class="text-gray-600">Weather</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-green-600" id="stat-news">-</div>
+                    <div class="text-gray-600">News Articles</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-purple-600" id="stat-podcasts">-</div>
+                    <div class="text-gray-600">Podcast Episodes</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold text-lg text-orange-600" id="stat-fetch-time">-</div>
+                    <div class="text-gray-600">Fetch Time</div>
+                </div>
+            </div>
+            
+            <!-- Report Content -->
+            <div class="flex-1 overflow-hidden">
+                <textarea id="data-report-content" class="w-full h-full resize-none border border-gray-300 rounded-md p-4 text-sm font-mono leading-relaxed" readonly placeholder="Data report will appear here..."></textarea>
+            </div>
+            
+            <!-- Modal Actions -->
+            <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                <div class="text-sm text-gray-600" id="data-report-info">
+                    Generated at: <span class="font-medium" id="report-timestamp">-</span>
+                </div>
+                <div class="flex gap-3">
+                    <button id="copy-report" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        📋 Copy Report
+                    </button>
+                    <button id="download-report" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        💾 Download
+                    </button>
+                    <button id="close-data-report-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Modal -->
     <div id="loading-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-8 shadow-2xl max-w-md w-full mx-4">
@@ -191,6 +250,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressSteps = document.getElementById('progress-steps');
     
+    // Data report elements
+    const dataReportBtn = document.getElementById('data-report-btn');
+    const dataReportModal = document.getElementById('data-report-modal');
+    const closeDataReportBtn = document.getElementById('close-data-report-btn');
+    const dataReportContent = document.getElementById('data-report-content');
+    const copyReportBtn = document.getElementById('copy-report');
+    const downloadReportBtn = document.getElementById('download-report');
+    const reportTimestamp = document.getElementById('report-timestamp');
+
     // Close preview modal
     closePreviewBtn.addEventListener('click', function() {
         previewModal.classList.add('hidden');
@@ -198,6 +266,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('close-preview').addEventListener('click', function() {
         previewModal.classList.add('hidden');
+    });
+
+    // Close data report modal
+    closeDataReportBtn.addEventListener('click', function() {
+        dataReportModal.classList.add('hidden');
+    });
+
+    document.getElementById('close-data-report').addEventListener('click', function() {
+        dataReportModal.classList.add('hidden');
     });
 
     // Preview button listener
@@ -378,6 +455,88 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error: ' + error.message);
             loadingModal.classList.add('hidden');
         });
+    });
+
+    // Data report button listener
+    dataReportBtn.addEventListener('click', function() {
+        // Show loading state
+        dataReportBtn.disabled = true;
+        dataReportBtn.innerHTML = '⏳ Fetching Data...';
+        
+        // Show modal immediately with loading state
+        dataReportModal.classList.remove('hidden');
+        dataReportContent.value = 'Fetching raw data...\n\nThis may take 10-30 seconds as we gather weather, news, and podcast data from external APIs.';
+        
+        // Reset stats to loading state
+        document.getElementById('stat-weather').textContent = '...';
+        document.getElementById('stat-news').textContent = '...';
+        document.getElementById('stat-podcasts').textContent = '...';
+        document.getElementById('stat-fetch-time').textContent = '...';
+        reportTimestamp.textContent = '...';
+        
+        // Fetch the data report from the server
+        fetch('/data-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update report content
+                dataReportContent.value = data.report_content;
+                
+                // Update stats
+                document.getElementById('stat-weather').textContent = data.weather_status;
+                document.getElementById('stat-news').textContent = data.news_count;
+                document.getElementById('stat-podcasts').textContent = data.podcast_count;
+                document.getElementById('stat-fetch-time').textContent = data.fetch_time_seconds + 's';
+                
+                // Update timestamp
+                reportTimestamp.textContent = data.timestamp;
+            } else {
+                dataReportContent.value = 'Error generating data report:\n\n' + (data.error || 'Unknown error occurred');
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            dataReportContent.value = 'Network error generating data report:\n\n' + error.message;
+            alert('Error: ' + error.message);
+        })
+        .finally(() => {
+            // Re-enable data report button
+            dataReportBtn.disabled = false;
+            dataReportBtn.innerHTML = '📊 View Data Report';
+        });
+    });
+
+    // Copy report functionality
+    copyReportBtn.addEventListener('click', function() {
+        dataReportContent.select();
+        document.execCommand('copy');
+        copyReportBtn.innerHTML = '✅ Copied!';
+        setTimeout(() => {
+            copyReportBtn.innerHTML = '📋 Copy Report';
+        }, 2000);
+    });
+
+    // Download report functionality
+    downloadReportBtn.addEventListener('click', function() {
+        const reportText = dataReportContent.value;
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+        const filename = `ai-briefing-data-report-${timestamp}.txt`;
+        
+        const blob = new Blob([reportText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     });
 });
 </script>
