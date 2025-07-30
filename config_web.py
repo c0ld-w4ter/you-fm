@@ -5,6 +5,7 @@ This module handles mapping web form data to configuration objects,
 replacing the environment variable dependency for web-based configuration.
 """
 
+import os
 import logging
 from typing import Dict, Any, Optional
 from config import Config, ConfigurationError
@@ -60,46 +61,44 @@ class WebConfig:
         # Create configuration dictionary in the format expected by Config
         config_dict = {
             # Required API keys
-            'NEWSAPI_KEY': form_data['newsapi_key'].strip(),
-            'OPENWEATHER_API_KEY': form_data['openweather_api_key'].strip(),
-            'TADDY_API_KEY': form_data['taddy_api_key'].strip(),
-            'TADDY_USER_ID': form_data['taddy_user_id'].strip(),
-            'GEMINI_API_KEY': form_data['gemini_api_key'].strip(),
-            'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'].strip(),
+            'NEWSAPI_KEY': form_data['newsapi_key'],
+            'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
+            'TADDY_API_KEY': form_data['taddy_api_key'],
+            'TADDY_USER_ID': form_data['taddy_user_id'],
+            'GEMINI_API_KEY': form_data['gemini_api_key'],
+            'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'],
             
-            # Optional settings with defaults
-            'AWS_REGION': form_data.get('aws_region', 'us-east-1').strip(),
-            'LOCATION_CITY': form_data.get('location_city', 'Denver').strip(),
-            'LOCATION_COUNTRY': form_data.get('location_country', 'US').strip(),
-            'NEWS_TOPICS': form_data.get('news_topics', 'technology,business,science').strip(),
+            # Optional configuration
+            'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
+            'LOCATION_CITY': form_data.get('location_city', 'Denver'),
+            'LOCATION_COUNTRY': form_data.get('location_country', 'US'),
+            'NEWS_TOPICS': form_data.get('news_topics', 'technology,business,science'),
             'MAX_ARTICLES_PER_TOPIC': str(form_data.get('max_articles_per_topic', 3)),
-            'PODCAST_CATEGORIES': form_data.get('podcast_categories', 'Technology,Business,Science').strip(),
-            'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default').strip(),
+            'PODCAST_CATEGORIES': form_data.get('podcast_categories', 'Technology,Business,Science'),
+            'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
             'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 8)),
-            'LISTENER_NAME': form_data.get('listener_name', 'Seamus').strip(),
+            'LISTENER_NAME': form_data.get('listener_name', 'Seamus'),
             
-            # Advanced settings (New for Milestone 5)
-            'BRIEFING_TONE': form_data.get('briefing_tone', 'professional').strip(),
-            'CONTENT_DEPTH': form_data.get('content_depth', 'balanced').strip(),
-            'KEYWORDS_EXCLUDE': form_data.get('keywords_exclude', '').strip(),
-            'VOICE_SPEED': form_data.get('voice_speed', '1.0').strip(),
+            # Advanced customization options (New for Milestone 5)
+            'BRIEFING_TONE': form_data.get('briefing_tone', 'professional'),
+            'CONTENT_DEPTH': form_data.get('content_depth', 'balanced'),
+            'KEYWORDS_EXCLUDE': form_data.get('keywords_exclude', ''),
+            'VOICE_SPEED': form_data.get('voice_speed', '1.0'),
         }
         
-        # Create Config object with custom data
-        config = Config.from_dict(config_dict)
-        
-        logger.info("✓ Configuration created successfully from web form")
-        return config
+        logger.info("Web form data mapped to configuration successfully")
+        return Config(config_dict)
     
     @staticmethod
     def get_form_defaults() -> Dict[str, Any]:
         """
-        Get default values for web form fields.
+        Get default values for form fields.
+        For local development, this includes API keys from environment variables.
         
         Returns:
             Dictionary of default form values
         """
-        return {
+        defaults = {
             'aws_region': 'us-east-1',
             'location_city': 'Denver',
             'location_country': 'US',
@@ -116,6 +115,20 @@ class WebConfig:
             'keywords_exclude': '',
             'voice_speed': '1.0',
         }
+        
+        # Add API keys from environment variables for local development
+        # These will be empty in production and filled by AWS Secrets Manager
+        api_key_defaults = {
+            'newsapi_key': os.environ.get('NEWSAPI_KEY', ''),
+            'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
+            'taddy_api_key': os.environ.get('TADDY_API_KEY', ''),
+            'taddy_user_id': os.environ.get('TADDY_USER_ID', ''),
+            'gemini_api_key': os.environ.get('GEMINI_API_KEY', ''),
+            'elevenlabs_api_key': os.environ.get('ELEVENLABS_API_KEY', ''),
+        }
+        
+        defaults.update(api_key_defaults)
+        return defaults
     
     @staticmethod
     def validate_form_data(form_data: Dict[str, Any]) -> Dict[str, str]:

@@ -9,6 +9,13 @@ import os
 import logging
 from typing import Optional, Dict, Any
 
+# Load .env file for local development
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # Load .env file if it exists
+except ImportError:
+    pass  # dotenv not required in production
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
