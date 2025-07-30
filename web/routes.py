@@ -39,8 +39,6 @@ def api_keys():
             env_fallbacks = {
                 'newsapi_key': 'NEWSAPI_KEY',
                 'openweather_api_key': 'OPENWEATHER_API_KEY',
-                'taddy_api_key': 'TADDY_API_KEY',
-                'taddy_user_id': 'TADDY_USER_ID',
                 'gemini_api_key': 'GEMINI_API_KEY',
                 'elevenlabs_api_key': 'ELEVENLABS_API_KEY',
             }
@@ -94,11 +92,7 @@ def settings():
             else:
                 news_topics_str = news_topics or 'technology,business,science'
                 
-            podcast_categories = form.podcast_categories.data
-            if isinstance(podcast_categories, list):
-                podcast_categories_str = ','.join(podcast_categories)
-            else:
-                podcast_categories_str = podcast_categories or 'Technology,Business,Science'
+
             
             # Store settings in session
             session['settings'] = {
@@ -108,7 +102,6 @@ def settings():
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
                 'news_topics': news_topics_str,  # Store as comma-separated string
                 'max_articles_per_topic': form.max_articles_per_topic.data,
-                'podcast_categories': podcast_categories_str,  # Store as comma-separated string
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
                 'aws_region': form.aws_region.data,
                 
@@ -182,7 +175,6 @@ def preview_script():
                 'estimated_duration_minutes': data['estimated_duration_minutes'],
                 'generation_time_seconds': data['generation_time_seconds'],
                 'articles_count': data['articles_count'],
-                'podcasts_count': data['podcasts_count'],
                 'has_weather': data['has_weather'],
                 'tone': data['tone'],
                 'depth': data['depth'],
@@ -228,7 +220,7 @@ def data_report():
         config = WebConfig.create_config_from_form(session_data)
         
         # Import data fetchers
-        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_articles
         from datetime import datetime
         import time
         
@@ -249,7 +241,6 @@ def data_report():
         # Initialize counters
         weather_status = "N/A"
         news_count = 0
-        podcast_count = 0
         
         # Fetch Weather Data
         try:
@@ -312,32 +303,12 @@ def data_report():
             report_lines.append(f"Error fetching news articles: {str(e)}")
             report_lines.append("")
         
-        # Fetch Podcast Episodes
-        try:
-            logger.info("Fetching podcast episodes for report...")
-            podcast_episodes = get_new_podcast_episodes(config)
-            podcast_count = len(podcast_episodes)
-            
-            report_lines.append(f"PODCAST EPISODES ({podcast_count} episodes)")
-            report_lines.append("-" * 25)
-            
-            for i, episode in enumerate(podcast_episodes, 1):
-                report_lines.append(f"  {i}. {episode.podcast_title} - {episode.episode_title}")
-                report_lines.append(f"     URL: {episode.url}")
-                report_lines.append("")
-            
-        except Exception as e:
-            report_lines.append(f"PODCAST EPISODES (Error)")
-            report_lines.append("-" * 25)
-            report_lines.append(f"Error fetching podcast episodes: {str(e)}")
-            report_lines.append("")
-        
         # Footer
         end_time = time.perf_counter()
         fetch_time = round(end_time - start_time, 2)
         
         report_lines.append("=" * 60)
-        report_lines.append(f"Total Data Points: Weather: {weather_status} | News: {news_count} | Podcasts: {podcast_count}")
+        report_lines.append(f"Total Data Points: Weather: {weather_status} | News: {news_count}")
         report_lines.append(f"Data Fetch Time: {fetch_time} seconds")
         report_lines.append(f"Next Step: AI Processing & Audio Generation")
         report_lines.append("=" * 60)
@@ -350,7 +321,6 @@ def data_report():
             'report_content': report_content,
             'weather_status': weather_status,
             'news_count': news_count,
-            'podcast_count': podcast_count,
             'fetch_time_seconds': fetch_time,
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
@@ -396,7 +366,7 @@ def preview_voice():
             })
         
         # Sample text for voice preview
-        preview_text = "Hello! This is a preview of your selected voice for the AI Daily Briefing. I'll be delivering your personalized news, weather, and podcast summaries in this style."
+        preview_text = "Hello! This is a preview of your selected voice for the AI Daily Briefing. I'll be delivering your personalized news and weather summaries in this style."
         
         # Import TTS generator
         from tts_generator import generate_audio

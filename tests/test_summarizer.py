@@ -9,13 +9,15 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from typing import List
 
+import google.generativeai as genai
+
 from summarizer import (
     summarize_articles, 
     create_briefing_script,
     filter_articles_by_keywords,
     generate_style_instructions
 )
-from data_fetchers import Article, WeatherData, PodcastEpisode
+from data_fetchers import Article, WeatherData
 from config import Config
 
 
@@ -205,7 +207,6 @@ class TestStyleAwareBriefingScript:
         mock_model_class.return_value = mock_model
         
         # Create test data
-        articles = create_test_articles()
         weather_data = WeatherData(
             city="Denver",
             country="US", 
@@ -214,30 +215,35 @@ class TestStyleAwareBriefingScript:
             humidity=45,
             wind_speed=5.2
         )
-        podcast_episodes = []
         
-        # Create config with advanced settings
-        config_dict = {
+        articles = [
+            Article(
+                title="Tech News",
+                source="Tech Source",
+                url="https://example.com",
+                content="Technology content",
+                category="technology"
+            )
+        ]
+        
+        # Mock config with style preferences
+        config = Config({
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'BRIEFING_TONE': 'casual',
-            'CONTENT_DEPTH': 'headlines',
-            'KEYWORDS_EXCLUDE': 'celebrity,gossip',
-            'VOICE_SPEED': '1.1',
-            'LISTENER_NAME': 'Alice',
+            'CONTENT_DEPTH': 'detailed',
+            'KEYWORDS_EXCLUDE': 'sports,politics',
+            'LISTENER_NAME': 'Test User',
             'BRIEFING_DURATION_MINUTES': '5'
-        }
-        config = Config(config_dict)
+        })
         
         # Generate script
-        script = create_briefing_script(weather_data, articles, podcast_episodes, config)
+        script = create_briefing_script(weather_data, articles, config)
         
         # Verify that filtering was called with correct parameters
-        mock_filter.assert_called_once_with(articles, ['celebrity', 'gossip'])
+        mock_filter.assert_called_once_with(articles, ['sports', 'politics'])
         
         # Verify that AI was configured and called
         mock_configure.assert_called_once_with(api_key='test_key')
@@ -251,7 +257,7 @@ class TestStyleAwareBriefingScript:
         # Verify style preferences are in the prompt
         assert 'TONE:' in prompt
         assert 'DEPTH:' in prompt
-        assert 'Alice' in prompt  # Listener name
+        assert 'Test User' in prompt  # Listener name
         
         # Verify script content
         assert script == "Here's your personalized casual briefing for today, Alice..."
@@ -273,16 +279,14 @@ class TestStyleAwareBriefingScript:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'KEYWORDS_EXCLUDE': 'sports,politics'
         }
         config = Config(config_dict)
         
-        # Generate script
-        create_briefing_script(None, articles, [], config)
+        # Call create_briefing_script (it should filter articles first)
+        script = create_briefing_script(None, articles, config)
         
         # Verify filtering was called with correct parameters
         mock_filter.assert_called_once_with(articles, ['sports', 'politics'])
@@ -304,16 +308,14 @@ class TestStyleAwareBriefingScript:
         config_dict = {
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'LISTENER_NAME': 'Bob'
         }
         config = Config(config_dict)
         
-        # Should not raise exception, should use fallback
-        script = create_briefing_script(None, articles, [], config)
+        # Call function - should use fallback
+        script = create_briefing_script(None, articles, config)
         
         # Should return fallback script
         assert script is not None

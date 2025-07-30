@@ -168,8 +168,7 @@
                     <div class="text-gray-600">News Articles</div>
                 </div>
                 <div class="text-center">
-                    <div class="font-bold text-lg text-purple-600" id="stat-podcasts">-</div>
-                    <div class="text-gray-600">Podcast Episodes</div>
+                    
                 </div>
                 <div class="text-center">
                     <div class="font-bold text-lg text-orange-600" id="stat-fetch-time">-</div>
@@ -285,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show modal immediately with loading state
         previewModal.classList.remove('hidden');
-        previewScript.value = 'Generating script preview...\n\nThis may take 10-20 seconds as we fetch the latest news, weather, and podcast data, then create your personalized script.';
+                            previewScript.value = 'Generating script preview...\n\nThis may take 10-20 seconds as we fetch the latest news and weather data, then create your personalized script.';
         
         // Reset stats to loading state
         document.getElementById('stat-duration').textContent = '...';
@@ -351,11 +350,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Progress steps
         const steps = [
-            { message: 'Fetching weather data...', step: 'Step 1 of 5', progress: 20, delay: 2000 },
-            { message: 'Gathering news articles...', step: 'Step 2 of 5', progress: 40, delay: 6000 },
-            { message: 'Processing podcast episodes...', step: 'Step 3 of 5', progress: 60, delay: 12000 },
-            { message: 'Generating AI briefing script...', step: 'Step 4 of 5', progress: 80, delay: 20000 },
-            { message: 'Converting to audio...', step: 'Step 5 of 5', progress: 95, delay: 30000 }
+            { message: 'Fetching weather data...', step: 'Step 1 of 4', progress: 25, delay: 2000 },
+            { message: 'Gathering news articles...', step: 'Step 2 of 4', progress: 50, delay: 6000 },
+            { message: 'Generating AI briefing script...', step: 'Step 3 of 4', progress: 75, delay: 15000 },
+            { message: 'Converting to audio...', step: 'Step 4 of 4', progress: 95, delay: 25000 }
         ];
         
         // Start progress updates
@@ -410,11 +408,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Progress steps
         const steps = [
-            { message: 'Fetching weather data...', step: 'Step 1 of 5', progress: 20, delay: 2000 },
-            { message: 'Gathering news articles...', step: 'Step 2 of 5', progress: 40, delay: 6000 },
-            { message: 'Processing podcast episodes...', step: 'Step 3 of 5', progress: 60, delay: 12000 },
-            { message: 'Generating AI briefing script...', step: 'Step 4 of 5', progress: 80, delay: 20000 },
-            { message: 'Converting to audio...', step: 'Step 5 of 5', progress: 95, delay: 30000 }
+            { message: 'Fetching weather data...', step: 'Step 1 of 4', progress: 25, delay: 2000 },
+            { message: 'Gathering news articles...', step: 'Step 2 of 4', progress: 50, delay: 6000 },
+            { message: 'Generating AI briefing script...', step: 'Step 3 of 4', progress: 75, delay: 15000 },
+            { message: 'Converting to audio...', step: 'Step 4 of 4', progress: 95, delay: 25000 }
         ];
         
         // Start progress updates
@@ -465,12 +462,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show modal immediately with loading state
         dataReportModal.classList.remove('hidden');
-        dataReportContent.value = 'Fetching raw data...\n\nThis may take 10-30 seconds as we gather weather, news, and podcast data from external APIs.';
+                            dataReportContent.value = 'Fetching raw data...\n\nThis may take 10-30 seconds as we gather weather and news data from external APIs.';
         
         // Reset stats to loading state
         document.getElementById('stat-weather').textContent = '...';
         document.getElementById('stat-news').textContent = '...';
-        document.getElementById('stat-podcasts').textContent = '...';
+        
         document.getElementById('stat-fetch-time').textContent = '...';
         reportTimestamp.textContent = '...';
         
@@ -490,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update stats
                 document.getElementById('stat-weather').textContent = data.weather_status;
                 document.getElementById('stat-news').textContent = data.news_count;
-                document.getElementById('stat-podcasts').textContent = data.podcast_count;
+                
                 document.getElementById('stat-fetch-time').textContent = data.fetch_time_seconds + 's';
                 
                 // Update timestamp

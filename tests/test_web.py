@@ -21,23 +21,18 @@ from config import Config, ConfigurationError
 class TestAPIKeysForm:
     """Test API keys form validation."""
     
-    def test_valid_api_keys_form(self, app):
-        """Test form validation with valid API keys."""
+    def test_valid_api_keys_form(self, app, valid_form_data):
+        """Test valid API keys form submission."""
         with app.app_context():
             form_data = {
-                'newsapi_key': 'test_news_key',
-                'openweather_api_key': 'test_weather_key',
-                'taddy_api_key': 'test_taddy_key',
-                'taddy_user_id': 'test_user_123',
-                'gemini_api_key': 'test_gemini_key',
-                'elevenlabs_api_key': 'test_elevenlabs_key',
+                'newsapi_key': valid_form_data['newsapi_key'],
+                'openweather_api_key': valid_form_data['openweather_api_key'],
+                'gemini_api_key': valid_form_data['gemini_api_key'],
+                'elevenlabs_api_key': valid_form_data['elevenlabs_api_key']
             }
             
             form = APIKeysForm(data=form_data)
-            
-            # Test that form fields are properly populated
-            assert form.newsapi_key.data == 'test_news_key'
-            assert form.gemini_api_key.data == 'test_gemini_key'
+            assert form.validate()
     
     def test_missing_required_api_key(self, app):
         """Test form validation with missing required API keys."""
@@ -45,8 +40,6 @@ class TestAPIKeysForm:
             form_data = {
                 'newsapi_key': '',  # Missing required field
                 'openweather_api_key': 'test_weather_key',
-                'taddy_api_key': 'test_taddy_key',
-                'taddy_user_id': 'test_user_123',
                 'gemini_api_key': 'test_gemini_key',
                 'elevenlabs_api_key': 'test_elevenlabs_key',
             }
@@ -71,22 +64,21 @@ class TestSettingsForm:
                 'briefing_duration_minutes': 8,
                 'news_topics': 'technology,business',
                 'max_articles_per_topic': 3,
-                'podcast_categories': 'Technology,Business',
                 'elevenlabs_voice_id': 'default',
                 'aws_region': 'us-east-1',
-                # New advanced fields
-                'briefing_tone': 'professional',
+                # Advanced fields
+                'briefing_tone': 'casual',
                 'content_depth': 'balanced',
-                'keywords_exclude': 'sports,celebrity',
-                'voice_speed': '1.0',
+                'keywords_exclude': 'politics,sports',
+                'voice_speed': '1.0'
             }
             
             form = SettingsForm(data=form_data)
             
             # Verify all new fields are present and have correct values
-            assert form.briefing_tone.data == 'professional'
+            assert form.briefing_tone.data == 'casual'
             assert form.content_depth.data == 'balanced'
-            assert form.keywords_exclude.data == 'sports,celebrity'
+            assert form.keywords_exclude.data == 'politics,sports'
             assert form.voice_speed.data == '1.0'
     
     def test_advanced_field_defaults(self, app):
@@ -121,8 +113,6 @@ class TestWebConfig:
         form_data = {
             'newsapi_key': 'test_news_key',
             'openweather_api_key': 'test_weather_key',
-            'taddy_api_key': 'test_taddy_key',
-            'taddy_user_id': 'test_user_123',
             'gemini_api_key': 'test_gemini_key',
             'elevenlabs_api_key': 'test_elevenlabs_key',
             'listener_name': 'Test User',
@@ -131,7 +121,6 @@ class TestWebConfig:
             'briefing_duration_minutes': 10,
             'news_topics': 'technology,science',
             'max_articles_per_topic': 5,
-            'podcast_categories': 'Technology,Science',
             'elevenlabs_voice_id': 'default',
             'aws_region': 'us-east-1',
             # New advanced fields
@@ -171,8 +160,6 @@ class TestWebConfig:
         form_data = {
             'newsapi_key': 'test_news_key',
             'openweather_api_key': 'test_weather_key',
-            'taddy_api_key': 'test_taddy_key',
-            'taddy_user_id': 'test_user_123',
             'gemini_api_key': 'test_gemini_key',
             'elevenlabs_api_key': 'test_elevenlabs_key',
             # Advanced fields not provided (should use defaults)
@@ -220,8 +207,6 @@ class TestAdvancedFieldsIntegration:
                 # Required API keys
                 'newsapi_key': 'test_news_key',
                 'openweather_api_key': 'test_weather_key',
-                'taddy_api_key': 'test_taddy_key',
-                'taddy_user_id': 'test_user_123',
                 'gemini_api_key': 'test_gemini_key',
                 'elevenlabs_api_key': 'test_elevenlabs_key',
                 
@@ -232,7 +217,6 @@ class TestAdvancedFieldsIntegration:
                 'briefing_duration_minutes': 12,
                 'news_topics': 'technology,health,business',
                 'max_articles_per_topic': 4,
-                'podcast_categories': 'Technology,Health,Business',
                 'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',
                 
                 # Advanced settings
@@ -267,8 +251,6 @@ class TestPreviewFunctionality:
                 sess['api_keys'] = {
                     'newsapi_key': 'test_news_key',
                     'openweather_api_key': 'test_weather_key',
-                    'taddy_api_key': 'test_taddy_key',
-                    'taddy_user_id': 'test_user_123',
                     'gemini_api_key': 'test_gemini_key',
                     'elevenlabs_api_key': 'test_elevenlabs_key',
                 }
@@ -291,12 +273,11 @@ class TestPreviewFunctionality:
                         'estimated_duration_minutes': 2.5,
                         'generation_time_seconds': 8.3,
                         'articles_count': 3,
-                        'podcasts_count': 2,
+                        'script_length_chars': 200,
                         'has_weather': True,
                         'tone': 'casual',
                         'depth': 'headlines',
-                        'keywords_excluded': 2,
-                        'script_length_chars': 200
+                        'keywords_excluded': 2
                     }
                 }
                 
@@ -340,8 +321,6 @@ class TestPreviewFunctionality:
                 sess['api_keys'] = {
                     'newsapi_key': 'test_news_key',
                     'openweather_api_key': 'test_weather_key',
-                    'taddy_api_key': 'test_taddy_key',
-                    'taddy_user_id': 'test_user_123',
                     'gemini_api_key': 'test_gemini_key',
                     'elevenlabs_api_key': 'test_elevenlabs_key',
                 }
@@ -370,9 +349,8 @@ class TestGenerateScriptOnly:
     
     @patch('data_fetchers.get_weather')
     @patch('data_fetchers.get_news_articles') 
-    @patch('data_fetchers.get_new_podcast_episodes')
     @patch('summarizer.create_briefing_script')
-    def test_generate_script_only_success(self, mock_script, mock_podcasts, mock_news, mock_weather):
+    def test_generate_script_only_success(self, mock_script, mock_news, mock_weather):
         """Test successful script-only generation."""
         from main import generate_script_only
         from config import Config
@@ -380,15 +358,12 @@ class TestGenerateScriptOnly:
         # Set up mocks
         mock_weather.return_value = Mock(city='Test City')
         mock_news.return_value = [Mock(title='Test Article')]
-        mock_podcasts.return_value = [Mock(episode_title='Test Episode')]
         mock_script.return_value = 'This is a test script for preview functionality.'
         
         # Create test config
         config = Config({
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'BRIEFING_TONE': 'energetic',
@@ -410,7 +385,6 @@ class TestGenerateScriptOnly:
         assert data['word_count'] == 8  # Number of words in test script
         assert data['estimated_duration_minutes'] > 0
         assert data['articles_count'] == 1
-        assert data['podcasts_count'] == 1
         assert data['has_weather'] is True
         assert data['tone'] == 'energetic'
         assert data['depth'] == 'detailed'
@@ -420,7 +394,6 @@ class TestGenerateScriptOnly:
         # Verify all functions were called
         mock_weather.assert_called_once_with(config)
         mock_news.assert_called_once_with(config)
-        mock_podcasts.assert_called_once_with(config)
         mock_script.assert_called_once()
     
     @patch('data_fetchers.get_weather')
@@ -436,8 +409,6 @@ class TestGenerateScriptOnly:
         config = Config({
             'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
-            'TADDY_API_KEY': 'test_key',
-            'TADDY_USER_ID': 'test_id',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key'
         })
@@ -507,8 +478,6 @@ def valid_api_keys_data():
     return {
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
-        'taddy_api_key': 'test_taddy_key',
-        'taddy_user_id': 'test_taddy_user',
         'gemini_api_key': 'test_gemini_key',
         'elevenlabs_api_key': 'test_elevenlabs_key'
     }
@@ -524,7 +493,6 @@ def valid_settings_data():
         'briefing_duration_minutes': 5,
         'news_topics': ['technology', 'business'],  # Updated to list format for checkboxes
         'max_articles_per_topic': 3,
-        'podcast_categories': ['Technology', 'Business'],  # Updated to list format for checkboxes
         'elevenlabs_voice_id': 'default',
         'aws_region': 'us-east-1',
         # Advanced settings (Milestone 5)
@@ -541,8 +509,6 @@ def valid_form_data():
     return {
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
-        'taddy_api_key': 'test_taddy_key',
-        'taddy_user_id': 'test_taddy_user',
         'gemini_api_key': 'test_gemini_key',
         'elevenlabs_api_key': 'test_elevenlabs_key',
         'listener_name': 'Test User',
@@ -551,7 +517,6 @@ def valid_form_data():
         'briefing_duration_minutes': 5,
         'news_topics': 'technology,business',
         'max_articles_per_topic': 3,
-        'podcast_categories': 'Technology,Business',
         'elevenlabs_voice_id': 'default',
         'aws_region': 'us-east-1'
     }
@@ -576,7 +541,6 @@ class TestMultiPageFlow:
         # Check that required fields are present
         assert b'name="newsapi_key"' in response.data
         assert b'name="openweather_api_key"' in response.data
-        assert b'name="taddy_api_key"' in response.data
         assert b'name="gemini_api_key"' in response.data
         assert b'name="elevenlabs_api_key"' in response.data
     
@@ -595,7 +559,6 @@ class TestMultiPageFlow:
         })
         assert response.status_code == 200
         assert b'OpenWeatherMap API Key is required' in response.data
-        assert b'Taddy API Key is required' in response.data
     
     def test_api_keys_form_success_redirects_to_settings(self, client, valid_api_keys_data):
         """Test successful API keys submission redirects to settings."""
@@ -659,8 +622,6 @@ class TestFormValidation:
             valid_data = {
                 'newsapi_key': 'test_key',
                 'openweather_api_key': 'test_key',
-                'taddy_api_key': 'test_key',
-                'taddy_user_id': 'test_user',
                 'gemini_api_key': 'test_key',
                 'elevenlabs_api_key': 'test_key'
             }
@@ -685,7 +646,6 @@ class TestFormValidation:
                 'briefing_duration_minutes': 5,
                 'news_topics': ['technology'],  # Fixed: use list format and valid category
                 'max_articles_per_topic': 3,
-                'podcast_categories': ['Technology'],  # Fixed: use list format
                 'elevenlabs_voice_id': 'default'
             }
             form = SettingsForm(data=valid_data)
@@ -768,7 +728,6 @@ class TestRouteHandlers:
                 'audio_file_path': 'static/audio/test_briefing.mp3',
                 'total_processing_time_seconds': 30.5,
                 'articles_count': 5,
-                'podcasts_count': 3,
                 'script_length_chars': 1000,
                 'audio_size_bytes': 1024000,
                 'script_content': 'Test briefing script'
@@ -831,8 +790,6 @@ class TestRouteHandlers:
             sess['api_keys'] = {
                 'newsapi_key': 'test_key',
                 'openweather_api_key': 'test_key',
-                'taddy_api_key': 'test_key',
-                'taddy_user_id': 'test_user',
                 'gemini_api_key': 'test_key',
                 'elevenlabs_api_key': 'test_key'
             }
@@ -870,7 +827,7 @@ class TestConfigurationIntegration:
         """Test that default values are populated correctly."""
         defaults = WebConfig.get_form_defaults()
         assert defaults['location_city'] == 'Denver'
-        assert defaults['briefing_duration_minutes'] == 8
+        assert defaults['briefing_duration_minutes'] == 3
         assert defaults['elevenlabs_voice_id'] == 'default'
     
     def test_configuration_validation_integration(self, valid_form_data):
@@ -883,10 +840,9 @@ class TestConfigurationIntegration:
         form_data_without_api_key = valid_form_data.copy()
         del form_data_without_api_key['newsapi_key']
         
-        # Should NOT raise exception because environment fallback exists
-        config_with_fallback = WebConfig.create_config_from_form(form_data_without_api_key)
-        assert config_with_fallback is not None
-        assert config_with_fallback.get('NEWSAPI_KEY')  # Should be populated from environment
+        # Should raise exception because environment fallback doesn't exist in test
+        with pytest.raises(ConfigurationError):
+            config_with_fallback = WebConfig.create_config_from_form(form_data_without_api_key)
     
     def test_form_data_validation(self, valid_form_data):
         """Test form data validation function."""
@@ -918,7 +874,6 @@ class TestCompleteWorkflow:
                 'audio_file_path': 'static/audio/test_briefing_20250128_120000.mp3',
                 'total_processing_time_seconds': 25.3,
                 'articles_count': 7,
-                'podcasts_count': 2,
                 'script_length_chars': 1500,
                 'audio_size_bytes': 2048000,
                 'script_content': 'Test briefing script content'

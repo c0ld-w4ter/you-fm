@@ -162,7 +162,7 @@ Summary:"""
         raise Exception(f"Failed to summarize articles with Gemini API: {e}")
 
 
-def create_briefing_script(weather_data, articles: List[Article], podcast_episodes, config=None) -> str:
+def create_briefing_script(weather_data, articles: List[Article], config=None) -> str:
     """
     Create the final briefing script from all data sources using AI.
     Performs both article summarization and script generation in a single API call for optimal performance.
@@ -170,7 +170,6 @@ def create_briefing_script(weather_data, articles: List[Article], podcast_episod
     Args:
         weather_data: WeatherData object
         articles: List of raw Article objects (not pre-summarized)
-        podcast_episodes: List of PodcastEpisode objects
         config: Optional Config object. If None, loads from environment.
         
     Returns:
@@ -235,35 +234,6 @@ Content: {content}
 """)
             news_info = "\n".join(news_items)
         
-        # Build podcast information
-        podcast_info = "No new podcast episodes available"
-        if podcast_episodes:
-            podcast_items = []
-            
-            # Better selection: get episodes from different podcasts for variety
-            podcast_counts = {}
-            selected_episodes = []
-            
-            for episode in podcast_episodes:
-                podcast_title = episode.podcast_title
-                if podcast_title not in podcast_counts:
-                    podcast_counts[podcast_title] = 0
-                
-                # Only add if we haven't reached the limit for this podcast and overall limit
-                if podcast_counts[podcast_title] < 1 and len(selected_episodes) < 3:
-                    selected_episodes.append(episode)
-                    podcast_counts[podcast_title] += 1
-            
-            # If we still have room and want more variety, add more episodes
-            if len(selected_episodes) < 3:
-                for episode in podcast_episodes:
-                    if episode not in selected_episodes and len(selected_episodes) < 3:
-                        selected_episodes.append(episode)
-            
-            for i, episode in enumerate(selected_episodes, 1):
-                podcast_items.append(f"{i}. '{episode.episode_title}' from {episode.podcast_title}")
-            podcast_info = "\n".join(podcast_items)
-        
         # Create enhanced prompt for combined summarization and script generation with style awareness
         listener_greeting = f" for {listener_name}" if listener_name else ""
         prompt = f"""You are an AI assistant creating a personalized daily news briefing script{listener_greeting}. You need to:
@@ -288,9 +258,6 @@ WEATHER:
 NEWS ARTICLES (analyze and select the most newsworthy):
 {news_info}
 
-PODCAST EPISODES:
-{podcast_info}
-
 SCRIPT GENERATION INSTRUCTIONS:
 1. Create a warm greeting that matches the specified TONE and includes the date{f" and addresses {listener_name} by name" if listener_name else ""}
 2. Present the weather information conversationally, mentioning notable conditions using the specified TONE
@@ -298,14 +265,13 @@ SCRIPT GENERATION INSTRUCTIONS:
 4. Use your editorial judgment to determine how many stories to include and how much detail to provide based on the {briefing_duration}-minute target duration and DEPTH preference
 5. For each selected story, provide an appropriate summary length that follows the DEPTH guidelines
 6. Present stories in order of importance/interest using the specified TONE
-7. Include podcast recommendations naturally in the specified TONE
-8. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
-9. Use natural transitions between sections that match the TONE
-10. Follow the TONE guidelines throughout the entire script
-11. Make it sound natural when spoken aloud - avoid written language patterns
-12. Handle missing data gracefully without being repetitive
-13. Target the script length to fit comfortably within a {briefing_duration}-minute audio briefing
-14. Convert all numbers, symbols, and units to word equivalents (e.g. "35.78°C" as "thirty five point seven eight degrees Celsius", "50%" as "fifty percent")
+7. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
+8. Use natural transitions between sections that match the TONE
+9. Follow the TONE guidelines throughout the entire script
+10. Make it sound natural when spoken aloud - avoid written language patterns
+11. Handle missing data gracefully without being repetitive
+12. Target the script length to fit comfortably within a {briefing_duration}-minute audio briefing
+13. Convert all numbers, symbols, and units to word equivalents (e.g. "35.78°C" as "thirty five point seven eight degrees Celsius", "50%" as "fifty percent")
 
 EDITORIAL GUIDELINES:
 - Prioritize stories with the most significant impact or widespread interest
@@ -356,10 +322,6 @@ Generate only the final script text, ready for text-to-speech conversion:"""
                 # Use truncated content as fallback summary
                 content = article.content[:150] + "..." if len(article.content) > 150 else article.content
                 fallback_parts.append(f"{article.title}: {content}")
-        
-        if podcast_episodes:
-            fallback_parts.append("New podcast episodes are available from " + 
-                                ", ".join([ep.podcast_title for ep in podcast_episodes[:2]]))
         
         # Create personalized closing
         closing = f"That's your briefing for today{f', {listener_name}' if listener_name else ''}. Have a great day!"

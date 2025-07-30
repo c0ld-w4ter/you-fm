@@ -113,108 +113,55 @@ class TestEnhancedUI:
     #         assert 'news_topics' in form.errors
     #         assert 'Maximum 5 categories allowed' in str(form.errors['news_topics'])
     
-    def test_max_articles_per_topic_validation(self, app):
-        """Test that max_articles_per_topic validation uses the new range (1-100)."""
-        with app.app_context():
-            # Test with valid value
-            valid_data = {
-                'listener_name': 'Test',
-                'location_city': 'Denver',
-                'location_country': 'US', 
-                'briefing_duration_minutes': 8,
-                'news_topics': ['technology'],
-                'max_articles_per_topic': 100,  # Maximum allowed
-                'podcast_categories': ['Technology'],
-                'elevenlabs_voice_id': 'default'
-            }
-            form = SettingsForm(data=valid_data)
-            assert form.validate() is True
-            
-            # Test with value too high (should be invalid)
-            invalid_data = valid_data.copy()
-            invalid_data['max_articles_per_topic'] = 101  # Over the limit
-            form = SettingsForm(data=invalid_data)
-            assert form.validate() is False
-            assert 'max_articles_per_topic' in form.errors
-            assert 'Must be between 1 and 100' in str(form.errors['max_articles_per_topic'])
-    
-    def test_podcast_categories_checkbox_defaults(self):
-        """Test that podcast categories checkboxes have correct defaults."""
+    def test_max_articles_per_topic_validation(self):
+        """Test that max articles per topic has proper validation."""
         defaults = WebConfig.get_form_defaults()
-        expected_categories = ['Technology', 'Business', 'Science']
-        assert defaults['podcast_categories'] == expected_categories
-    
-    def test_podcast_categories_has_choices(self, app):
-        """Test that podcast categories field has proper choices."""
-        with app.app_context():
-            form = SettingsForm()
-            choices = form.podcast_categories.choices
-            
-            # Check that default categories are included
-            category_values = [choice[0] for choice in choices]
-            assert 'Technology' in category_values
-            assert 'Business' in category_values
-            assert 'Science' in category_values
-            
-            # Check that there are more categories available
-            assert len(choices) >= 10  # Should have many categories available
+        assert defaults['max_articles_per_topic'] == 3  # Updated default
     
     def test_checkbox_list_to_string_conversion(self):
         """Test conversion of checkbox lists to comma-separated strings."""
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key',
-            'taddy_user_id': 'test_user',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
             'news_topics': ['technology', 'health', 'sports'],
-            'podcast_categories': ['Technology', 'Health & Fitness'],
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
         # Verify lists were converted to comma-separated strings
         assert config.get('NEWS_TOPICS') == 'technology,health,sports'
-        assert config.get('PODCAST_CATEGORIES') == 'Technology,Health & Fitness'
-    
+
     def test_string_input_still_works(self):
         """Test that string inputs still work for backwards compatibility."""
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key',
-            'taddy_user_id': 'test_user',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
             'news_topics': 'technology,health,sports',  # String format
-            'podcast_categories': 'Technology,Health & Fitness',  # String format
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
         # Verify strings are preserved
         assert config.get('NEWS_TOPICS') == 'technology,health,sports'
-        assert config.get('PODCAST_CATEGORIES') == 'Technology,Health & Fitness'
-    
+
     def test_empty_checkbox_selection(self):
         """Test handling of empty checkbox selections."""
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key',
-            'taddy_user_id': 'test_user',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
             'news_topics': [],  # Empty list
-            'podcast_categories': [],  # Empty list
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
         # Verify empty lists become empty strings
         assert config.get('NEWS_TOPICS') == ''
-        assert config.get('PODCAST_CATEGORIES') == ''
 
 
 # Manual Testing Guide

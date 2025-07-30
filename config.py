@@ -29,34 +29,38 @@ class ConfigurationError(Exception):
 class Config:
     """Configuration manager for the AI Daily Briefing Agent."""
     
-    # Required environment variables for all milestones
-    REQUIRED_VARS = [
-        'NEWSAPI_KEY',           # NewsAPI.org API key
-        'OPENWEATHER_API_KEY',   # OpenWeatherMap API key
-        'TADDY_API_KEY',         # Taddy Podcast API key
-        'TADDY_USER_ID',         # Taddy User ID
-        'GEMINI_API_KEY',        # Google Gemini API key
-        'ELEVENLABS_API_KEY',    # ElevenLabs API key
-        # 'S3_BUCKET_NAME', # Target S3 bucket name (temporarily disabled for local testing)
+    # Required configuration keys
+    REQUIRED_KEYS = [
+        'NEWSAPI_KEY',               # NewsAPI API key
+        'OPENWEATHER_API_KEY',       # OpenWeatherMap API key
+        'GEMINI_API_KEY',            # Google Gemini API key
+        'ELEVENLABS_API_KEY',        # ElevenLabs API key
     ]
     
     # Optional configuration with defaults
-    DEFAULT_VALUES = {
-        'AWS_REGION': 'us-east-1',
+    DEFAULT_CONFIG = {
+        # Personal settings
+        'LISTENER_NAME': '',  # Empty string for no personalization
         'LOCATION_CITY': 'Denver',
         'LOCATION_COUNTRY': 'US',
-        'NEWS_TOPICS': 'technology,business,science',  # Real NewsAPI categories only
-        'MAX_ARTICLES_PER_TOPIC': '50',  # Increased default but not maxed out
-        'PODCAST_CATEGORIES': 'Technology,Business,Science',
-        'ELEVENLABS_VOICE_ID': 'default',
-        'BRIEFING_DURATION_MINUTES': '8',  # Duration in minutes for the audio briefing
-        'LISTENER_NAME': 'Seamus',  # Name of the listener for personalized greetings (optional)
         
-        # Advanced settings (New for Milestone 5)
-        'BRIEFING_TONE': 'professional',  # Tone of the briefing: professional, casual, energetic
-        'CONTENT_DEPTH': 'balanced',      # Content depth: headlines, balanced, detailed  
-        'KEYWORDS_EXCLUDE': '',           # Keywords to avoid in articles (comma-separated)
-        'VOICE_SPEED': '1.0',            # Speech speed multiplier for TTS
+        # Content settings
+        'BRIEFING_DURATION_MINUTES': '3',
+        'NEWS_TOPICS': 'technology,business,science',  # Default NewsAPI categories
+        'MAX_ARTICLES_PER_TOPIC': '3',
+        
+        # Audio settings
+        'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
+        
+        # AWS settings (optional for S3 upload)
+        'AWS_REGION': 'us-east-1',
+        'S3_BUCKET_NAME': '',
+        
+        # Advanced customization settings (Milestone 5)
+        'BRIEFING_TONE': 'professional',  # professional, casual, energetic
+        'CONTENT_DEPTH': 'balanced',       # headlines, balanced, detailed
+        'KEYWORDS_EXCLUDE': '',            # Comma-separated keywords to filter out
+        'VOICE_SPEED': '1.0',              # 0.8 (slow), 1.0 (normal), 1.2 (fast)
     }
     
     def __init__(self, config_dict: Optional[Dict[str, str]] = None):
@@ -79,7 +83,7 @@ class Config:
         
         # Load required variables
         missing_vars = []
-        for var in self.REQUIRED_VARS:
+        for var in self.REQUIRED_KEYS:
             value = os.environ.get(var)
             if value:
                 self._config[var] = value
@@ -89,7 +93,7 @@ class Config:
                 logger.warning(f"✗ Missing required variable: {var}")
         
         # Load optional variables with defaults
-        for var, default in self.DEFAULT_VALUES.items():
+        for var, default in self.DEFAULT_CONFIG.items():
             value = os.environ.get(var, default)
             self._config[var] = value
             logger.info(f"✓ Loaded {var} = {value}")
@@ -113,7 +117,7 @@ class Config:
         
         # Validate required variables
         missing_vars = []
-        for var in self.REQUIRED_VARS:
+        for var in self.REQUIRED_KEYS:
             if var in config_dict and config_dict[var]:
                 self._config[var] = config_dict[var]
                 logger.info(f"✓ Loaded {var}")
@@ -122,7 +126,7 @@ class Config:
                 logger.warning(f"✗ Missing required variable: {var}")
         
         # Load optional variables with defaults
-        for var, default in self.DEFAULT_VALUES.items():
+        for var, default in self.DEFAULT_CONFIG.items():
             value = config_dict.get(var, default)
             self._config[var] = value
             logger.info(f"✓ Loaded {var} = {value}")
@@ -177,8 +181,8 @@ class Config:
     
     def get_podcast_categories(self) -> list[str]:
         """Get podcast categories as a list."""
-        categories_str = self.get('PODCAST_CATEGORIES')
-        return [category.strip() for category in categories_str.split(',')]
+        # Return empty list since podcasts are removed
+        return []
     
     def get_max_articles_per_topic(self) -> int:
         """Get maximum articles per topic as integer."""
@@ -221,33 +225,59 @@ class Config:
         """
         return os.environ.get('AWS_EXECUTION_ENV') is not None
     
-    def validate_config(self) -> bool:
+    def validate_config(self):
         """
-        Validate that all required configuration is present and valid.
+        Validate the configuration has all required fields.
         
-        Returns:
-            True if configuration is valid
-            
         Raises:
-            ConfigurationError: If configuration is invalid
+            ConfigurationError: If required fields are missing or invalid
         """
-        try:
-            # Validate integer values
-            self.get_max_articles_per_topic()
-            
-            # Check that lists are not empty
-            if not self.get_news_topics():
-                raise ConfigurationError("NEWS_TOPICS cannot be empty")
-            
-            if not self.get_podcast_categories():
-                raise ConfigurationError("PODCAST_CATEGORIES cannot be empty")
-            
-            logger.info("✓ Configuration validation passed")
-            return True
+        missing_keys = []
         
-        except (ValueError, ConfigurationError) as e:
-            logger.error(f"Configuration validation failed: {e}")
-            raise ConfigurationError(f"Invalid configuration: {e}")
+        for key in self.REQUIRED_KEYS:
+            if not self.get(key):
+                missing_keys.append(key)
+        
+        if missing_keys:
+            raise ConfigurationError(
+                f"Missing required configuration: {', '.join(missing_keys)}"
+            )
+        
+        # Validate location settings
+        if not self.get('LOCATION_CITY'):
+            raise ConfigurationError("LOCATION_CITY cannot be empty")
+        
+        if not self.get('LOCATION_COUNTRY'):
+            raise ConfigurationError("LOCATION_COUNTRY cannot be empty")
+        
+        # Validate content settings
+        if not self.get_news_topics():
+            raise ConfigurationError("NEWS_TOPICS cannot be empty")
+        
+        # Validate numeric fields
+        try:
+            self.get_max_articles_per_topic()
+        except ValueError:
+            raise ConfigurationError("MAX_ARTICLES_PER_TOPIC must be a valid integer")
+        
+        try:
+            self.get_briefing_duration_minutes()
+        except ValueError:
+            raise ConfigurationError("BRIEFING_DURATION_MINUTES must be a valid integer")
+        
+        # Validate advanced settings
+        if self.get_briefing_tone() not in ['professional', 'casual', 'energetic']:
+            raise ConfigurationError("BRIEFING_TONE must be one of: professional, casual, energetic")
+        
+        if self.get_content_depth() not in ['headlines', 'balanced', 'detailed']:
+            raise ConfigurationError("CONTENT_DEPTH must be one of: headlines, balanced, detailed")
+        
+        try:
+            voice_speed = float(self.get('VOICE_SPEED'))
+            if voice_speed not in [0.8, 1.0, 1.2]:
+                raise ConfigurationError("VOICE_SPEED must be one of: 0.8, 1.0, 1.2")
+        except ValueError:
+            raise ConfigurationError("VOICE_SPEED must be a valid float")
 
 
 # Global configuration instance
