@@ -94,7 +94,7 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
     
     try:
         # Import required functions
-        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_from_gemini, get_new_podcast_episodes
         from summarizer import create_briefing_script
         
         import time
@@ -104,7 +104,7 @@ def generate_script_only(config: Config = None) -> Dict[str, Any]:
         t0 = time.perf_counter()
         
         weather_data = get_weather(config)
-        news_articles = get_news_articles(config)
+        news_articles = get_news_from_gemini(config)
         podcast_episodes = get_new_podcast_episodes(config)
         
         t1 = time.perf_counter()
@@ -177,7 +177,7 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
     
     try:
         # Import all required functions
-        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_from_gemini, get_new_podcast_episodes
         from summarizer import create_briefing_script  # Note: summarize_articles no longer needed
         from tts_generator import generate_audio, save_audio_locally
         # from uploader import upload_to_s3  # Uncomment for S3 upload
@@ -191,9 +191,9 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
         t1 = time.perf_counter()
         logger.info(f"Weather data fetched in {t1 - t0:.2f} seconds.")
 
-        logger.info("Fetching news articles...")
+        logger.info("Fetching news articles with Gemini web search...")
         t2 = time.perf_counter()
-        news_articles = get_news_articles(config)
+        news_articles = get_news_from_gemini(config)
         t3 = time.perf_counter()
         logger.info(f"News articles fetched in {t3 - t2:.2f} seconds.")
 

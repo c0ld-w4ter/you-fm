@@ -41,7 +41,7 @@ class WebConfig:
         
         # Validate required fields
         required_fields = [
-            'newsapi_key',
+            # 'newsapi_key',  # No longer required - using Gemini for news
             'openweather_api_key', 
             'taddy_api_key',
             'taddy_user_id',
@@ -75,7 +75,7 @@ class WebConfig:
         # Create configuration dictionary in the format expected by Config
         config_dict = {
             # Required API keys
-            'NEWSAPI_KEY': form_data['newsapi_key'],
+            # 'NEWSAPI_KEY': form_data['newsapi_key'],  # No longer required - using Gemini for news
             'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
             'TADDY_API_KEY': form_data['taddy_api_key'],
             'TADDY_USER_ID': form_data['taddy_user_id'],
@@ -133,7 +133,7 @@ class WebConfig:
         # Add API keys from environment variables for local development
         # These will be empty in production and filled by AWS Secrets Manager
         api_key_defaults = {
-            'newsapi_key': os.environ.get('NEWSAPI_KEY', ''),
+            # 'newsapi_key': os.environ.get('NEWSAPI_KEY', ''),  # No longer required
             'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
             'taddy_api_key': os.environ.get('TADDY_API_KEY', ''),
             'taddy_user_id': os.environ.get('TADDY_USER_ID', ''),
@@ -159,7 +159,7 @@ class WebConfig:
         
         # Required field validation
         required_fields = {
-            'newsapi_key': 'NewsAPI Key is required',
+            # 'newsapi_key': 'NewsAPI Key is required',  # No longer required
             'openweather_api_key': 'OpenWeather API Key is required',
             'taddy_api_key': 'Taddy API Key is required',
             'taddy_user_id': 'Taddy User ID is required',

@@ -96,20 +96,20 @@ class TestConfig:
     def test_get_with_default(self):
         """Test the get method with default value."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            # 'NEWSAPI_KEY': 'test-newsapi-key',  # No longer required
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
+            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
         }
-        
+
         with patch.dict(os.environ, mock_env, clear=True):
             config = Config()
-            
+
             # Test existing key
-            assert config.get('NEWSAPI_KEY') == 'test-newsapi-key'
+            assert config.get('GEMINI_API_KEY') == 'test-gemini-key'
             
             # Test non-existing key with default
             assert config.get('NON_EXISTING_KEY', 'default_value') == 'default_value'
@@ -294,23 +294,23 @@ class TestGetConfig:
     def test_get_config_returns_instance(self):
         """Test that get_config returns a Config instance."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            # 'NEWSAPI_KEY': 'test-newsapi-key',  # No longer required
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'TADDY_API_KEY': 'test-taddy-api-key',
-        'TADDY_USER_ID': 'test-taddy-user-id',
+            'TADDY_USER_ID': 'test-taddy-user-id',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
         }
-        
+
         with patch.dict(os.environ, mock_env, clear=True):
             # Reset global config to None to test fresh initialization
             import config
             config.config = None
-            
+
             instance = get_config()
             assert isinstance(instance, Config)
-            assert instance.get('NEWSAPI_KEY') == 'test-newsapi-key' 
+            assert instance.get('GEMINI_API_KEY') == 'test-gemini-key'
 
 
 class TestAdvancedConfigurationGetters:

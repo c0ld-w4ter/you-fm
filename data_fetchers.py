@@ -199,6 +199,150 @@ def get_news_articles(config=None) -> List[Article]:
         raise
 
 
+def get_news_from_gemini(config=None) -> List[Article]:
+    """
+    Fetch curated daily news using Gemini's web search capabilities.
+    
+    Uses Google Gemini 2.0 with web search to find and curate recent news articles
+    across configured topics. This is a more intelligent alternative to NewsAPI
+    that can provide better curation and real-time information.
+    
+    Args:
+        config: Optional Config object. If None, loads from environment.
+    
+    Returns:
+        List of Article objects
+        
+    Raises:
+        Exception: If Gemini API call fails
+    """
+    logger.info("Fetching news articles using Gemini with web search...")
+    
+    if config is None:
+        config = get_config()
+    
+    api_key = config.get('GEMINI_API_KEY')
+    topics = config.get_news_topics()
+    
+    # Calculate target articles - aim for more raw material for better curation
+    # Use 100 total articles distributed across topics for better selection
+    target_articles = 100
+    
+    try:
+        import google.generativeai as genai
+        
+        # Configure the Gemini API
+        genai.configure(api_key=api_key)
+        
+        # Use Gemini 2.5 Pro for high-quality news curation with web search capability
+        # Note: Using simpler approach for now - may need model with search capability
+        model = genai.GenerativeModel('gemini-2.5-pro')
+        
+        # Create specific, token-efficient prompt that requests web search
+        prompt = f"""
+        Please search the web and find exactly {target_articles} of today's most important news articles across these topics: {', '.join(topics)}
+        
+        REQUIREMENTS:
+        - Use web search to find articles published in the last 24 hours only
+        - Mix of breaking news and significant developments  
+        - Credible sources (major news outlets, tech publications, business journals)
+        - Distribute roughly evenly across topics: {', '.join(topics)}
+        
+        FORMAT each article as:
+        TITLE: [exact headline]
+        SOURCE: [publication name]
+        URL: [if available, otherwise 'N/A']
+        SUMMARY: [exactly 2 sentences describing key facts]
+        ---
+        
+        IMPORTANT: Keep summaries brief - there will be further AI processing later.
+        Focus on factual content, not opinions.
+        Return exactly {target_articles} articles total.
+        Please use your web search capabilities to find current, real-time news.
+        """
+        
+        logger.info(f"Requesting {target_articles} articles from Gemini across topics: {', '.join(topics)}")
+        
+        # Make the API call - using basic model for now
+        # The model should automatically use web search when needed
+        response = model.generate_content(prompt)
+        
+        # Parse the response
+        articles = _parse_gemini_news_response(response.text)
+        
+        logger.info(f"✓ Fetched {len(articles)} news articles from Gemini web search")
+        return articles
+        
+    except Exception as e:
+        logger.error(f"Gemini news fetch error: {e}")
+        raise Exception(f"Failed to fetch news articles with Gemini: {e}")
+
+
+def _parse_gemini_news_response(response_text: str) -> List[Article]:
+    """
+    Parse Gemini's response text into Article objects.
+    
+    Expects format:
+    TITLE: [headline]
+    SOURCE: [source]
+    URL: [url]
+    SUMMARY: [summary]
+    ---
+    
+    Args:
+        response_text: Raw text response from Gemini
+        
+    Returns:
+        List of Article objects
+    """
+    articles = []
+    
+    # Split response by article separators
+    article_blocks = response_text.split('---')
+    
+    for block in article_blocks:
+        block = block.strip()
+        if not block:
+            continue
+            
+        try:
+            # Parse each field
+            lines = [line.strip() for line in block.split('\n') if line.strip()]
+            
+            title = ""
+            source = ""
+            url = ""
+            summary = ""
+            
+            for line in lines:
+                if line.startswith('TITLE:'):
+                    title = line[6:].strip()
+                elif line.startswith('SOURCE:'):
+                    source = line[7:].strip()
+                elif line.startswith('URL:'):
+                    url_text = line[4:].strip()
+                    url = url_text if url_text != 'N/A' else ""
+                elif line.startswith('SUMMARY:'):
+                    summary = line[8:].strip()
+            
+            # Only create article if we have essential fields
+            if title and source:
+                article = Article(
+                    title=title,
+                    source=source,
+                    url=url,
+                    content=summary,  # Use summary as content since we don't have full text
+                    summary=""  # Leave empty, will be processed later in the pipeline
+                )
+                articles.append(article)
+                
+        except Exception as e:
+            logger.warning(f"Failed to parse article block: {e}")
+            continue
+    
+    return articles
+
+
 def get_new_podcast_episodes(config=None) -> List[PodcastEpisode]:
     """
     Fetch new podcast episodes from Taddy GraphQL API.

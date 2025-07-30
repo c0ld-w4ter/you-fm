@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime
 
 from data_fetchers import (
-    get_weather, get_news_articles, get_new_podcast_episodes,
+    get_weather, get_news_articles, get_news_from_gemini, get_new_podcast_episodes,
     WeatherData, Article, PodcastEpisode
 )
 
@@ -249,6 +249,257 @@ class TestGetNewsArticles:
             get_news_articles()
         
         assert "NewsAPI connection failed" in str(exc_info.value)
+
+
+class TestGetNewsFromGemini:
+    """Test cases for the get_news_from_gemini function."""
+    
+    @patch('google.generativeai.GenerativeModel')
+    @patch('google.generativeai.configure')
+    @patch('data_fetchers.get_config')
+    def test_get_news_from_gemini_success(self, mock_config, mock_configure, mock_model_class):
+        """Test successful news fetching with Gemini web search."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key: {
+            'GEMINI_API_KEY': 'test-gemini-key'
+        }[key]
+        mock_config_instance.get_news_topics.return_value = ['technology', 'business']
+        mock_config.return_value = mock_config_instance
+        
+        # Mock Gemini model and response
+        mock_model = MagicMock()
+        mock_model_class.return_value = mock_model
+        
+        # Mock response with properly formatted articles
+        mock_response = MagicMock()
+        mock_response.text = """
+TITLE: AI Revolution in Tech
+SOURCE: TechCrunch
+URL: https://techcrunch.com/ai-revolution
+SUMMARY: Artificial intelligence is transforming the technology industry. Major companies are investing billions in AI development.
+---
+TITLE: Market Update Today
+SOURCE: Bloomberg
+URL: https://bloomberg.com/market-update
+SUMMARY: Stock markets saw significant gains today. Technology stocks led the rally.
+---
+TITLE: Climate Tech Breakthrough
+SOURCE: Nature
+URL: N/A
+SUMMARY: Scientists develop new carbon capture technology. The innovation could help combat climate change.
+"""
+        mock_model.generate_content.return_value = mock_response
+        
+        # Call function
+        result = get_news_from_gemini()
+        
+        # Verify Gemini API configuration
+        mock_configure.assert_called_once_with(api_key='test-gemini-key')
+        mock_model_class.assert_called_once_with('gemini-2.5-pro')
+        
+        # Verify model call
+        mock_model.generate_content.assert_called_once()
+        call_args = mock_model.generate_content.call_args
+        
+        # Check prompt contains topics and web search request
+        prompt = call_args[0][0]
+        assert 'technology' in prompt
+        assert 'business' in prompt
+        assert '100' in prompt  # Target article count
+        assert 'last 24 hours' in prompt
+        assert 'web search' in prompt
+        
+        # Verify result
+        assert len(result) == 3
+        assert all(isinstance(article, Article) for article in result)
+        
+        # Check first article
+        first_article = result[0]
+        assert first_article.title == 'AI Revolution in Tech'
+        assert first_article.source == 'TechCrunch'
+        assert first_article.url == 'https://techcrunch.com/ai-revolution'
+        assert 'Artificial intelligence is transforming' in first_article.content
+        assert first_article.summary == ""  # Should be empty initially
+        
+        # Check article with no URL
+        third_article = result[2]
+        assert third_article.title == 'Climate Tech Breakthrough'
+        assert third_article.source == 'Nature'
+        assert third_article.url == ""  # Should be empty when N/A
+    
+    @patch('google.generativeai.GenerativeModel')
+    @patch('google.generativeai.configure')
+    @patch('data_fetchers.get_config')
+    def test_get_news_from_gemini_api_error(self, mock_config, mock_configure, mock_model_class):
+        """Test handling of Gemini API errors."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key: {
+            'GEMINI_API_KEY': 'test-gemini-key'
+        }[key]
+        mock_config_instance.get_news_topics.return_value = ['technology']
+        mock_config.return_value = mock_config_instance
+        
+        # Mock API error
+        mock_model = MagicMock()
+        mock_model_class.return_value = mock_model
+        mock_model.generate_content.side_effect = Exception("API rate limit exceeded")
+        
+        # Test exception handling
+        with pytest.raises(Exception) as exc_info:
+            get_news_from_gemini()
+        
+        assert "Failed to fetch news articles with Gemini" in str(exc_info.value)
+        assert "API rate limit exceeded" in str(exc_info.value)
+    
+    @patch('google.generativeai.GenerativeModel')
+    @patch('google.generativeai.configure')
+    @patch('data_fetchers.get_config')
+    def test_get_news_from_gemini_empty_response(self, mock_config, mock_configure, mock_model_class):
+        """Test handling of empty or malformed response."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key: {
+            'GEMINI_API_KEY': 'test-gemini-key'
+        }[key]
+        mock_config_instance.get_news_topics.return_value = ['technology']
+        mock_config.return_value = mock_config_instance
+        
+        # Mock empty response
+        mock_model = MagicMock()
+        mock_model_class.return_value = mock_model
+        mock_response = MagicMock()
+        mock_response.text = ""
+        mock_model.generate_content.return_value = mock_response
+        
+        # Call function
+        result = get_news_from_gemini()
+        
+        # Should return empty list
+        assert result == []
+    
+    @patch('google.generativeai.GenerativeModel')
+    @patch('google.generativeai.configure')
+    @patch('data_fetchers.get_config')
+    def test_get_news_from_gemini_malformed_response(self, mock_config, mock_configure, mock_model_class):
+        """Test handling of malformed response format."""
+        # Mock configuration
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key: {
+            'GEMINI_API_KEY': 'test-gemini-key'
+        }[key]
+        mock_config_instance.get_news_topics.return_value = ['technology']
+        mock_config.return_value = mock_config_instance
+        
+        # Mock malformed response
+        mock_model = MagicMock()
+        mock_model_class.return_value = mock_model
+        mock_response = MagicMock()
+        mock_response.text = """
+Some random text that doesn't match the expected format
+TITLE: Only Title No Other Fields
+---
+TITLE: Valid Title
+SOURCE: Valid Source
+URL: https://example.com
+SUMMARY: Valid summary content.
+---
+Incomplete article missing fields
+"""
+        mock_model.generate_content.return_value = mock_response
+        
+        # Call function
+        result = get_news_from_gemini()
+        
+        # Should return only the one valid article
+        assert len(result) == 1
+        assert result[0].title == 'Valid Title'
+        assert result[0].source == 'Valid Source'
+
+
+class TestParseGeminiNewsResponse:
+    """Test cases for the _parse_gemini_news_response helper function."""
+    
+    def test_parse_valid_response(self):
+        """Test parsing of valid response format."""
+        response_text = """
+TITLE: First Article Title
+SOURCE: First Source
+URL: https://example.com/first
+SUMMARY: This is the first article summary. It contains important information.
+---
+TITLE: Second Article Title
+SOURCE: Second Source
+URL: N/A
+SUMMARY: This is the second article summary. It has no URL.
+---
+TITLE: Third Article Title
+SOURCE: Third Source
+URL: https://example.com/third
+SUMMARY: This is the third article summary. It's also important.
+"""
+        
+        from data_fetchers import _parse_gemini_news_response
+        result = _parse_gemini_news_response(response_text)
+        
+        assert len(result) == 3
+        
+        # Check first article
+        assert result[0].title == 'First Article Title'
+        assert result[0].source == 'First Source'
+        assert result[0].url == 'https://example.com/first'
+        assert 'This is the first article summary' in result[0].content
+        assert result[0].summary == ""
+        
+        # Check second article (no URL)
+        assert result[1].title == 'Second Article Title'
+        assert result[1].source == 'Second Source'
+        assert result[1].url == ""  # Should be empty when N/A
+        assert 'This is the second article summary' in result[1].content
+    
+    def test_parse_empty_response(self):
+        """Test parsing of empty response."""
+        from data_fetchers import _parse_gemini_news_response
+        result = _parse_gemini_news_response("")
+        assert result == []
+    
+    def test_parse_malformed_blocks(self):
+        """Test parsing with some malformed blocks."""
+        response_text = """
+TITLE: Valid Article
+SOURCE: Valid Source
+URL: https://example.com
+SUMMARY: Valid summary content.
+---
+
+Random text without proper format
+---
+TITLE: Missing Source Article
+URL: https://example.com/missing
+SUMMARY: This article has no source field.
+---
+TITLE: Another Valid Article
+SOURCE: Another Source
+URL: N/A
+SUMMARY: Another valid summary.
+"""
+        
+        from data_fetchers import _parse_gemini_news_response
+        result = _parse_gemini_news_response(response_text)
+        
+        # Should return only the valid articles (first and last)
+        assert len(result) == 2
+        assert result[0].title == 'Valid Article'
+        assert result[1].title == 'Another Valid Article'
+    
+    def test_parse_no_separators(self):
+        """Test parsing text without proper separators."""
+        response_text = "Just some random text without any article format"
+        
+        from data_fetchers import _parse_gemini_news_response
+        result = _parse_gemini_news_response(response_text)
+        assert result == []
 
 
 class TestGetNewPodcastEpisodes:
