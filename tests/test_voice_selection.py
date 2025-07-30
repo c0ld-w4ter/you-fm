@@ -16,66 +16,106 @@ from web.forms import SettingsForm, BriefingConfigForm
 from tts_generator import generate_audio
 
 
+# Flask app fixture for testing
+@pytest.fixture
+def app():
+    """Create a Flask app for testing."""
+    import os
+    from flask import Flask
+    from web.routes import web_bp
+    
+    # Get the project root directory (parent of tests directory)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Create Flask app with proper template and static directories
+    app = Flask(__name__, 
+                template_folder=os.path.join(project_root, 'templates'),
+                static_folder=os.path.join(project_root, 'static'))
+    
+    app.config['SECRET_KEY'] = 'test_secret_key'
+    app.config['TESTING'] = True
+    app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+    
+    # Register the web blueprint so routes are available
+    app.register_blueprint(web_bp)
+    
+    return app
+
+
+@pytest.fixture
+def client(app):
+    """Create test client."""
+    return app.test_client()
+
+
+@pytest.fixture
+def full_config_data():
+    """Provide full configuration data with all required keys for Config class."""
+    return {
+        'NEWSAPI_KEY': 'test_newsapi_key',
+        'OPENWEATHER_API_KEY': 'test_openweather_key',
+        'TADDY_API_KEY': 'test_taddy_key',
+        'TADDY_USER_ID': 'test_taddy_user',
+        'GEMINI_API_KEY': 'test_gemini_key',
+        'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
+        'ELEVENLABS_VOICE_ID': 'EXAVITQu4vr4xnSDxMaL'  # Will be overridden in specific tests
+    }
+
+
+@pytest.fixture
+def form_data():
+    """Provide form data with lowercase field names for WebConfig.create_config_from_form."""
+    return {
+        'newsapi_key': 'test_newsapi_key',
+        'openweather_api_key': 'test_openweather_key',
+        'taddy_api_key': 'test_taddy_key',
+        'taddy_user_id': 'test_taddy_user',
+        'gemini_api_key': 'test_gemini_key',
+        'elevenlabs_api_key': 'test_elevenlabs_key',
+        'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL'  # Will be overridden in specific tests
+    }
+
+
 class TestVoiceSelectionFlow:
     """Test voice selection from form to TTS generation."""
     
-    def test_form_voice_choices_consistent(self):
+    def test_form_voice_choices_consistent(self, app):
         """Test that both forms have the same voice choices."""
-        settings_form = SettingsForm()
-        briefing_form = BriefingConfigForm()
-        
-        settings_choices = settings_form.elevenlabs_voice_id.choices
-        briefing_choices = briefing_form.elevenlabs_voice_id.choices
-        
-        assert settings_choices == briefing_choices, "Voice choices should be identical in both forms"
-        
-        # Verify we have more than the original 5 voices
-        assert len(settings_choices) > 5, "Should have expanded voice selection"
-        
-        # Verify default voice is first choice
-        assert settings_choices[0][0] == 'default', "First choice should be 'default'"
-        
-        # Verify all voice IDs are valid (non-empty)
-        for voice_id, description in settings_choices:
-            assert voice_id, f"Voice ID should not be empty for {description}"
-            assert description, f"Description should not be empty for {voice_id}"
+        with app.app_context():
+            settings_form = SettingsForm()
+            briefing_form = BriefingConfigForm()
+            
+            settings_choices = settings_form.elevenlabs_voice_id.choices
+            briefing_choices = briefing_form.elevenlabs_voice_id.choices
+            
+            assert settings_choices == briefing_choices, "Voice choices should be identical in both forms"
+            
+            # Verify we have more than the original 5 voices
+            assert len(settings_choices) > 5, "Should have expanded voice selection"
+            
+            # Verify default voice is first choice
+            assert settings_choices[0][0] == 'default', "First choice should be 'default'"
+            
+            # Verify all voice IDs are valid (non-empty)
+            for voice_id, description in settings_choices:
+                assert voice_id, f"Voice ID should not be empty for {description}"
+                assert description, f"Description should not be empty for {voice_id}"
     
-    def test_config_creation_preserves_voice_id(self):
+    def test_config_creation_preserves_voice_id(self, form_data):
         """Test that voice ID is properly preserved when creating Config from form data."""
-        test_form_data = {
-            'newsapi_key': 'test_key',
-            'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key', 
-            'taddy_user_id': 'test_id',
-            'gemini_api_key': 'test_key',
-            'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Bella
-            'listener_name': 'Test User',
-            'location_city': 'Denver',
-            'location_country': 'US',
-            'briefing_duration_minutes': 8,
-            'news_topics': 'technology,business',
-            'max_articles_per_topic': 3,
-            'podcast_categories': 'Technology,Business',
-        }
+        test_form_data = form_data.copy()
+        test_form_data['elevenlabs_voice_id'] = 'EXAVITQu4vr4xnSDxMaL'
         
         config = WebConfig.create_config_from_form(test_form_data)
         
         assert config.get('ELEVENLABS_VOICE_ID') == 'EXAVITQu4vr4xnSDxMaL'
-        assert config.get('ELEVENLABS_API_KEY') == 'test_key'
+        assert config.get('ELEVENLABS_API_KEY') == 'test_elevenlabs_key'
     
-    def test_default_voice_handling(self):
+    def test_default_voice_handling(self, form_data):
         """Test that default voice is handled correctly."""
         # Test with 'default' value
-        form_data_default = {
-            'newsapi_key': 'test_key',
-            'openweather_api_key': 'test_key',
-            'taddy_api_key': 'test_key',
-            'taddy_user_id': 'test_id', 
-            'gemini_api_key': 'test_key',
-            'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'default',
-        }
+        form_data_default = form_data.copy()
+        form_data_default['elevenlabs_voice_id'] = 'default'
         
         config = WebConfig.create_config_from_form(form_data_default)
         assert config.get('ELEVENLABS_VOICE_ID') == 'default'
@@ -117,7 +157,8 @@ class TestVoicePreview:
         # Verify generate_audio was called with correct parameters
         mock_generate_audio.assert_called_once()
         call_args = mock_generate_audio.call_args
-        config_used = call_args[1] if len(call_args) > 1 else call_args[0][1]
+        # generate_audio is called as generate_audio(script_text, config)
+        config_used = call_args[0][1]  # Second positional argument is the config
         
         assert config_used.get('ELEVENLABS_VOICE_ID') == 'EXAVITQu4vr4xnSDxMaL'
         assert config_used.get('ELEVENLABS_API_KEY') == 'test_api_key'
@@ -154,7 +195,7 @@ class TestTTSVoiceGeneration:
     """Test TTS generation with voice selection."""
     
     @patch('elevenlabs.client.ElevenLabs')
-    def test_generate_audio_uses_correct_voice_id(self, mock_elevenlabs_class):
+    def test_generate_audio_uses_correct_voice_id(self, mock_elevenlabs_class, full_config_data):
         """Test that generate_audio uses the correct voice ID."""
         # Setup mock
         mock_client = MagicMock()
@@ -162,10 +203,9 @@ class TestTTSVoiceGeneration:
         mock_client.text_to_speech.convert.return_value = b'fake_audio'
         
         # Test with specific voice ID
-        config = Config({
-            'ELEVENLABS_API_KEY': 'test_key',
-            'ELEVENLABS_VOICE_ID': 'EXAVITQu4vr4xnSDxMaL'  # Bella
-        })
+        config_data = full_config_data.copy()
+        config_data['ELEVENLABS_VOICE_ID'] = 'EXAVITQu4vr4xnSDxMaL'  # Bella
+        config = Config(config_data)
         
         generate_audio("Test script", config)
         
@@ -175,7 +215,7 @@ class TestTTSVoiceGeneration:
         assert call_kwargs['voice_id'] == 'EXAVITQu4vr4xnSDxMaL'
     
     @patch('elevenlabs.client.ElevenLabs')
-    def test_generate_audio_default_voice_resolution(self, mock_elevenlabs_class):
+    def test_generate_audio_default_voice_resolution(self, mock_elevenlabs_class, full_config_data):
         """Test that 'default' voice ID is resolved to correct ElevenLabs ID."""
         # Setup mock
         mock_client = MagicMock()
@@ -183,10 +223,9 @@ class TestTTSVoiceGeneration:
         mock_client.text_to_speech.convert.return_value = b'fake_audio'
         
         # Test with 'default' voice ID
-        config = Config({
-            'ELEVENLABS_API_KEY': 'test_key',
-            'ELEVENLABS_VOICE_ID': 'default'
-        })
+        config_data = full_config_data.copy()
+        config_data['ELEVENLABS_VOICE_ID'] = 'default'
+        config = Config(config_data)
         
         generate_audio("Test script", config)
         
@@ -197,14 +236,4 @@ class TestTTSVoiceGeneration:
         # Should resolve to a specific ElevenLabs voice ID, not 'default'
         assert call_kwargs['voice_id'] != 'default'
         assert isinstance(call_kwargs['voice_id'], str)
-        assert len(call_kwargs['voice_id']) > 10  # ElevenLabs IDs are long strings
-
-
-@pytest.fixture
-def client():
-    """Create test client."""
-    from app import app
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
-    with app.test_client() as client:
-        yield client 
+        assert len(call_kwargs['voice_id']) > 10  # ElevenLabs IDs are long strings 

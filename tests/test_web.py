@@ -725,25 +725,26 @@ class TestRouteHandlers:
     
     def test_audio_file_serving(self, client):
         """Test audio file serving endpoint."""
-        # Get the project root directory (same as in app fixture)
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Create a dummy audio file for testing using the same path construction as the route
+        from flask import current_app
         
-        # Create a dummy audio file for testing in the correct location
-        audio_dir = os.path.join(project_root, 'static', 'audio')
-        os.makedirs(audio_dir, exist_ok=True)
-        test_file = os.path.join(audio_dir, 'test.mp3')
-        
-        with open(test_file, 'w') as f:
-            f.write('dummy audio content')
-        
-        try:
-            response = client.get('/audio/test.mp3')
-            assert response.status_code == 200
-            assert response.mimetype == 'audio/mpeg'
-        finally:
-            # Clean up
-            if os.path.exists(test_file):
-                os.remove(test_file)
+        with client.application.app_context():
+            # Use the same path construction as the audio serving route
+            audio_dir = os.path.join(current_app.root_path, 'static', 'audio')
+            os.makedirs(audio_dir, exist_ok=True)
+            test_file = os.path.join(audio_dir, 'test.mp3')
+            
+            with open(test_file, 'w') as f:
+                f.write('dummy audio content')
+            
+            try:
+                response = client.get('/audio/test.mp3')
+                assert response.status_code == 200
+                assert response.mimetype == 'audio/mpeg'
+            finally:
+                # Clean up
+                if os.path.exists(test_file):
+                    os.remove(test_file)
     
     def test_audio_file_not_found(self, client):
         """Test audio file serving with non-existent file."""
