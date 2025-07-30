@@ -82,7 +82,7 @@ class TestGenerateAudio:
         # Verify Rachel voice is used when 'default' is specified
         mock_client.text_to_speech.convert.assert_called_once_with(
             text="Test script",
-            voice_id="JBFqnCBsd6RMkjVDRZzb",  # Rachel voice
+            voice_id="21m00Tcm4TlvDq8ikWAM",  # Rachel voice
             model_id="eleven_multilingual_v2",
             output_format="mp3_44100_128",
             voice_settings={

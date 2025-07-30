@@ -5,7 +5,7 @@ This module defines form classes for user input validation and processing.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SelectField, SubmitField, HiddenField
+from wtforms import StringField, IntegerField, SelectField, SelectMultipleField, SubmitField, HiddenField
 from wtforms.validators import DataRequired, Optional, NumberRange, Length, Regexp
 
 
@@ -69,10 +69,60 @@ class SettingsForm(FlaskForm):
         render_kw={'placeholder': 'e.g., Denver'}
     )
     
-    location_country = StringField(
-        'Country Code',
-        validators=[Optional(), Regexp(r'^[A-Z]{2}$', message='Please enter a 2-letter country code (e.g., US)')],
-        render_kw={'placeholder': 'e.g., US, CA, GB'}
+    # Enhanced: Country as dropdown with US as default
+    location_country = SelectField(
+        'Country',
+        choices=[
+            ('US', 'United States'),
+            ('CA', 'Canada'),
+            ('GB', 'United Kingdom'),
+            ('AU', 'Australia'),
+            ('DE', 'Germany'),
+            ('FR', 'France'),
+            ('IT', 'Italy'),
+            ('ES', 'Spain'),
+            ('NL', 'Netherlands'),
+            ('BE', 'Belgium'),
+            ('CH', 'Switzerland'),
+            ('AT', 'Austria'),
+            ('SE', 'Sweden'),
+            ('NO', 'Norway'),
+            ('DK', 'Denmark'),
+            ('FI', 'Finland'),
+            ('IE', 'Ireland'),
+            ('PT', 'Portugal'),
+            ('PL', 'Poland'),
+            ('CZ', 'Czech Republic'),
+            ('HU', 'Hungary'),
+            ('GR', 'Greece'),
+            ('TR', 'Turkey'),
+            ('RU', 'Russia'),
+            ('JP', 'Japan'),
+            ('KR', 'South Korea'),
+            ('CN', 'China'),
+            ('IN', 'India'),
+            ('SG', 'Singapore'),
+            ('HK', 'Hong Kong'),
+            ('TW', 'Taiwan'),
+            ('TH', 'Thailand'),
+            ('MY', 'Malaysia'),
+            ('ID', 'Indonesia'),
+            ('PH', 'Philippines'),
+            ('VN', 'Vietnam'),
+            ('BR', 'Brazil'),
+            ('MX', 'Mexico'),
+            ('AR', 'Argentina'),
+            ('CL', 'Chile'),
+            ('CO', 'Colombia'),
+            ('ZA', 'South Africa'),
+            ('EG', 'Egypt'),
+            ('IL', 'Israel'),
+            ('AE', 'United Arab Emirates'),
+            ('SA', 'Saudi Arabia'),
+            ('NZ', 'New Zealand'),
+        ],
+        default='US',
+        validators=[Optional()]
     )
     
     # Content Settings
@@ -82,10 +132,28 @@ class SettingsForm(FlaskForm):
         render_kw={'min': 1, 'max': 30}
     )
     
-    news_topics = StringField(
+    # Enhanced: News Topics as checkboxes
+    news_topics = SelectMultipleField(
         'News Topics',
-        validators=[Optional(), Length(max=200)],
-        render_kw={'placeholder': 'e.g., technology,business,science'}
+        choices=[
+            ('technology', 'Technology'),
+            ('business', 'Business'),
+            ('science', 'Science'),
+            ('health', 'Health'),
+            ('sports', 'Sports'),
+            ('entertainment', 'Entertainment'),
+            ('politics', 'Politics'),
+            ('world', 'World News'),
+            ('national', 'National News'),
+            ('economics', 'Economics'), 
+            ('environment', 'Environment'),
+            ('education', 'Education'),
+            ('automotive', 'Automotive'),
+            ('travel', 'Travel'),
+            ('finance', 'Finance'),
+        ],
+        default=['technology', 'business', 'science'],
+        validators=[Optional()]
     )
     
     max_articles_per_topic = IntegerField(
@@ -94,10 +162,28 @@ class SettingsForm(FlaskForm):
         render_kw={'min': 1, 'max': 10}
     )
     
-    podcast_categories = StringField(
+    # Enhanced: Podcast Categories as checkboxes
+    podcast_categories = SelectMultipleField(
         'Podcast Categories',
-        validators=[Optional(), Length(max=200)],
-        render_kw={'placeholder': 'e.g., Technology,Business,Science'}
+        choices=[
+            ('Technology', 'Technology'),
+            ('Business', 'Business'),
+            ('Science', 'Science'),
+            ('Health & Fitness', 'Health & Fitness'),
+            ('Sports', 'Sports'),
+            ('Comedy', 'Comedy'),
+            ('News', 'News'),
+            ('True Crime', 'True Crime'),
+            ('Education', 'Education'),
+            ('Arts', 'Arts'),
+            ('History', 'History'),
+            ('Society & Culture', 'Society & Culture'),
+            ('Personal Development', 'Personal Development'),
+            ('Investing', 'Investing'),
+            ('Entrepreneurship', 'Entrepreneurship'),
+        ],
+        default=['Technology', 'Business', 'Science'],
+        validators=[Optional()]
     )
     
     # Advanced Content Settings (New for Milestone 5)
@@ -123,21 +209,35 @@ class SettingsForm(FlaskForm):
         validators=[Optional()]
     )
     
+    # Enhanced: Keywords to Avoid with better description
     keywords_exclude = StringField(
         'Keywords to Avoid',
         validators=[Optional(), Length(max=200)],
-        render_kw={'placeholder': 'e.g., sports,celebrity,gossip'}
+        render_kw={
+            'placeholder': 'e.g., sports, celebrity, gossip, politics',
+            'title': 'Separate keywords with commas. Articles containing these keywords will be filtered out.'
+        }
     )
     
     # Audio Settings
     elevenlabs_voice_id = SelectField(
         'Voice Selection',
         choices=[
-            ('default', 'Default Voice'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam'),
+            ('default', 'Rachel (Default) - Professional Female'),
+            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
+            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
+            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
+            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
+            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
+            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
+            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
+            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
+            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
+            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
+            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
+            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
+            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
+            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
         ],
         default='default',
         validators=[Optional()]
@@ -254,11 +354,21 @@ class BriefingConfigForm(FlaskForm):
     elevenlabs_voice_id = SelectField(
         'Voice Selection',
         choices=[
-            ('default', 'Default Voice'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam'),
+            ('default', 'Rachel (Default) - Professional Female'),
+            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
+            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
+            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
+            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
+            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
+            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
+            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
+            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
+            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
+            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
+            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
+            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
+            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
+            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
         ],
         default='default',
         validators=[Optional()]

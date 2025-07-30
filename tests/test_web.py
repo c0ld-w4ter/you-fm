@@ -522,9 +522,9 @@ def valid_settings_data():
         'location_city': 'Denver',
         'location_country': 'US',
         'briefing_duration_minutes': 5,
-        'news_topics': 'technology,business',
+        'news_topics': ['technology', 'business'],  # Updated to list format for checkboxes
         'max_articles_per_topic': 3,
-        'podcast_categories': 'Technology,Business',
+        'podcast_categories': ['Technology', 'Business'],  # Updated to list format for checkboxes
         'elevenlabs_voice_id': 'default',
         'aws_region': 'us-east-1',
         # Advanced settings (Milestone 5)

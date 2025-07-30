@@ -70,15 +70,28 @@ def settings():
     
     if request.method == 'POST':
         if form.validate_on_submit():
+            # Convert checkbox lists to comma-separated strings for session storage
+            news_topics = form.news_topics.data
+            if isinstance(news_topics, list):
+                news_topics_str = ','.join(news_topics)
+            else:
+                news_topics_str = news_topics or 'technology,business,science'
+                
+            podcast_categories = form.podcast_categories.data
+            if isinstance(podcast_categories, list):
+                podcast_categories_str = ','.join(podcast_categories)
+            else:
+                podcast_categories_str = podcast_categories or 'Technology,Business,Science'
+            
             # Store settings in session
             session['settings'] = {
                 'listener_name': form.listener_name.data,
                 'location_city': form.location_city.data,
                 'location_country': form.location_country.data,
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
-                'news_topics': form.news_topics.data,
+                'news_topics': news_topics_str,  # Store as comma-separated string
                 'max_articles_per_topic': form.max_articles_per_topic.data,
-                'podcast_categories': form.podcast_categories.data,
+                'podcast_categories': podcast_categories_str,  # Store as comma-separated string
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
                 'aws_region': form.aws_region.data,
                 
@@ -160,11 +173,93 @@ def preview_script():
             })
             
     except Exception as e:
-        logger.error(f"Preview script generation failed: {e}")
+        logger.error(f"Error during script preview: {e}")
         return jsonify({
             'success': False,
-            'error': str(e),
-            'message': 'Failed to generate script preview'
+            'error': 'Failed to generate preview',
+            'message': str(e)
+        })
+
+
+@web_bp.route('/preview-voice', methods=['POST'])
+def preview_voice():
+    """AJAX endpoint to generate voice preview audio."""
+    try:
+        # Get voice ID from request
+        data = request.get_json()
+        voice_id = data.get('voice_id')
+        
+        if not voice_id:
+            return jsonify({
+                'success': False,
+                'error': 'No voice ID provided'
+            })
+        
+        # Check if API keys are configured
+        if 'api_keys' not in session:
+            return jsonify({
+                'success': False, 
+                'error': 'ElevenLabs API key not configured. Please set up your API keys first.'
+            })
+        
+        # Create a minimal config for preview
+        api_keys = session.get('api_keys', {})
+        elevenlabs_api_key = api_keys.get('elevenlabs_api_key')
+        
+        if not elevenlabs_api_key:
+            return jsonify({
+                'success': False,
+                'error': 'ElevenLabs API key not found. Please configure your API keys.'
+            })
+        
+        # Sample text for voice preview
+        preview_text = "Hello! This is a preview of your selected voice for the AI Daily Briefing. I'll be delivering your personalized news, weather, and podcast summaries in this style."
+        
+        # Import TTS generator
+        from tts_generator import generate_audio
+        from config import Config
+        
+        # Create a minimal config object for the preview
+        # We need to bypass the validation for preview, so we'll create a simple config object
+        preview_config = type('PreviewConfig', (), {
+            'get': lambda self, key, default=None: {
+                'ELEVENLABS_API_KEY': elevenlabs_api_key,
+                'ELEVENLABS_VOICE_ID': voice_id
+            }.get(key, default),
+            'get_voice_speed': lambda self: 1.0
+        })()
+        
+        logger.info(f"Generating voice preview for voice ID: {voice_id}")
+        
+        # Generate preview audio
+        audio_bytes = generate_audio(preview_text, preview_config)
+        
+        # Save preview to temporary file
+        import tempfile
+        import base64
+        
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+            temp_file.write(audio_bytes)
+            temp_filename = temp_file.name
+        
+        # Convert to base64 for easy transmission
+        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        
+        # Clean up temp file
+        os.unlink(temp_filename)
+        
+        return jsonify({
+            'success': True,
+            'audio_data': f"data:audio/mp3;base64,{audio_base64}",
+            'voice_id': voice_id
+        })
+        
+    except Exception as e:
+        logger.error(f"Error during voice preview: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to generate voice preview',
+            'message': str(e)
         })
 
 
@@ -226,13 +321,17 @@ def results():
 def serve_audio(filename):
     """Serve audio files from the static/audio directory."""
     try:
-        # Use absolute path based on Flask app's root directory
-        audio_path = os.path.join(current_app.root_path, '..', 'static', 'audio', filename)
+        # Use correct path - static/audio is relative to the app root directory
+        audio_path = os.path.join(current_app.root_path, 'static', 'audio', filename)
         audio_path = os.path.abspath(audio_path)  # Resolve the absolute path
         
+        logger.info(f"Attempting to serve audio file: {audio_path}")
+        
         if os.path.exists(audio_path):
+            logger.info(f"✓ Audio file found, serving: {filename}")
             return send_file(audio_path, mimetype='audio/mpeg')
         else:
+            logger.error(f"✗ Audio file not found at: {audio_path}")
             flash('Audio file not found.', 'error')
             return redirect(url_for('web.index'))
     except Exception as e:
@@ -245,16 +344,20 @@ def serve_audio(filename):
 def download_audio(filename):
     """Download audio files."""
     try:
-        # Use absolute path based on Flask app's root directory
-        audio_path = os.path.join(current_app.root_path, '..', 'static', 'audio', filename)
+        # Use correct path - static/audio is relative to the app root directory
+        audio_path = os.path.join(current_app.root_path, 'static', 'audio', filename)
         audio_path = os.path.abspath(audio_path)  # Resolve the absolute path
         
+        logger.info(f"Attempting to download audio file: {audio_path}")
+        
         if os.path.exists(audio_path):
+            logger.info(f"✓ Audio file found, downloading: {filename}")
             return send_file(audio_path, 
                            mimetype='audio/mpeg',
                            as_attachment=True,
                            download_name=filename)
         else:
+            logger.error(f"✗ Audio file not found at: {audio_path}")
             flash('Audio file not found.', 'error')
             return redirect(url_for('web.index'))
     except Exception as e:

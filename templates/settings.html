@@ -71,7 +71,7 @@
                         {% if form.location_country.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.location_country.errors[0] }}</p>
                         {% endif %}
-                        <p class="field-description">2-letter country code (e.g., US, CA, GB)</p>
+                        <p class="field-description">Select your country for regional news and weather</p>
                     </div>
 
                     <div class="field-group">
@@ -124,31 +124,52 @@
                         <p class="field-description">Maximum articles per news topic</p>
                     </div>
 
+                    <!-- Enhanced: News Topics as checkboxes -->
                     <div class="field-group" style="grid-column: 1 / -1;">
-                        {{ form.news_topics.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.news_topics(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        {{ form.news_topics.label(class="block text-sm font-medium text-gray-700 mb-3") }}
                         {% if form.news_topics.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.news_topics.errors[0] }}</p>
                         {% endif %}
-                        <p class="field-description">Comma-separated topics (e.g., technology, business, science)</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {% for value, label in form.news_topics.choices %}
+                                <label class="flex items-center space-x-2 p-2 rounded border cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="checkbox" name="news_topics" value="{{ value }}" 
+                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                           {% if value in form.news_topics.data %}checked{% endif %}>
+                                    <span class="text-sm text-gray-700">{{ label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p class="field-description mt-2">Select the news topics you're interested in</p>
                     </div>
 
+                    <!-- Enhanced: Podcast Categories as checkboxes -->
                     <div class="field-group" style="grid-column: 1 / -1;">
-                        {{ form.podcast_categories.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.podcast_categories(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        {{ form.podcast_categories.label(class="block text-sm font-medium text-gray-700 mb-3") }}
                         {% if form.podcast_categories.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.podcast_categories.errors[0] }}</p>
                         {% endif %}
-                        <p class="field-description">Comma-separated categories (e.g., Technology, Business, Science)</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {% for value, label in form.podcast_categories.choices %}
+                                <label class="flex items-center space-x-2 p-2 rounded border cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="checkbox" name="podcast_categories" value="{{ value }}" 
+                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                           {% if value in form.podcast_categories.data %}checked{% endif %}>
+                                    <span class="text-sm text-gray-700">{{ label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p class="field-description mt-2">Select the podcast categories you enjoy</p>
                     </div>
 
+                    <!-- Enhanced: Keywords to Avoid with better description -->
                     <div class="field-group" style="grid-column: 1 / -1;">
                         {{ form.keywords_exclude.label(class="block text-sm font-medium text-gray-700 mb-2") }}
                         {{ form.keywords_exclude(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
                         {% if form.keywords_exclude.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.keywords_exclude.errors[0] }}</p>
                         {% endif %}
-                        <p class="field-description">Keywords to avoid in articles (comma-separated, e.g., sports, celebrity)</p>
+                        <p class="field-description">Topics to avoid in your briefing. Separate keywords with commas (e.g., sports, celebrity, politics)</p>
                     </div>
                 </div>
             </div>
@@ -167,11 +188,28 @@
                 <div class="settings-grid">
                     <div class="field-group">
                         {{ form.elevenlabs_voice_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.elevenlabs_voice_id(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        <div class="flex items-center space-x-2">
+                            {{ form.elevenlabs_voice_id(class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", id="voice-select") }}
+                            <button type="button" id="preview-voice-btn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed" title="Preview selected voice">
+                                <span class="preview-text">🔊 Preview</span>
+                                <span class="loading-text hidden">⏳ Loading...</span>
+                            </button>
+                        </div>
                         {% if form.elevenlabs_voice_id.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_voice_id.errors[0] }}</p>
                         {% endif %}
-                        <p class="field-description">Choose the voice for your briefing</p>
+                        <p class="field-description">Choose the voice for your briefing - Click preview to hear a sample</p>
+                        
+                        <!-- Audio element for preview playback -->
+                        <audio id="voice-preview-audio" class="hidden" controls preload="none">
+                            Your browser does not support the audio element.
+                        </audio>
+                        
+                        <!-- Preview status message -->
+                        <div id="preview-status" class="mt-2 text-sm hidden">
+                            <p class="text-green-600" id="preview-success"></p>
+                            <p class="text-red-600" id="preview-error"></p>
+                        </div>
                     </div>
 
                     <div class="field-group">

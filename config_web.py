@@ -10,6 +10,7 @@ import logging
 from typing import Dict, Any, Optional
 from config import Config, ConfigurationError
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,6 +59,19 @@ class WebConfig:
             logger.error(error_msg)
             raise ConfigurationError(error_msg)
         
+        # Convert checkbox lists to comma-separated strings
+        news_topics = form_data.get('news_topics', ['technology', 'business', 'science'])
+        if isinstance(news_topics, list):
+            news_topics_str = ','.join(news_topics)
+        else:
+            news_topics_str = news_topics or 'technology,business,science'
+            
+        podcast_categories = form_data.get('podcast_categories', ['Technology', 'Business', 'Science'])
+        if isinstance(podcast_categories, list):
+            podcast_categories_str = ','.join(podcast_categories)
+        else:
+            podcast_categories_str = podcast_categories or 'Technology,Business,Science'
+        
         # Create configuration dictionary in the format expected by Config
         config_dict = {
             # Required API keys
@@ -72,9 +86,9 @@ class WebConfig:
             'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
             'LOCATION_CITY': form_data.get('location_city', 'Denver'),
             'LOCATION_COUNTRY': form_data.get('location_country', 'US'),
-            'NEWS_TOPICS': form_data.get('news_topics', 'technology,business,science'),
+            'NEWS_TOPICS': news_topics_str,
             'MAX_ARTICLES_PER_TOPIC': str(form_data.get('max_articles_per_topic', 3)),
-            'PODCAST_CATEGORIES': form_data.get('podcast_categories', 'Technology,Business,Science'),
+            'PODCAST_CATEGORIES': podcast_categories_str,
             'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
             'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 8)),
             'LISTENER_NAME': form_data.get('listener_name', 'Seamus'),
@@ -102,9 +116,9 @@ class WebConfig:
             'aws_region': 'us-east-1',
             'location_city': 'Denver',
             'location_country': 'US',
-            'news_topics': 'technology,business,science',
+            'news_topics': ['technology', 'business', 'science'],  # Changed to list for checkboxes
             'max_articles_per_topic': 3,
-            'podcast_categories': 'Technology,Business,Science',
+            'podcast_categories': ['Technology', 'Business', 'Science'],  # Changed to list for checkboxes
             'elevenlabs_voice_id': 'default',
             'briefing_duration_minutes': 8,
             'listener_name': 'Seamus',

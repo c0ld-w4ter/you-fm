@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initTooltips();
     initLocalStorage();
     initSettingsSections(); // New for Iteration 4
+    initVoicePreview(); // New voice preview functionality
 });
 
 /**
@@ -638,3 +639,139 @@ const FormUtils = {
 
 // Make FormUtils available globally for potential use in templates
 window.FormUtils = FormUtils; 
+
+/**
+ * Initialize voice preview functionality
+ */
+function initVoicePreview() {
+    const previewBtn = document.getElementById('preview-voice-btn');
+    const voiceSelect = document.getElementById('voice-select');
+    const audioElement = document.getElementById('voice-preview-audio');
+    const statusDiv = document.getElementById('preview-status');
+    const successMsg = document.getElementById('preview-success');
+    const errorMsg = document.getElementById('preview-error');
+    
+    if (!previewBtn || !voiceSelect) {
+        console.log('Voice preview elements not found on this page');
+        return;
+    }
+    
+    console.log('Voice preview functionality initialized');
+    
+    previewBtn.addEventListener('click', async function() {
+        const selectedVoiceId = voiceSelect.value;
+        
+        if (!selectedVoiceId) {
+            showPreviewError('Please select a voice first');
+            return;
+        }
+        
+        // Show loading state
+        setPreviewLoading(true);
+        hidePreviewMessages();
+        
+        try {
+            console.log('Requesting voice preview for:', selectedVoiceId);
+            
+            const response = await fetch('/preview-voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    voice_id: selectedVoiceId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                showPreviewSuccess('Preview generated successfully! Click play to listen.');
+                
+                // Set audio source and show player
+                audioElement.src = result.audio_data;
+                audioElement.classList.remove('hidden');
+                
+                // Auto-play the preview
+                try {
+                    await audioElement.play();
+                } catch (autoplayError) {
+                    console.log('Autoplay prevented by browser, user needs to click play');
+                    showPreviewSuccess('Preview ready! Click play to listen.');
+                }
+                
+                console.log('Voice preview generated successfully');
+            } else {
+                showPreviewError(result.error || 'Failed to generate voice preview');
+                console.error('Voice preview failed:', result);
+            }
+        } catch (error) {
+            console.error('Voice preview error:', error);
+            showPreviewError('Network error: Unable to generate preview');
+        } finally {
+            setPreviewLoading(false);
+        }
+    });
+    
+    // Also update preview when voice selection changes
+    voiceSelect.addEventListener('change', function() {
+        // Hide audio player and reset messages when voice changes
+        if (audioElement) {
+            audioElement.classList.add('hidden');
+            audioElement.src = '';
+        }
+        hidePreviewMessages();
+    });
+    
+    /**
+     * Set loading state for preview button
+     */
+    function setPreviewLoading(isLoading) {
+        const previewText = previewBtn.querySelector('.preview-text');
+        const loadingText = previewBtn.querySelector('.loading-text');
+        
+        if (isLoading) {
+            previewBtn.disabled = true;
+            previewText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+        } else {
+            previewBtn.disabled = false;
+            previewText.classList.remove('hidden');
+            loadingText.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Show preview success message
+     */
+    function showPreviewSuccess(message) {
+        if (successMsg && statusDiv) {
+            successMsg.textContent = message;
+            statusDiv.classList.remove('hidden');
+            errorMsg.textContent = '';
+        }
+    }
+    
+    /**
+     * Show preview error message
+     */
+    function showPreviewError(message) {
+        if (errorMsg && statusDiv) {
+            errorMsg.textContent = message;
+            statusDiv.classList.remove('hidden');
+            successMsg.textContent = '';
+        }
+    }
+    
+    /**
+     * Hide all preview messages
+     */
+    function hidePreviewMessages() {
+        if (statusDiv) {
+            statusDiv.classList.add('hidden');
+            if (successMsg) successMsg.textContent = '';
+            if (errorMsg) errorMsg.textContent = '';
+        }
+    }
+} 

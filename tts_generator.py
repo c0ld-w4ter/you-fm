@@ -76,7 +76,7 @@ def generate_audio(script_text: str, config=None) -> bytes:
             # Try with voice settings (newer API)
             audio = client.text_to_speech.convert(
                 text=script_text,
-                voice_id=voice_id if voice_id != 'default' else "JBFqnCBsd6RMkjVDRZzb",  # Rachel voice as default
+                voice_id=voice_id if voice_id != 'default' else "21m00Tcm4TlvDq8ikWAM",  # Rachel voice as default
                 model_id="eleven_multilingual_v2",  # High quality multilingual model
                 output_format="mp3_44100_128",  # Standard MP3 quality
                 voice_settings=voice_settings
@@ -86,7 +86,7 @@ def generate_audio(script_text: str, config=None) -> bytes:
             logger.info("Falling back to basic voice generation (voice_settings not supported)")
             audio = client.text_to_speech.convert(
                 text=script_text,
-                voice_id=voice_id if voice_id != 'default' else "JBFqnCBsd6RMkjVDRZzb",
+                voice_id=voice_id if voice_id != 'default' else "21m00Tcm4TlvDq8ikWAM",  # Rachel voice as default
                 model_id="eleven_multilingual_v2",
                 output_format="mp3_44100_128",
             )

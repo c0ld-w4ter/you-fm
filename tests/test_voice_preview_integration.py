@@ -1,0 +1,116 @@
+"""
+Integration test for voice preview endpoint.
+
+Tests the actual Flask route with mocked TTS generation.
+"""
+
+import pytest
+import json
+from unittest.mock import patch
+
+
+@patch('tts_generator.generate_audio')
+def test_voice_preview_endpoint_integration(mock_generate_audio, client):
+    """Test voice preview endpoint with Flask test client."""
+    # Mock the audio generation
+    mock_generate_audio.return_value = b'fake_audio_data'
+    
+    # Set up session with API keys (simulating user has completed step 1)
+    with client.session_transaction() as sess:
+        sess['api_keys'] = {
+            'elevenlabs_api_key': 'test_api_key_12345'
+        }
+    
+    # Test voice preview request
+    response = client.post('/preview-voice', 
+                          json={'voice_id': 'EXAVITQu4vr4xnSDxMaL'},  # Bella
+                          content_type='application/json')
+    
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    
+    # Verify successful response
+    assert data['success'] is True
+    assert 'audio_data' in data
+    assert data['voice_id'] == 'EXAVITQu4vr4xnSDxMaL'
+    assert data['audio_data'].startswith('data:audio/mp3;base64,')
+    
+    # Verify generate_audio was called with correct config
+    mock_generate_audio.assert_called_once()
+    call_args = mock_generate_audio.call_args
+    
+    # Check the text used for preview
+    preview_text = call_args[0][0]
+    assert 'Hello!' in preview_text
+    assert 'AI Daily Briefing' in preview_text
+    
+    # Check the config object passed
+    config_obj = call_args[0][1]
+    assert config_obj.get('ELEVENLABS_API_KEY') == 'test_api_key_12345'
+    assert config_obj.get('ELEVENLABS_VOICE_ID') == 'EXAVITQu4vr4xnSDxMaL'
+
+
+def test_voice_preview_endpoint_no_session(client):
+    """Test voice preview fails without API keys in session."""
+    response = client.post('/preview-voice',
+                          json={'voice_id': 'EXAVITQu4vr4xnSDxMaL'},
+                          content_type='application/json')
+    
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    
+    assert data['success'] is False
+    assert 'API key not configured' in data['error']
+
+
+def test_voice_preview_endpoint_missing_voice_id(client):
+    """Test voice preview fails without voice_id."""
+    with client.session_transaction() as sess:
+        sess['api_keys'] = {'elevenlabs_api_key': 'test_key'}
+    
+    response = client.post('/preview-voice',
+                          json={},  # No voice_id
+                          content_type='application/json')
+    
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    
+    assert data['success'] is False
+    assert 'No voice ID provided' in data['error']
+
+
+@patch('tts_generator.generate_audio')
+def test_voice_preview_with_default_voice(mock_generate_audio, client):
+    """Test voice preview with default voice selection."""
+    mock_generate_audio.return_value = b'fake_audio_data'
+    
+    with client.session_transaction() as sess:
+        sess['api_keys'] = {'elevenlabs_api_key': 'test_api_key'}
+    
+    # Test with default voice
+    response = client.post('/preview-voice',
+                          json={'voice_id': 'default'},
+                          content_type='application/json')
+    
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    
+    assert data['success'] is True
+    assert data['voice_id'] == 'default'
+    
+    # Verify config was set up correctly
+    mock_generate_audio.assert_called_once()
+    config_obj = mock_generate_audio.call_args[0][1]
+    assert config_obj.get('ELEVENLABS_VOICE_ID') == 'default'
+
+
+@pytest.fixture
+def client():
+    """Create test client for voice preview tests."""
+    from app import app
+    app.config['TESTING'] = True
+    app.config['WTF_CSRF_ENABLED'] = False
+    app.config['SECRET_KEY'] = 'test-secret-key'
+    
+    with app.test_client() as client:
+        yield client 
