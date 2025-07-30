@@ -13,11 +13,11 @@ class APIKeysForm(FlaskForm):
     """Form for API keys configuration (Page 1)."""
     
     # Required API Keys
-    # newsapi_key = StringField(
-    #     'NewsAPI Key',
-    #     validators=[DataRequired(message='NewsAPI Key is required')],
-    #     render_kw={'placeholder': 'Enter your NewsAPI key'}
-    # )  # No longer required - using Gemini for news
+    newsapi_key = StringField(
+        'NewsAPI Key',
+        validators=[DataRequired(message='NewsAPI Key is required')],
+        render_kw={'placeholder': 'Enter your NewsAPI key'}
+    )
     
     openweather_api_key = StringField(
         'OpenWeatherMap API Key',
@@ -38,7 +38,7 @@ class APIKeysForm(FlaskForm):
     )
     
     gemini_api_key = StringField(
-        'Google Gemini API Key (now also used for news)',
+        'Google Gemini API Key',
         validators=[DataRequired(message='Google Gemini API Key is required')],
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
@@ -270,11 +270,11 @@ class BriefingConfigForm(FlaskForm):
     """
     
     # Required API Keys
-    # newsapi_key = StringField(
-    #     'NewsAPI Key',
-    #     validators=[DataRequired(message='NewsAPI Key is required')],
-    #     render_kw={'placeholder': 'Enter your NewsAPI key'}
-    # )  # No longer required - using Gemini for news
+    newsapi_key = StringField(
+        'NewsAPI Key',
+        validators=[DataRequired(message='NewsAPI Key is required')],
+        render_kw={'placeholder': 'Enter your NewsAPI key'}
+    )
     
     openweather_api_key = StringField(
         'OpenWeatherMap API Key',

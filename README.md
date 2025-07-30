@@ -74,7 +74,7 @@ python -m pytest tests/test_config.py -v
 ```
 
 ### Test Coverage
-Current test coverage includes **152 comprehensive tests** covering:
+Current test coverage includes **110+ comprehensive tests** covering:
 - ✅ Configuration loading and validation (21 tests)
 - ✅ Environment variable handling and error cases
 - ✅ Live data fetching from external APIs (10 tests)
@@ -102,9 +102,10 @@ The application can be configured through the **web interface** or via environme
 
 ### Required API Keys
 The following API keys are required and can be entered through the web form:
+- **NewsAPI Key**: For fetching news articles
 - **OpenWeatherMap API Key**: For weather data
 - **Taddy API Key & User ID**: For podcast episode data
-- **Google Gemini API Key**: For AI news curation via web search, summarization, and script generation
+- **Google Gemini API Key**: For AI summarization and script generation
 - **ElevenLabs API Key**: For text-to-speech conversion
 
 ### Optional Configuration (via Web Interface)
@@ -124,21 +125,22 @@ The following API keys are required and can be entered through the web form:
 ### Environment Variables (Alternative)
 For automated/CLI usage, you can still use environment variables:
 ```bash
-# NEWSAPI_KEY=your_newsapi_key_here  # No longer required - Gemini handles news via web search
+NEWSAPI_KEY=your_newsapi_key_here
 OPENWEATHER_API_KEY=your_openweather_key_here
 TADDY_API_KEY=your_taddy_api_key_here
 TADDY_USER_ID=your_taddy_user_id_here
-GEMINI_API_KEY=your_google_gemini_key_here  # Used for news curation, summarization, and script generation
+GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
 # Optional settings...
 ```
 
 ### Getting API Keys
-1. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
-2. **Taddy**: Get API key and User ID at [taddy.org](https://taddy.org/developers)
-3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
-4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
-5. **Amazon S3**: Create S3 bucket and configure permissions
+1. **NewsAPI**: Register at [newsapi.org](https://newsapi.org/)
+2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
+3. **Taddy**: Get API key and User ID at [taddy.org](https://taddy.org/developers)
+4. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
+5. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
+6. **Amazon S3**: Create S3 bucket and configure permissions
 
 ## 🏃 Running the Application
 
@@ -176,8 +178,8 @@ python app.py
   - **🎯 Organized UI**: Collapsible sections with logical field grouping
 
 ### Complete Pipeline Features:
-- ✅ **Live Data Aggregation**: Weather, News (via Gemini web search), and Podcast data fetching
-- ✅ **AI News Curation & Summarization**: Google Gemini 2.5 Pro with web search for intelligent news selection and summaries
+- ✅ **Live Data Aggregation**: Weather, News, and Podcast data fetching
+- ✅ **AI Summarization**: Google Gemini 2.5 Pro for article summaries
 - ✅ **AI Script Generation**: Natural, professional briefing scripts
 - ✅ **Text-to-Speech**: High-quality audio generation via ElevenLabs
 - ✅ **Multi-Page Interface**: Intuitive step-by-step configuration process

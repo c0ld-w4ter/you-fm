@@ -25,7 +25,7 @@ class TestAPIKeysForm:
         """Test form validation with valid API keys."""
         with app.app_context():
             form_data = {
-                # 'newsapi_key': 'test_news_key',  # No longer required
+                'newsapi_key': 'test_news_key',
                 'openweather_api_key': 'test_weather_key',
                 'taddy_api_key': 'test_taddy_key',
                 'taddy_user_id': 'test_user_123',
@@ -36,14 +36,14 @@ class TestAPIKeysForm:
             form = APIKeysForm(data=form_data)
             
             # Test that form fields are properly populated
-            # assert form.newsapi_key.data == 'test_news_key'  # No longer exists
+            assert form.newsapi_key.data == 'test_news_key'
             assert form.gemini_api_key.data == 'test_gemini_key'
     
     def test_missing_required_api_key(self, app):
         """Test form validation with missing required API keys."""
         with app.app_context():
             form_data = {
-                # 'newsapi_key': '',  # No longer required field
+                'newsapi_key': '',  # Missing required field
                 'openweather_api_key': 'test_weather_key',
                 'taddy_api_key': 'test_taddy_key',
                 'taddy_user_id': 'test_user_123',
@@ -54,9 +54,7 @@ class TestAPIKeysForm:
             form = APIKeysForm(data=form_data)
             
             # Test that validation catches missing required field
-            # assert not form.newsapi_key.data  # No longer exists
-            # Now test that a different field works properly
-            assert form.gemini_api_key.data == 'test_gemini_key'
+            assert not form.newsapi_key.data
             # In real form validation, this would fail validation
 
 
@@ -371,7 +369,7 @@ class TestGenerateScriptOnly:
     """Test the generate_script_only function from main.py."""
     
     @patch('data_fetchers.get_weather')
-    @patch('data_fetchers.get_news_from_gemini')
+    @patch('data_fetchers.get_news_articles') 
     @patch('data_fetchers.get_new_podcast_episodes')
     @patch('summarizer.create_briefing_script')
     def test_generate_script_only_success(self, mock_script, mock_podcasts, mock_news, mock_weather):
@@ -385,9 +383,9 @@ class TestGenerateScriptOnly:
         mock_podcasts.return_value = [Mock(episode_title='Test Episode')]
         mock_script.return_value = 'This is a test script for preview functionality.'
         
-        # Create test config - no longer need NEWSAPI_KEY
+        # Create test config
         config = Config({
-            # 'NEWSAPI_KEY': 'test_key',  # No longer required
+            'NEWSAPI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'TADDY_API_KEY': 'test_key',
             'TADDY_USER_ID': 'test_id',
@@ -507,7 +505,7 @@ def client(app):
 def valid_api_keys_data():
     """Valid API keys form data for testing."""
     return {
-        # 'newsapi_key': 'test_newsapi_key',  # No longer required
+        'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
         'taddy_api_key': 'test_taddy_key',
         'taddy_user_id': 'test_taddy_user',
@@ -541,7 +539,7 @@ def valid_settings_data():
 def valid_form_data():
     """Valid form data for testing (legacy fixture for compatibility)."""
     return {
-        # 'newsapi_key': 'test_newsapi_key',  # No longer required - using Gemini for news
+        'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
         'taddy_api_key': 'test_taddy_key',
         'taddy_user_id': 'test_taddy_user',
@@ -576,7 +574,7 @@ class TestMultiPageFlow:
         assert b'Save API Keys &amp; Continue' in response.data
         
         # Check that required fields are present
-        # assert b'name="newsapi_key"' in response.data  # No longer required
+        assert b'name="newsapi_key"' in response.data
         assert b'name="openweather_api_key"' in response.data
         assert b'name="taddy_api_key"' in response.data
         assert b'name="gemini_api_key"' in response.data
@@ -586,7 +584,7 @@ class TestMultiPageFlow:
         """Test API keys form validation with empty data."""
         response = client.post('/api-keys', data={})
         assert response.status_code == 200
-        # assert b'NewsAPI Key is required' in response.data  # No longer required
+        assert b'NewsAPI Key is required' in response.data
         assert b'OpenWeatherMap API Key is required' in response.data
         assert b'Please correct the errors below' in response.data
     
@@ -659,7 +657,7 @@ class TestFormValidation:
         with app.app_context():
             # Test valid form
             valid_data = {
-                # 'newsapi_key': 'test_key',  # No longer required
+                'newsapi_key': 'test_key',
                 'openweather_api_key': 'test_key',
                 'taddy_api_key': 'test_key',
                 'taddy_user_id': 'test_user',
@@ -671,10 +669,10 @@ class TestFormValidation:
             
             # Test missing required field
             invalid_data = valid_data.copy()
-            del invalid_data['gemini_api_key']  # Remove a field that's actually required
+            del invalid_data['newsapi_key']
             form = APIKeysForm(data=invalid_data)
             assert form.validate() is False
-            assert 'gemini_api_key' in form.errors
+            assert 'newsapi_key' in form.errors
     
     def test_settings_form_validation(self, app):
         """Test SettingsForm validation."""
@@ -831,7 +829,7 @@ class TestRouteHandlers:
         # Test with mock configuration (would need mock data fetchers for full test)
         with client.session_transaction() as sess:
             sess['api_keys'] = {
-                # 'newsapi_key': 'test_key',  # No longer required - using Gemini for news
+                'newsapi_key': 'test_key',
                 'openweather_api_key': 'test_key',
                 'taddy_api_key': 'test_key',
                 'taddy_user_id': 'test_user',
@@ -865,12 +863,8 @@ class TestConfigurationIntegration:
         """Test that web form data correctly maps to Config object."""
         config = WebConfig.create_config_from_form(valid_form_data)
         assert isinstance(config, Config)
-        # assert config.get('NEWSAPI_KEY') == 'test_newsapi_key'  # No longer required
-        assert config.get('OPENWEATHER_API_KEY') == 'test_openweather_key'
-        assert config.get('TADDY_API_KEY') == 'test_taddy_key'
-        assert config.get('TADDY_USER_ID') == 'test_taddy_user'  # Match fixture value
-        assert config.get('GEMINI_API_KEY') == 'test_gemini_key'
-        assert config.get('ELEVENLABS_API_KEY') == 'test_elevenlabs_key'
+        assert config.get('NEWSAPI_KEY') == 'test_newsapi_key'
+        assert config.get('LISTENER_NAME') == 'Test User'
     
     def test_default_values_populate_correctly(self):
         """Test that default values are populated correctly."""
@@ -887,7 +881,7 @@ class TestConfigurationIntegration:
         
         # Test invalid configuration
         invalid_data = valid_form_data.copy()
-        del invalid_data['gemini_api_key']  # Remove a key that actually exists and is required
+        del invalid_data['newsapi_key']
         
         with pytest.raises(ConfigurationError):
             WebConfig.create_config_from_form(invalid_data)

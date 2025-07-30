@@ -31,11 +31,11 @@ class Config:
     
     # Required environment variables for all milestones
     REQUIRED_VARS = [
-        # 'NEWSAPI_KEY',           # NewsAPI.org API key (replaced by Gemini web search)
+        'NEWSAPI_KEY',           # NewsAPI.org API key
         'OPENWEATHER_API_KEY',   # OpenWeatherMap API key
         'TADDY_API_KEY',         # Taddy Podcast API key
         'TADDY_USER_ID',         # Taddy User ID
-        'GEMINI_API_KEY',        # Google Gemini API key (now also used for news via web search)
+        'GEMINI_API_KEY',        # Google Gemini API key
         'ELEVENLABS_API_KEY',    # ElevenLabs API key
         # 'S3_BUCKET_NAME', # Target S3 bucket name (temporarily disabled for local testing)
     ]

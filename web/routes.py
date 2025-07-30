@@ -36,7 +36,7 @@ def api_keys():
         if form.validate_on_submit():
             # Store API keys in session
             session['api_keys'] = {
-                # 'newsapi_key': form.newsapi_key.data,  # No longer required
+                'newsapi_key': form.newsapi_key.data,
                 'openweather_api_key': form.openweather_api_key.data,
                 'taddy_api_key': form.taddy_api_key.data,
                 'taddy_user_id': form.taddy_user_id.data,
@@ -197,7 +197,7 @@ def data_report():
         config = WebConfig.create_config_from_form(session_data)
         
         # Import data fetchers
-        from data_fetchers import get_weather, get_news_from_gemini, get_new_podcast_episodes
+        from data_fetchers import get_weather, get_news_articles, get_new_podcast_episodes
         from datetime import datetime
         import time
         
@@ -244,8 +244,8 @@ def data_report():
         
         # Fetch News Articles
         try:
-            logger.info("Fetching news articles with Gemini web search for report...")
-            news_articles = get_news_from_gemini(config)
+            logger.info("Fetching news articles for report...")
+            news_articles = get_news_articles(config)
             news_count = len(news_articles)
             
             # Group articles by topic

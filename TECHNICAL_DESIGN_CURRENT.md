@@ -47,9 +47,9 @@ graph TB
     E --> E1[Web Form Configuration]
     E --> E2[Environment Variables]
     
-    F --> F1[OpenWeatherMap]
-    F --> F2[Taddy Podcast API]
-    F --> F3[Gemini Web Search]  
+    F --> F1[NewsAPI]
+    F --> F2[OpenWeatherMap]
+    F --> F3[Taddy Podcast API]
     
     G --> G1[Google Gemini API]
     
@@ -276,14 +276,9 @@ graph LR
 **Responsibility**: Raw data retrieval from external sources
 
 **APIs Integrated**:
+- **NewsAPI**: REST API for news articles
 - **OpenWeatherMap**: REST API for weather data  
 - **Taddy**: GraphQL API for podcast episodes
-- **Google Gemini Web Search**: AI-powered news curation via `get_news_from_gemini()` function
-
-**Key Features**:
-- **Intelligent News Curation**: Gemini 2.5 Pro uses web search to find and curate relevant news articles
-- **Simplified Architecture**: Eliminated NewsAPI dependency in favor of AI-driven news selection
-- **Real-time Information**: Gemini's web search provides up-to-date news content
 
 **Error Handling**:
 - Network timeout handling
@@ -337,9 +332,10 @@ graph LR
 
 | API | Auth Method | Rate Limits | Error Handling |
 |-----|-------------|-------------|----------------|
+| NewsAPI | API Key (Header) | 1000 requests/day | Fallback to cached data |
 | OpenWeatherMap | API Key (Query Param) | 60 calls/min | Weather warnings disabled |
 | Taddy | API Key + User ID (Headers) | Not specified | Skip podcast section |
-| Google Gemini | API Key (SDK) | 60 RPM | Fallback summaries, web search for news |
+| Google Gemini | API Key (SDK) | 60 RPM | Fallback summaries |
 | ElevenLabs | API Key (SDK) | 10,000 chars/month | Error message audio |
 
 ### GraphQL Implementation (Taddy API)
@@ -396,7 +392,7 @@ graph TD
 ### Fallback Mechanisms
 
 - **Weather**: Skip weather section if API fails
-- **News**: Generate briefing without news if Gemini web search fails
+- **News**: Use article content if summarization fails
 - **Podcasts**: Continue without podcast updates
 - **TTS**: Generate error message audio
 - **Upload**: Save locally (cloud upload not implemented in Milestone 4)
@@ -405,7 +401,7 @@ graph TD
 
 ## Testing Architecture
 
-### Test Coverage: 152 Comprehensive Tests
+### Test Coverage: 110+ Comprehensive Tests
 
 ```mermaid
 graph LR
