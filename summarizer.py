@@ -303,8 +303,8 @@ USER PROFILE:
 {user_profile}
 
 PERSONALIZATION REQUIREMENTS:
-- You MUST actively incorporate the user's interests, followed entities, hobbies, and passion topics throughout the briefing
-- When selecting news stories, give STRONG preference to topics that match the user profile
+- Actively incorporate the user's interests, followed entities, hobbies, and passion topics throughout the briefing
+- When selecting news stories, give strong preference to topics that match the user profile
 - Make explicit connections between news stories and the user's stated interests
 - Reference the user's hobbies or passion topics when relevant to make the briefing feel personal
 
@@ -327,18 +327,19 @@ SCRIPT GENERATION INSTRUCTIONS:
    - Stories directly related to the user's specific interests
    - News about their followed entities
    - Topics connected to their hobbies or passion topics
-4. For a {briefing_duration}-minute briefing, include approximately {3 if briefing_duration <= 3 else 4 if briefing_duration <= 5 else 5 if briefing_duration <= 7 else 6} news stories
+4. For a {briefing_duration}-minute briefing, include approximately {3 if briefing_duration <= 3 else 4 if briefing_duration <= 5 else 5 if briefing_duration <= 7 else 6} news stories, prioritizing quality and relevance over quantity
 5. Adjust the detail level of each story based on the target duration and DEPTH preference
 6. EXPLICITLY mention when a story relates to the user's interests (e.g., "Since you follow Tesla..." or "Given your interest in quantum computing...")
 7. Present stories in order of relevance to the user, then by general importance
-8. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
-9. Use natural transitions between sections that match the TONE
-10. Follow the TONE guidelines throughout the entire script
-11. Make it sound natural when spoken aloud - avoid written language patterns
-12. Handle missing data gracefully without being repetitive
-13. ENSURE the script is {briefing_duration * 150} to {briefing_duration * 160} words long to fill the requested {briefing_duration} minutes
-14. Convert all numbers, symbols, and units to word equivalents (e.g. "35.78°C" as "thirty five point seven eight degrees Celsius", "50%" as "fifty percent")
-{"15. If the user mentioned details about their daily routine, acknowledge or reference it appropriately" if daily_routine_detail else ""}
+8. Include podcast recommendations naturally in the specified TONE
+9. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
+10. Use natural transitions between sections that match the TONE
+11. Follow the TONE guidelines throughout the entire script
+12. Make it sound natural when spoken aloud - avoid written language patterns
+13. Handle missing data gracefully without being repetitive
+14. ENSURE the script is {briefing_duration * 150} to {briefing_duration * 160} words long to fill the requested {briefing_duration} minutes
+15. Convert all numbers, symbols, and units to word equivalents (e.g. "35.78°C" as "thirty five point seven eight degrees Celsius", "50%" as "fifty percent")
+{"16. If the user mentioned details about their daily routine, acknowledge or reference it appropriately" if daily_routine_detail else ""}
 
 EDITORIAL GUIDELINES:
 - Prioritize stories with the most significant impact or widespread interest

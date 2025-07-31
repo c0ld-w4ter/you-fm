@@ -110,6 +110,20 @@ def settings():
                 'content_depth': form.content_depth.data,
                 'keywords_exclude': form.keywords_exclude.data,
                 'voice_speed': form.voice_speed.data,
+                
+                # Personalization settings - News & Information Preferences
+                'specific_interests': form.specific_interests.data,
+                'briefing_goal': form.briefing_goal.data,
+                'followed_entities': form.followed_entities.data,
+                
+                # Personalization settings - Hobbies & Personal Interests
+                'hobbies': form.hobbies.data,
+                'favorite_teams_artists': form.favorite_teams_artists.data,
+                'passion_topics': form.passion_topics.data,
+                
+                # Personalization settings - Personal Quirks & Style
+                'greeting_preference': form.greeting_preference.data,
+                'daily_routine_detail': form.daily_routine_detail.data,
             }
             flash('Settings saved successfully!', 'success')
             return redirect(url_for('web.generate'))
@@ -440,8 +454,8 @@ def create_briefing():
         logger.debug(f"Session api_keys keys: {list(session.get('api_keys', {}).keys())}")
         logger.debug(f"Session settings keys: {list(session.get('settings', {}).keys())}")
         
-        # Combine API keys and settings
-        form_data = {**session['api_keys'], **session['settings']}
+        # Combine API keys and settings (use .get() for consistency with preview route)
+        form_data = {**session.get('api_keys', {}), **session.get('settings', {})}
         logger.debug(f"Combined form data keys: {list(form_data.keys())}")
         
         # Create configuration from form data
@@ -451,8 +465,38 @@ def create_briefing():
         logger.info("Starting briefing generation from web interface...")
         result = generate_daily_briefing(config)
         
-        # Store result in session for results page
-        session['briefing_result'] = result
+        # Store lightweight result in session to avoid cookie size limits
+        # (The full script content and large data objects exceed 4KB cookie limit)
+        lightweight_result = {
+            'success': result.get('success', False),
+            'status': result.get('status', ''),
+            'message': result.get('message', ''),
+            'error': result.get('error', ''),  # Include error field for failed generations
+            'performance_improvement': result.get('performance_improvement', ''),
+            'data': {}
+        }
+        
+        if result.get('success') and 'data' in result:
+            data = result['data']
+            lightweight_result['data'] = {
+                'audio_filename': data.get('audio_filename', ''),
+                'articles_count': data.get('articles_count', 0),
+                'total_processing_time_seconds': data.get('total_processing_time_seconds', 0),
+                'script_length_chars': data.get('script_length_chars', 0),
+                'audio_size_bytes': data.get('audio_size_bytes', 0),
+                # Truncate script to only what's needed for preview (1000 chars)
+                'script_content': data.get('script_content', '')[:1000],
+                # Store only essential weather fields (WeatherData is a dataclass, not dict)
+                'weather': {
+                    'temperature': data['weather'].temperature,
+                    'description': data['weather'].description,
+                    'humidity': data['weather'].humidity,
+                    'wind_speed': data['weather'].wind_speed
+                } if data.get('weather') else None
+            }
+        
+        session['briefing_result'] = lightweight_result
+        logger.info(f"Stored lightweight briefing result in session (~{len(str(lightweight_result))} chars)")
         
         return jsonify({'success': True, 'redirect': url_for('web.results')})
         
