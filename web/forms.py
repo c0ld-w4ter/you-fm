@@ -201,14 +201,105 @@ class SettingsForm(FlaskForm):
     
     # Advanced Audio Settings (New for Milestone 5)
     voice_speed = SelectField(
-        'Speech Speed',
+        'Voice Speed',
         choices=[
-            ('0.8', 'Slow'),
-            ('1.0', 'Normal'),
-            ('1.2', 'Fast')
+            ('0.8', 'Slow (0.8x)'),
+            ('1.0', 'Normal (1.0x)'),
+            ('1.2', 'Fast (1.2x)')
         ],
         default='1.0',
         validators=[Optional()]
+    )
+    
+    # Personalization fields - News & Information Preferences
+    specific_interests = StringField(
+        'Specific Interests',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'advancements in generative AI', 'Formula 1 results', 'Nintendo', 'quantum computing'",
+            'title': 'What are 1-3 specific sub-topics, companies, or technologies you are most interested in right now?'
+        }
+    )
+    
+    briefing_goal = SelectField(
+        'Briefing Goal',
+        choices=[
+            ('', 'Select your main goal...'),
+            ('work', 'Stay informed for work'),
+            ('discovery', 'Discover interesting tech news'),
+            ('essential', 'Get the day\'s essential world events quickly'),
+            ('personal', 'Keep up with personal interests'),
+            ('learning', 'Learn something new every day')
+        ],
+        default='',
+        validators=[Optional()]
+    )
+    
+    followed_entities = StringField(
+        'Followed Entities',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'tech industry', 'Elon Musk', 'OpenAI', 'renewable energy sector'",
+            'title': 'Are there any specific industries or public figures you actively follow?'
+        }
+    )
+    
+    # Personalization fields - Hobbies & Personal Interests
+    hobbies = StringField(
+        'Hobbies & Free Time',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'Hiking', 'Playing video games', 'Cooking', 'Reading fiction'",
+            'title': 'How do you like to spend your free time? What are your main hobbies?'
+        }
+    )
+    
+    favorite_teams_artists = StringField(
+        'Favorite Teams/Artists',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'Lakers', 'Taylor Swift', 'Marvel movies', 'Real Madrid'",
+            'title': 'Are you a fan of any particular sports teams, artists, or movie franchises?'
+        }
+    )
+    
+    passion_topics = StringField(
+        'Passion Topics',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'History', 'Space exploration', 'Personal finance', 'Cooking techniques'",
+            'title': "What's a topic you could talk about for hours?"
+        }
+    )
+    
+    # Personalization fields - Personal Quirks & Style
+    greeting_preference = StringField(
+        'Greeting Preference',
+        validators=[Optional(), Length(max=200)],
+        render_kw={
+            'placeholder': "e.g., 'Good morning, [Name]!', 'Alright, let's get to it.', 'Here is your essential update.'",
+            'title': 'How would you like the anchor to greet you in the morning?'
+        }
+    )
+    
+    humor_style = SelectField(
+        'Humor Style',
+        choices=[
+            ('facts_only', 'Just the facts, please'),
+            ('dry_wit', 'A little bit of dry wit is fine'),
+            ('puns_jokes', 'Bring on the puns and dad jokes!')
+        ],
+        default='facts_only',
+        validators=[Optional()]
+    )
+    
+    daily_routine_detail = StringField(
+        'Daily Routine Detail',
+        validators=[Optional(), Length(max=500)],
+        render_kw={
+            'placeholder': "e.g., 'I listen while walking my dog, Sparky', 'I'm not a morning person', 'I'm training for a marathon'",
+            'title': 'Is there a unique detail about your daily routine the briefing should know?'
+        }
     )
     
     aws_region = HiddenField(default='us-east-1')

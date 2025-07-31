@@ -61,6 +61,21 @@ class Config:
         'CONTENT_DEPTH': 'balanced',       # headlines, balanced, detailed
         'KEYWORDS_EXCLUDE': '',            # Comma-separated keywords to filter out
         'VOICE_SPEED': '1.0',              # 0.8 (slow), 1.0 (normal), 1.2 (fast)
+        
+        # Personalization settings - News & Information Preferences
+        'SPECIFIC_INTERESTS': '',          # Specific sub-topics, companies, or technologies
+        'BRIEFING_GOAL': '',               # Main goal for listening to the briefing
+        'FOLLOWED_ENTITIES': '',           # Specific industries or public figures to follow
+        
+        # Personalization settings - Hobbies & Personal Interests
+        'HOBBIES': '',                     # Main hobbies and free time activities
+        'FAVORITE_TEAMS_ARTISTS': '',      # Favorite sports teams, artists, or franchises
+        'PASSION_TOPICS': '',              # Topics the user could talk about for hours
+        
+        # Personalization settings - Personal Quirks & Style
+        'GREETING_PREFERENCE': '',         # How the anchor should greet the user
+        'HUMOR_STYLE': 'facts_only',      # facts_only, dry_wit, puns_jokes
+        'DAILY_ROUTINE_DETAIL': '',        # Unique detail about daily routine
     }
     
     def __init__(self, config_dict: Optional[Dict[str, str]] = None):
@@ -216,6 +231,43 @@ class Config:
         """Get voice speed as float."""
         return float(self.get('VOICE_SPEED'))
     
+    # Personalization getters
+    def get_specific_interests(self) -> str:
+        """Get specific interests/sub-topics."""
+        return self.get('SPECIFIC_INTERESTS')
+    
+    def get_briefing_goal(self) -> str:
+        """Get main goal for listening to the briefing."""
+        return self.get('BRIEFING_GOAL')
+    
+    def get_followed_entities(self) -> str:
+        """Get followed industries or public figures."""
+        return self.get('FOLLOWED_ENTITIES')
+    
+    def get_hobbies(self) -> str:
+        """Get hobbies and free time activities."""
+        return self.get('HOBBIES')
+    
+    def get_favorite_teams_artists(self) -> str:
+        """Get favorite sports teams, artists, or franchises."""
+        return self.get('FAVORITE_TEAMS_ARTISTS')
+    
+    def get_passion_topics(self) -> str:
+        """Get topics the user could talk about for hours."""
+        return self.get('PASSION_TOPICS')
+    
+    def get_greeting_preference(self) -> str:
+        """Get how the anchor should greet the user."""
+        return self.get('GREETING_PREFERENCE')
+    
+    def get_humor_style(self) -> str:
+        """Get user's humor style preference."""
+        return self.get('HUMOR_STYLE')
+    
+    def get_daily_routine_detail(self) -> str:
+        """Get unique detail about user's daily routine."""
+        return self.get('DAILY_ROUTINE_DETAIL')
+    
     def is_aws_environment(self) -> bool:
         """
         Check if running in AWS environment.
@@ -278,6 +330,11 @@ class Config:
                 raise ConfigurationError("VOICE_SPEED must be one of: 0.8, 1.0, 1.2")
         except ValueError:
             raise ConfigurationError("VOICE_SPEED must be a valid float")
+        
+        # Validate humor style if set
+        humor_style = self.get_humor_style()
+        if humor_style and humor_style not in ['facts_only', 'dry_wit', 'puns_jokes']:
+            raise ConfigurationError("HUMOR_STYLE must be one of: facts_only, dry_wit, puns_jokes")
 
 
 # Global configuration instance

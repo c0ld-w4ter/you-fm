@@ -375,4 +375,83 @@ class TestAdvancedConfigurationGetters:
         assert Config.DEFAULT_CONFIG['BRIEFING_TONE'] == 'professional'
         assert Config.DEFAULT_CONFIG['CONTENT_DEPTH'] == 'balanced'
         assert Config.DEFAULT_CONFIG['KEYWORDS_EXCLUDE'] == ''
-        assert Config.DEFAULT_CONFIG['VOICE_SPEED'] == '1.0' 
+        assert Config.DEFAULT_CONFIG['VOICE_SPEED'] == '1.0'
+    
+    def test_personalization_getters(self):
+        """Test all personalization getter methods."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'SPECIFIC_INTERESTS': 'AI, quantum computing',
+            'BRIEFING_GOAL': 'work',
+            'FOLLOWED_ENTITIES': 'OpenAI, Elon Musk',
+            'HOBBIES': 'hiking, gaming',
+            'FAVORITE_TEAMS_ARTISTS': 'Lakers, Taylor Swift',
+            'PASSION_TOPICS': 'space exploration',
+            'GREETING_PREFERENCE': 'Good morning, friend!',
+            'HUMOR_STYLE': 'dry_wit',
+            'DAILY_ROUTINE_DETAIL': 'I walk my dog every morning'
+        }
+        
+        config = Config(config_dict)
+        
+        # Test News & Information Preferences
+        assert config.get_specific_interests() == 'AI, quantum computing'
+        assert config.get_briefing_goal() == 'work'
+        assert config.get_followed_entities() == 'OpenAI, Elon Musk'
+        
+        # Test Hobbies & Personal Interests
+        assert config.get_hobbies() == 'hiking, gaming'
+        assert config.get_favorite_teams_artists() == 'Lakers, Taylor Swift'
+        assert config.get_passion_topics() == 'space exploration'
+        
+        # Test Personal Quirks & Style
+        assert config.get_greeting_preference() == 'Good morning, friend!'
+        assert config.get_humor_style() == 'dry_wit'
+        assert config.get_daily_routine_detail() == 'I walk my dog every morning'
+    
+    def test_personalization_defaults(self):
+        """Test personalization fields have proper defaults."""
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key'
+        }
+        
+        config = Config(config_dict)
+        
+        # All should return empty strings except humor_style
+        assert config.get_specific_interests() == ''
+        assert config.get_briefing_goal() == ''
+        assert config.get_followed_entities() == ''
+        assert config.get_hobbies() == ''
+        assert config.get_favorite_teams_artists() == ''
+        assert config.get_passion_topics() == ''
+        assert config.get_greeting_preference() == ''
+        assert config.get_humor_style() == 'facts_only'
+        assert config.get_daily_routine_detail() == ''
+    
+    def test_humor_style_validation(self):
+        """Test humor style validation in validate_config."""
+        # Test valid humor style
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'HUMOR_STYLE': 'puns_jokes'
+        }
+        
+        config = Config(config_dict)
+        config.validate_config()  # Should not raise
+        
+        # Test invalid humor style
+        config_dict['HUMOR_STYLE'] = 'invalid_style'
+        config = Config(config_dict)
+        
+        with pytest.raises(ConfigurationError) as exc_info:
+            config.validate_config()
+        assert "HUMOR_STYLE must be one of: facts_only, dry_wit, puns_jokes" in str(exc_info.value) 

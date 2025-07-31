@@ -291,6 +291,73 @@ class TestStyleAwareBriefingScript:
         # Verify filtering was called with correct parameters
         mock_filter.assert_called_once_with(articles, ['sports', 'politics'])
     
+    @patch('summarizer.filter_articles_by_keywords')
+    @patch('google.generativeai.configure')
+    @patch('google.generativeai.GenerativeModel')
+    def test_create_briefing_script_with_personalization(self, mock_model_class, mock_configure, mock_filter):
+        """Test that briefing script creation uses personalization data."""
+        # Setup mocks
+        mock_filter.return_value = create_test_articles()
+        mock_model = MagicMock()
+        mock_response = MagicMock()
+        mock_response.text = "Personalized briefing script"
+        mock_model.generate_content.return_value = mock_response
+        mock_model_class.return_value = mock_model
+        
+        articles = create_test_articles()
+        weather_data = WeatherData(
+            city="Denver",
+            country="US",
+            temperature=20.5,
+            description="Clear sky",
+            humidity=45,
+            wind_speed=3.5
+        )
+        
+        config_dict = {
+            'NEWSAPI_KEY': 'test_key',
+            'OPENWEATHER_API_KEY': 'test_key',
+            'GEMINI_API_KEY': 'test_key',
+            'ELEVENLABS_API_KEY': 'test_key',
+            'LISTENER_NAME': 'Alice',
+            'SPECIFIC_INTERESTS': 'quantum computing, renewable energy',
+            'BRIEFING_GOAL': 'work',
+            'FOLLOWED_ENTITIES': 'OpenAI, Tesla',
+            'HOBBIES': 'hiking, photography',
+            'FAVORITE_TEAMS_ARTISTS': 'Lakers, Beatles',
+            'PASSION_TOPICS': 'space exploration',
+            'GREETING_PREFERENCE': 'Rise and shine, Alice!',
+            'HUMOR_STYLE': 'dry_wit',
+            'DAILY_ROUTINE_DETAIL': 'I walk my dog Sparky every morning'
+        }
+        config = Config(config_dict)
+        
+        # Generate script
+        script = create_briefing_script(weather_data, articles, config)
+        
+        # Get the prompt that was sent to AI
+        call_args = mock_model.generate_content.call_args[0]
+        prompt = call_args[0]
+        
+        # Verify user profile is in the prompt
+        assert 'USER PROFILE:' in prompt
+        assert 'Name: Alice' in prompt
+        assert 'Specific Interests: quantum computing, renewable energy' in prompt
+        assert 'Briefing Goal: Stay informed for work' in prompt
+        assert 'Followed Entities: OpenAI, Tesla' in prompt
+        assert 'Hobbies: hiking, photography' in prompt
+        assert 'Favorite Teams/Artists: Lakers, Beatles' in prompt
+        assert 'Passion Topics: space exploration' in prompt
+        assert 'Preferred Greeting: Rise and shine, Alice!' in prompt
+        assert 'Humor Style: Appreciates dry wit and subtle humor' in prompt
+        assert 'Daily Routine: I walk my dog Sparky every morning' in prompt
+        
+        # Verify personalization instructions are in the prompt
+        assert "Use the listener's preferred greeting: 'Rise and shine, Alice!'" in prompt
+        assert 'PRIORITIZE stories that align with the user\'s specific interests' in prompt
+        assert 'incorporate the user\'s humor style preference' in prompt
+        assert 'acknowledge or reference it appropriately' in prompt  # For daily routine
+    
     @patch('summarizer.get_config')
     @patch('google.generativeai.configure')
     def test_create_briefing_script_fallback_on_error(self, mock_configure, mock_get_config):

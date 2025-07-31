@@ -207,6 +207,132 @@
             </div>
         </div>
 
+        <!-- Personalization: News & Information Preferences Section -->
+        <div class="settings-section personalization-news">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3 class="section-title">
+                    <span class="section-icon">📰</span>
+                    News & Information Preferences
+                </h3>
+                <div class="collapse-indicator">+</div>
+            </div>
+            <div class="section-content">
+                <p class="section-description mb-4">Help us understand your specific informational needs to prioritize the most relevant stories.</p>
+                <div class="settings-grid">
+                    <div class="field-group full-width">
+                        {{ form.specific_interests.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.specific_interests(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.specific_interests.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.specific_interests.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.specific_interests.render_kw.title }}</p>
+                    </div>
+
+                    <div class="field-group">
+                        {{ form.briefing_goal.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.briefing_goal(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        {% if form.briefing_goal.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.briefing_goal.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">What is your main goal for listening to this briefing?</p>
+                    </div>
+
+                    <div class="field-group full-width">
+                        {{ form.followed_entities.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.followed_entities(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.followed_entities.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.followed_entities.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.followed_entities.render_kw.title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalization: Hobbies & Personal Interests Section -->
+        <div class="settings-section personalization-hobbies">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3 class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Hobbies & Personal Interests
+                </h3>
+                <div class="collapse-indicator">+</div>
+            </div>
+            <div class="section-content">
+                <p class="section-description mb-4">Share your personal interests to help us highlight news that intersects with your life.</p>
+                <div class="settings-grid">
+                    <div class="field-group full-width">
+                        {{ form.hobbies.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.hobbies(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.hobbies.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.hobbies.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.hobbies.render_kw.title }}</p>
+                    </div>
+
+                    <div class="field-group full-width">
+                        {{ form.favorite_teams_artists.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.favorite_teams_artists(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.favorite_teams_artists.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.favorite_teams_artists.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.favorite_teams_artists.render_kw.title }}</p>
+                    </div>
+
+                    <div class="field-group full-width">
+                        {{ form.passion_topics.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.passion_topics(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.passion_topics.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.passion_topics.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.passion_topics.render_kw.title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalization: Personal Quirks & Style Section -->
+        <div class="settings-section personalization-style">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h3 class="section-title">
+                    <span class="section-icon">✨</span>
+                    Personal Quirks & Style
+                </h3>
+                <div class="collapse-indicator">+</div>
+            </div>
+            <div class="section-content">
+                <p class="section-description mb-4">Customize how your briefing speaks to you with a unique voice and style.</p>
+                <div class="settings-grid">
+                    <div class="field-group full-width">
+                        {{ form.greeting_preference.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.greeting_preference(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        {% if form.greeting_preference.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.greeting_preference.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.greeting_preference.render_kw.title }}</p>
+                    </div>
+
+                    <div class="field-group">
+                        {{ form.humor_style.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.humor_style(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                        {% if form.humor_style.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.humor_style.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">What's your sense of humor like?</p>
+                    </div>
+
+                    <div class="field-group full-width">
+                        {{ form.daily_routine_detail.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.daily_routine_detail(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}
+                        {% if form.daily_routine_detail.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.daily_routine_detail.errors[0] }}</p>
+                        {% endif %}
+                        <p class="field-description">{{ form.daily_routine_detail.render_kw.title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex justify-center pt-6">
             {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-200 transform hover:scale-105") }}

@@ -218,6 +218,10 @@ audio::-webkit-media-controls-panel {
     gap: 0.5rem;
 }
 
+.field-group.full-width {
+    grid-column: 1 / -1;
+}
+
 .field-description {
     font-size: 0.75rem;
     color: #6b7280;
