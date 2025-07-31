@@ -499,7 +499,16 @@ def valid_settings_data():
         'briefing_tone': 'professional',
         'content_depth': 'balanced',
         'keywords_exclude': '',
-        'voice_speed': '1.0'
+        'voice_speed': '1.0',
+        # Personalization settings
+        'specific_interests': 'AI, renewable energy',
+        'briefing_goal': 'work',
+        'followed_entities': 'OpenAI, Tesla',
+        'hobbies': 'hiking, reading',
+        'favorite_teams_artists': 'Lakers',
+        'passion_topics': 'space exploration',
+        'greeting_preference': 'Good morning!',
+        'daily_routine_detail': 'I commute by train'
     }
 
 

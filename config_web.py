@@ -99,11 +99,25 @@ class WebConfig:
             'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
             'S3_BUCKET_NAME': form_data.get('s3_bucket_name', ''),
             
-            # Advanced customization options (New for Milestone 5)
+            # Advanced customization settings (Milestone 5)
             'BRIEFING_TONE': form_data.get('briefing_tone', 'professional'),
             'CONTENT_DEPTH': form_data.get('content_depth', 'balanced'),
             'KEYWORDS_EXCLUDE': form_data.get('keywords_exclude', ''),
-            'VOICE_SPEED': form_data.get('voice_speed', '1.0'),
+            'VOICE_SPEED': str(form_data.get('voice_speed', '1.0')),
+            
+            # Personalization settings - News & Information Preferences
+            'SPECIFIC_INTERESTS': form_data.get('specific_interests', ''),
+            'BRIEFING_GOAL': form_data.get('briefing_goal', ''),
+            'FOLLOWED_ENTITIES': form_data.get('followed_entities', ''),
+            
+            # Personalization settings - Hobbies & Personal Interests
+            'HOBBIES': form_data.get('hobbies', ''),
+            'FAVORITE_TEAMS_ARTISTS': form_data.get('favorite_teams_artists', ''),
+            'PASSION_TOPICS': form_data.get('passion_topics', ''),
+            
+            # Personalization settings - Personal Quirks & Style
+            'GREETING_PREFERENCE': form_data.get('greeting_preference', ''),
+            'DAILY_ROUTINE_DETAIL': form_data.get('daily_routine_detail', ''),
         }
         
         logger.info("Web form data mapped to configuration successfully")
