@@ -23,7 +23,8 @@ class TestVoiceFixes:
             'openweather_api_key': 'test_key',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'default'  # Testing default voice
+            'elevenlabs_voice_id': 'default',  # Testing default voice
+            'tts_provider': 'elevenlabs'  # Force ElevenLabs for this test
         }
         
         config = WebConfig.create_config_from_form(form_data)
@@ -53,7 +54,8 @@ class TestVoiceFixes:
             'openweather_api_key': 'test_key',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL'  # Bella voice
+            'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',  # Bella voice
+            'tts_provider': 'elevenlabs'  # Force ElevenLabs for this test
         }
         
         config = WebConfig.create_config_from_form(form_data)
@@ -87,11 +89,12 @@ class TestVoiceFixes:
         elevenlabs_api_key = 'test_api_key'
         voice_id = 'EXAVITQu4vr4xnSDxMaL'
         
-        # This mimics the current preview endpoint
+        # This mimics the current preview endpoint with TTS provider
         preview_config = type('PreviewConfig', (), {
             'get': lambda self, key, default=None: {
                 'ELEVENLABS_API_KEY': elevenlabs_api_key,
-                'ELEVENLABS_VOICE_ID': voice_id
+                'ELEVENLABS_VOICE_ID': voice_id,
+                'TTS_PROVIDER': 'elevenlabs'  # Force ElevenLabs
             }.get(key, default),
             'get_voice_speed': lambda self: 1.0
         })()
@@ -99,6 +102,7 @@ class TestVoiceFixes:
         # Test that the config works
         assert preview_config.get('ELEVENLABS_API_KEY') == 'test_api_key'
         assert preview_config.get('ELEVENLABS_VOICE_ID') == 'EXAVITQu4vr4xnSDxMaL'
+        assert preview_config.get('TTS_PROVIDER') == 'elevenlabs'
         assert preview_config.get_voice_speed() == 1.0
         
         # Test with TTS generator

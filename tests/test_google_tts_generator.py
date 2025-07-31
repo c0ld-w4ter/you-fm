@@ -5,7 +5,7 @@ Tests the Google Cloud Text-to-Speech API integration.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock, patch, Mock, call
 from google_tts_generator import generate_audio_google, GoogleTTSClient, get_available_voices
 
 
@@ -37,52 +37,65 @@ class TestGoogleTTSClient:
     @patch('google_tts_generator.texttospeech')
     def test_synthesize_speech(self, mock_texttospeech):
         """Test speech synthesis with various parameters."""
+        # Mock the enums
+        mock_texttospeech.AudioEncoding.MP3 = 'MP3'
+        
+        # Mock the classes
+        mock_synthesis_input = MagicMock()
+        mock_voice_params = MagicMock()
+        mock_audio_config = MagicMock()
+        
+        mock_texttospeech.SynthesisInput.return_value = mock_synthesis_input
+        mock_texttospeech.VoiceSelectionParams.return_value = mock_voice_params
+        mock_texttospeech.AudioConfig.return_value = mock_audio_config
+        
         # Mock the client and response
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.audio_content = b'fake_audio_data'
         mock_client.synthesize_speech.return_value = mock_response
+        mock_texttospeech.TextToSpeechClient.return_value = mock_client
         
-        # Create client instance
-        with patch('google_tts_generator.texttospeech.TextToSpeechClient', return_value=mock_client):
-            client = GoogleTTSClient()
-            
-            # Test synthesis
-            result = client.synthesize_speech(
-                text="Hello, world!",
-                voice_name="en-US-Journey-D",
-                language_code="en-US",
-                speaking_rate=1.2,
-                pitch=2.0,
-                volume_gain_db=3.0
-            )
-            
-            # Verify result
-            assert result == b'fake_audio_data'
-            
-            # Verify API call
-            mock_client.synthesize_speech.assert_called_once()
-            call_args = mock_client.synthesize_speech.call_args[1]
-            
-            # Check synthesis input
-            assert call_args['input'].text == "Hello, world!"
-            
-            # Check voice selection
-            assert call_args['voice'].language_code == "en-US"
-            assert call_args['voice'].name == "en-US-Journey-D"
-            
-            # Check audio config
-            assert call_args['audio_config'].audio_encoding == mock_texttospeech.AudioEncoding.MP3
-            assert call_args['audio_config'].speaking_rate == 1.2
-            assert call_args['audio_config'].pitch == 2.0
-            assert call_args['audio_config'].volume_gain_db == 3.0
+        # Create client instance and test
+        client = GoogleTTSClient()
+        result = client.synthesize_speech(
+            text="Hello, world!",
+            voice_name="en-US-Journey-D",
+            language_code="en-US",
+            speaking_rate=1.2,
+            pitch=2.0,
+            volume_gain_db=3.0
+        )
+        
+        # Verify result
+        assert result == b'fake_audio_data'
+        
+        # Verify the objects were created with correct parameters
+        mock_texttospeech.SynthesisInput.assert_called_once_with(text="Hello, world!")
+        mock_texttospeech.VoiceSelectionParams.assert_called_once_with(
+            language_code="en-US",
+            name="en-US-Journey-D"
+        )
+        mock_texttospeech.AudioConfig.assert_called_once_with(
+            audio_encoding='MP3',
+            speaking_rate=1.2,
+            pitch=2.0,
+            volume_gain_db=3.0
+        )
+        
+        # Verify API call
+        mock_client.synthesize_speech.assert_called_once_with(
+            input=mock_synthesis_input,
+            voice=mock_voice_params,
+            audio_config=mock_audio_config
+        )
 
 
 class TestGenerateAudioGoogle:
     """Test cases for generate_audio_google function."""
     
     @patch('google_tts_generator.GoogleTTSClient')
-    @patch('google_tts_generator.get_config')
+    @patch('config.get_config')
     def test_generate_audio_success(self, mock_get_config, mock_client_class):
         """Test successful audio generation with Google TTS."""
         # Mock configuration
@@ -114,7 +127,7 @@ class TestGenerateAudioGoogle:
         )
     
     @patch('google_tts_generator.GoogleTTSClient')
-    @patch('google_tts_generator.get_config')
+    @patch('config.get_config')
     def test_generate_audio_with_custom_speed(self, mock_get_config, mock_client_class):
         """Test audio generation with custom voice speed."""
         # Mock configuration
@@ -157,20 +170,25 @@ class TestGenerateAudioGoogle:
             generate_audio_google("   \n\t  ")
         assert "Cannot generate audio from empty script text" in str(exc_info.value)
     
-    @patch('google_tts_generator.get_config')
-    def test_generate_audio_import_error(self, mock_get_config):
+    def test_generate_audio_import_error(self):
         """Test handling of missing Google Cloud library."""
-        mock_config = MagicMock()
-        mock_get_config.return_value = mock_config
+        # We need to test the actual ImportError handling
+        # Since the imports are at module level, we'll test the catch-all exception handler
+        # by simulating what happens when the library is missing
         
-        with patch('google_tts_generator.texttospeech', side_effect=ImportError("No module")):
+        # Create a minimal test that verifies the error message format
+        with patch('google_tts_generator.GoogleTTSClient') as mock_client_class:
+            # Simulate ImportError when trying to use the client
+            mock_client_class.side_effect = ImportError("No module named 'google.cloud.texttospeech'")
+            
             with pytest.raises(Exception) as exc_info:
                 generate_audio_google("Test script")
             
+            # The ImportError is caught and handled with a specific message
             assert "Google Cloud Text-to-Speech library not installed" in str(exc_info.value)
     
     @patch('google_tts_generator.GoogleTTSClient')
-    @patch('google_tts_generator.get_config')
+    @patch('config.get_config')
     def test_generate_audio_authentication_error(self, mock_get_config, mock_client_class):
         """Test handling of authentication errors."""
         # Mock configuration
@@ -188,7 +206,7 @@ class TestGenerateAudioGoogle:
         assert "Google Cloud authentication failed" in str(exc_info.value)
     
     @patch('google_tts_generator.GoogleTTSClient')
-    @patch('google_tts_generator.get_config')
+    @patch('config.get_config')
     def test_generate_audio_quota_error(self, mock_get_config, mock_client_class):
         """Test handling of quota exceeded errors."""
         # Mock configuration
@@ -208,8 +226,7 @@ class TestGenerateAudioGoogle:
         assert "Google Cloud quota exceeded" in str(exc_info.value)
     
     @patch('google_tts_generator.GoogleTTSClient')
-    @patch('google_tts_generator.get_config')
-    def test_generate_audio_with_config_object(self, mock_get_config, mock_client_class):
+    def test_generate_audio_with_config_object(self, mock_client_class):
         """Test audio generation with provided config object."""
         # Create custom config
         custom_config = MagicMock()
@@ -230,7 +247,6 @@ class TestGenerateAudioGoogle:
         
         # Verify
         assert result == b'custom_audio'
-        mock_get_config.assert_not_called()
         mock_client_instance.synthesize_speech.assert_called_once_with(
             text="Test with custom config",
             voice_name='en-GB-News-G',

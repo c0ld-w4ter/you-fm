@@ -93,7 +93,10 @@ class WebConfig:
             'MAX_ARTICLES_PER_TOPIC': str(form_data.get('max_articles_per_topic', 3)),
             
             # Audio Settings
+            'TTS_PROVIDER': form_data.get('tts_provider', 'google'),
             'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
+            'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Journey-D'),
+            'GOOGLE_TTS_LANGUAGE_CODE': form_data.get('google_tts_language_code', 'en-US'),
             
             # AWS Settings
             'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
