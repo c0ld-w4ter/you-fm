@@ -7,6 +7,7 @@ google-generativeai>=0.3.0
 
 # Text-to-Speech
 elevenlabs>=0.2.0
+google-cloud-texttospeech>=2.14.0
 
 # Testing framework
 pytest>=7.4.0

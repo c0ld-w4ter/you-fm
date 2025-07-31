@@ -31,11 +31,25 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
+    # TTS Provider Selection
+    tts_provider = SelectField(
+        'Text-to-Speech Provider',
+        choices=[
+            ('google', 'Google Cloud Text-to-Speech'),
+            ('elevenlabs', 'ElevenLabs')
+        ],
+        default='google',
+        validators=[DataRequired()]
+    )
+    
     elevenlabs_api_key = StringField(
-        'ElevenLabs API Key',
-        validators=[DataRequired(message='ElevenLabs API Key is required')],
+        'ElevenLabs API Key (Optional - only needed if using ElevenLabs)',
+        validators=[Optional()],
         render_kw={'placeholder': 'Enter your ElevenLabs API key'}
     )
+    
+    # Google TTS doesn't require API key if using default credentials
+    google_cloud_credentials_info = HiddenField()  # Just for display purposes
     
     # Submit button
     submit = SubmitField('Save API Keys & Continue')
@@ -196,6 +210,30 @@ class SettingsForm(FlaskForm):
             ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
         ],
         default='default',
+        validators=[Optional()]
+    )
+    
+    # Google TTS Voice Selection
+    google_tts_voice_name = SelectField(
+        'Google TTS Voice Selection',
+        choices=[
+            ('en-US-Journey-D', 'Journey-D - Professional Male (Default)'),
+            ('en-US-Journey-F', 'Journey-F - Professional Female'),
+            ('en-US-Journey-O', 'Journey-O - Young Female'),
+            ('en-US-News-K', 'News-K - News Anchor Male'),
+            ('en-US-News-L', 'News-L - News Anchor Female'),
+            ('en-US-News-N', 'News-N - News Anchor Neutral'),
+            ('en-US-Polyglot-1', 'Polyglot-1 - Multilingual Male'),
+            ('en-US-Studio-M', 'Studio-M - Narrative Male'),
+            ('en-US-Studio-O', 'Studio-O - Narrative Female'),
+            ('en-US-Wavenet-A', 'Wavenet-A - Male'),
+            ('en-US-Wavenet-B', 'Wavenet-B - Male'),
+            ('en-US-Wavenet-C', 'Wavenet-C - Female'),
+            ('en-US-Wavenet-D', 'Wavenet-D - Male'),
+            ('en-US-Wavenet-E', 'Wavenet-E - Female'),
+            ('en-US-Wavenet-F', 'Wavenet-F - Female'),
+        ],
+        default='en-US-Journey-D',
         validators=[Optional()]
     )
     

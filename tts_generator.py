@@ -1,8 +1,8 @@
 """
 Text-to-Speech generator module for AI Daily Briefing Agent.
 
-This module interfaces with the ElevenLabs API to convert
-the briefing script text into high-quality audio.
+This module provides a unified interface for text-to-speech conversion,
+supporting both ElevenLabs and Google Cloud Text-to-Speech APIs.
 """
 
 import logging
@@ -13,6 +13,38 @@ logger = logging.getLogger(__name__)
 
 
 def generate_audio(script_text: str, config=None) -> bytes:
+    """
+    Convert text script to audio using configured TTS provider.
+    
+    Args:
+        script_text: The complete briefing script text
+        config: Optional Config object. If None, loads from environment.
+        
+    Returns:
+        Audio data as bytes (MP3 format)
+        
+    Raises:
+        Exception: If TTS API call fails
+    """
+    # Get configuration
+    if config is None:
+        config = get_config()
+    
+    # Determine TTS provider
+    tts_provider = config.get('TTS_PROVIDER', 'google').lower()
+    
+    logger.info(f"Using TTS provider: {tts_provider}")
+    
+    if tts_provider == 'google':
+        from google_tts_generator import generate_audio_google
+        return generate_audio_google(script_text, config)
+    elif tts_provider == 'elevenlabs':
+        return generate_audio_elevenlabs(script_text, config)
+    else:
+        raise Exception(f"Unknown TTS provider: {tts_provider}")
+
+
+def generate_audio_elevenlabs(script_text: str, config=None) -> bytes:
     """
     Convert text script to audio using ElevenLabs API.
     
@@ -26,7 +58,7 @@ def generate_audio(script_text: str, config=None) -> bytes:
     Raises:
         Exception: If ElevenLabs API call fails
     """
-    logger.info("Generating audio from script...")
+    logger.info("Generating audio from script using ElevenLabs...")
     
     if not script_text or not script_text.strip():
         raise Exception("Cannot generate audio from empty script text")
