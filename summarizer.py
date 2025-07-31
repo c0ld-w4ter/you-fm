@@ -201,7 +201,6 @@ def create_briefing_script(weather_data, articles: List[Article], config=None) -
         favorite_teams_artists = config.get_favorite_teams_artists()
         passion_topics = config.get_passion_topics()
         greeting_preference = config.get_greeting_preference()
-        humor_style = config.get_humor_style()
         daily_routine_detail = config.get_daily_routine_detail()
         
         # Filter articles by excluded keywords
@@ -245,12 +244,6 @@ def create_briefing_script(weather_data, articles: List[Article], config=None) -
         # Personal Quirks & Style
         if greeting_preference:
             user_profile_parts.append(f"Preferred Greeting: {greeting_preference}")
-        if humor_style and humor_style != 'facts_only':
-            humor_descriptions = {
-                'dry_wit': 'Appreciates dry wit and subtle humor',
-                'puns_jokes': 'Enjoys puns and dad jokes'
-            }
-            user_profile_parts.append(f"Humor Style: {humor_descriptions.get(humor_style, humor_style)}")
         if daily_routine_detail:
             user_profile_parts.append(f"Daily Routine: {daily_routine_detail}")
         
@@ -300,8 +293,20 @@ Date: {current_date}
 Listener: {listener_name if listener_name else "General audience"}
 Target Duration: {briefing_duration} minutes
 
+CRITICAL REQUIREMENTS:
+- The script MUST be long enough to fill {briefing_duration} minutes when read aloud at a normal pace
+- Assume a speaking rate of approximately 150-160 words per minute
+- This means the script should be approximately {briefing_duration * 150} to {briefing_duration * 160} words long
+{"- You MUST start the briefing with EXACTLY this greeting: '" + greeting_preference + "'" if greeting_preference else "- Start with a warm, professional greeting"}
+
 USER PROFILE:
 {user_profile}
+
+PERSONALIZATION REQUIREMENTS:
+- You MUST actively incorporate the user's interests, followed entities, hobbies, and passion topics throughout the briefing
+- When selecting news stories, give STRONG preference to topics that match the user profile
+- Make explicit connections between news stories and the user's stated interests
+- Reference the user's hobbies or passion topics when relevant to make the briefing feel personal
 
 STYLE PREFERENCES:
 TONE: {style_instructions['tone']}
@@ -316,19 +321,22 @@ NEWS ARTICLES (analyze and select the most newsworthy):
 {news_info}
 
 SCRIPT GENERATION INSTRUCTIONS:
-1. {"Use the listener's preferred greeting: '" + greeting_preference + "'" if greeting_preference else "Create a warm greeting that matches the specified TONE"} and includes the date{f" and addresses {listener_name} by name" if listener_name and not greeting_preference else ""}
+1. {"START WITH EXACTLY THIS GREETING: '" + greeting_preference + "' then mention the date" if greeting_preference else "Create a warm greeting that matches the specified TONE and includes the date"}{f" and addresses {listener_name} by name" if listener_name and not greeting_preference else ""}
 2. Present the weather information conversationally, mentioning notable conditions using the specified TONE
-3. INTELLIGENTLY SELECT and SUMMARIZE the most important/interesting news stories from the articles above
-4. PRIORITIZE stories that align with the user's specific interests, followed entities, hobbies, and passion topics when relevant
-5. Use your editorial judgment to determine how many stories to include and how much detail to provide based on the {briefing_duration}-minute target duration and DEPTH preference
-6. For each selected story, provide an appropriate summary length that follows the DEPTH guidelines
-7. Present stories in order of importance/interest using the specified TONE, considering the user's briefing goal
+3. INTELLIGENTLY SELECT and SUMMARIZE news stories, giving STRONG PRIORITY to:
+   - Stories directly related to the user's specific interests
+   - News about their followed entities
+   - Topics connected to their hobbies or passion topics
+4. For a {briefing_duration}-minute briefing, include approximately {3 if briefing_duration <= 3 else 4 if briefing_duration <= 5 else 5 if briefing_duration <= 7 else 6} news stories
+5. Adjust the detail level of each story based on the target duration and DEPTH preference
+6. EXPLICITLY mention when a story relates to the user's interests (e.g., "Since you follow Tesla..." or "Given your interest in quantum computing...")
+7. Present stories in order of relevance to the user, then by general importance
 8. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
 9. Use natural transitions between sections that match the TONE
-10. Follow the TONE guidelines throughout the entire script{" and incorporate the user's humor style preference" if humor_style != 'facts_only' else ""}
+10. Follow the TONE guidelines throughout the entire script
 11. Make it sound natural when spoken aloud - avoid written language patterns
 12. Handle missing data gracefully without being repetitive
-13. Target the script length to fit comfortably within a {briefing_duration}-minute audio briefing
+13. ENSURE the script is {briefing_duration * 150} to {briefing_duration * 160} words long to fill the requested {briefing_duration} minutes
 14. Convert all numbers, symbols, and units to word equivalents (e.g. "35.78°C" as "thirty five point seven eight degrees Celsius", "50%" as "fifty percent")
 {"15. If the user mentioned details about their daily routine, acknowledge or reference it appropriately" if daily_routine_detail else ""}
 

@@ -74,7 +74,6 @@ class Config:
         
         # Personalization settings - Personal Quirks & Style
         'GREETING_PREFERENCE': '',         # How the anchor should greet the user
-        'HUMOR_STYLE': 'facts_only',      # facts_only, dry_wit, puns_jokes
         'DAILY_ROUTINE_DETAIL': '',        # Unique detail about daily routine
     }
     
@@ -260,10 +259,6 @@ class Config:
         """Get how the anchor should greet the user."""
         return self.get('GREETING_PREFERENCE')
     
-    def get_humor_style(self) -> str:
-        """Get user's humor style preference."""
-        return self.get('HUMOR_STYLE')
-    
     def get_daily_routine_detail(self) -> str:
         """Get unique detail about user's daily routine."""
         return self.get('DAILY_ROUTINE_DETAIL')
@@ -330,11 +325,6 @@ class Config:
                 raise ConfigurationError("VOICE_SPEED must be one of: 0.8, 1.0, 1.2")
         except ValueError:
             raise ConfigurationError("VOICE_SPEED must be a valid float")
-        
-        # Validate humor style if set
-        humor_style = self.get_humor_style()
-        if humor_style and humor_style not in ['facts_only', 'dry_wit', 'puns_jokes']:
-            raise ConfigurationError("HUMOR_STYLE must be one of: facts_only, dry_wit, puns_jokes")
 
 
 # Global configuration instance

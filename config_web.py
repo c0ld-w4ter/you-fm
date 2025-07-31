@@ -117,7 +117,6 @@ class WebConfig:
             
             # Personalization settings - Personal Quirks & Style
             'GREETING_PREFERENCE': form_data.get('greeting_preference', ''),
-            'HUMOR_STYLE': form_data.get('humor_style', 'facts_only'),
             'DAILY_ROUTINE_DETAIL': form_data.get('daily_routine_detail', ''),
         }
         

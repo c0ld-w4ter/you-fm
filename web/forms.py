@@ -282,17 +282,6 @@ class SettingsForm(FlaskForm):
         }
     )
     
-    humor_style = SelectField(
-        'Humor Style',
-        choices=[
-            ('facts_only', 'Just the facts, please'),
-            ('dry_wit', 'A little bit of dry wit is fine'),
-            ('puns_jokes', 'Bring on the puns and dad jokes!')
-        ],
-        default='facts_only',
-        validators=[Optional()]
-    )
-    
     daily_routine_detail = StringField(
         'Daily Routine Detail',
         validators=[Optional(), Length(max=500)],

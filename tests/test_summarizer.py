@@ -327,7 +327,6 @@ class TestStyleAwareBriefingScript:
             'FAVORITE_TEAMS_ARTISTS': 'Lakers, Beatles',
             'PASSION_TOPICS': 'space exploration',
             'GREETING_PREFERENCE': 'Rise and shine, Alice!',
-            'HUMOR_STYLE': 'dry_wit',
             'DAILY_ROUTINE_DETAIL': 'I walk my dog Sparky every morning'
         }
         config = Config(config_dict)
@@ -349,13 +348,11 @@ class TestStyleAwareBriefingScript:
         assert 'Favorite Teams/Artists: Lakers, Beatles' in prompt
         assert 'Passion Topics: space exploration' in prompt
         assert 'Preferred Greeting: Rise and shine, Alice!' in prompt
-        assert 'Humor Style: Appreciates dry wit and subtle humor' in prompt
         assert 'Daily Routine: I walk my dog Sparky every morning' in prompt
         
         # Verify personalization instructions are in the prompt
-        assert "Use the listener's preferred greeting: 'Rise and shine, Alice!'" in prompt
-        assert 'PRIORITIZE stories that align with the user\'s specific interests' in prompt
-        assert 'incorporate the user\'s humor style preference' in prompt
+        assert "START WITH EXACTLY THIS GREETING: 'Rise and shine, Alice!'" in prompt
+        assert 'giving STRONG PRIORITY to' in prompt  # Part of the personalization instructions
         assert 'acknowledge or reference it appropriately' in prompt  # For daily routine
     
     @patch('summarizer.get_config')

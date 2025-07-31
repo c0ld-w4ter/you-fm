@@ -508,7 +508,6 @@ def valid_settings_data():
         'favorite_teams_artists': 'Lakers',
         'passion_topics': 'space exploration',
         'greeting_preference': 'Good morning!',
-        'humor_style': 'dry_wit',
         'daily_routine_detail': 'I commute by train'
     }
 

@@ -312,15 +312,6 @@
                         <p class="field-description">{{ form.greeting_preference.render_kw.title }}</p>
                     </div>
 
-                    <div class="field-group">
-                        {{ form.humor_style.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.humor_style(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.humor_style.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.humor_style.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">What's your sense of humor like?</p>
-                    </div>
-
                     <div class="field-group full-width">
                         {{ form.daily_routine_detail.label(class="block text-sm font-medium text-gray-700 mb-2") }}
                         {{ form.daily_routine_detail(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", rows="2") }}

@@ -391,7 +391,6 @@ class TestAdvancedConfigurationGetters:
             'FAVORITE_TEAMS_ARTISTS': 'Lakers, Taylor Swift',
             'PASSION_TOPICS': 'space exploration',
             'GREETING_PREFERENCE': 'Good morning, friend!',
-            'HUMOR_STYLE': 'dry_wit',
             'DAILY_ROUTINE_DETAIL': 'I walk my dog every morning'
         }
         
@@ -409,7 +408,6 @@ class TestAdvancedConfigurationGetters:
         
         # Test Personal Quirks & Style
         assert config.get_greeting_preference() == 'Good morning, friend!'
-        assert config.get_humor_style() == 'dry_wit'
         assert config.get_daily_routine_detail() == 'I walk my dog every morning'
     
     def test_personalization_defaults(self):
@@ -423,7 +421,7 @@ class TestAdvancedConfigurationGetters:
         
         config = Config(config_dict)
         
-        # All should return empty strings except humor_style
+        # All should return empty strings
         assert config.get_specific_interests() == ''
         assert config.get_briefing_goal() == ''
         assert config.get_followed_entities() == ''
@@ -431,27 +429,4 @@ class TestAdvancedConfigurationGetters:
         assert config.get_favorite_teams_artists() == ''
         assert config.get_passion_topics() == ''
         assert config.get_greeting_preference() == ''
-        assert config.get_humor_style() == 'facts_only'
-        assert config.get_daily_routine_detail() == ''
-    
-    def test_humor_style_validation(self):
-        """Test humor style validation in validate_config."""
-        # Test valid humor style
-        config_dict = {
-            'NEWSAPI_KEY': 'test_key',
-            'OPENWEATHER_API_KEY': 'test_key',
-            'GEMINI_API_KEY': 'test_key',
-            'ELEVENLABS_API_KEY': 'test_key',
-            'HUMOR_STYLE': 'puns_jokes'
-        }
-        
-        config = Config(config_dict)
-        config.validate_config()  # Should not raise
-        
-        # Test invalid humor style
-        config_dict['HUMOR_STYLE'] = 'invalid_style'
-        config = Config(config_dict)
-        
-        with pytest.raises(ConfigurationError) as exc_info:
-            config.validate_config()
-        assert "HUMOR_STYLE must be one of: facts_only, dry_wit, puns_jokes" in str(exc_info.value) 
+        assert config.get_daily_routine_detail() == '' 
