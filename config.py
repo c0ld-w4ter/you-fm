@@ -51,6 +51,8 @@ class Config:
         
         # Audio settings
         'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
+        'TTS_PROVIDER': 'google',  # 'google' or 'elevenlabs'
+        'GOOGLE_CLOUD_CREDENTIALS_JSON': '',  # JSON string of service account credentials
         
         # AWS settings (optional for S3 upload)
         'AWS_REGION': 'us-east-1',
@@ -229,6 +231,10 @@ class Config:
     def get_voice_speed(self) -> float:
         """Get voice speed as float."""
         return float(self.get('VOICE_SPEED'))
+    
+    def get_tts_provider(self) -> str:
+        """Get the TTS provider to use."""
+        return self.get('TTS_PROVIDER', 'google')
     
     # Personalization getters
     def get_specific_interests(self) -> str:
