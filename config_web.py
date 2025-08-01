@@ -41,12 +41,21 @@ class WebConfig:
         logger.debug(f"Form data keys available: {list(form_data.keys())}")
         
         # Validate required fields with environment variable fallback
-        required_fields = [
+        always_required_fields = [
             'newsapi_key',
             'openweather_api_key',
-            'gemini_api_key',
-            'elevenlabs_api_key'
+            'gemini_api_key'
         ]
+        
+        # TTS provider specific requirements
+        tts_provider = form_data.get('tts_provider', 'google').lower()
+        tts_required_fields = []
+        if tts_provider == 'elevenlabs':
+            tts_required_fields = ['elevenlabs_api_key']
+        elif tts_provider == 'google':
+            tts_required_fields = ['google_api_key']
+        
+        required_fields = always_required_fields + tts_required_fields
         
         missing_fields = []
         for field in required_fields:
@@ -60,6 +69,11 @@ class WebConfig:
                 # Use environment variable as fallback
                 form_data[field] = env_value
                 logger.info(f"Using environment variable fallback for {field}")
+        
+        # Always ensure we have values for both TTS providers (even if empty) for config creation
+        for tts_field in ['elevenlabs_api_key', 'google_api_key']:
+            if tts_field not in form_data:
+                form_data[tts_field] = os.environ.get(tts_field.upper().replace('_KEY', '_KEY'), '')
         
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
@@ -81,6 +95,7 @@ class WebConfig:
             'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
             'GEMINI_API_KEY': form_data['gemini_api_key'],
             'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'],
+            'GOOGLE_API_KEY': form_data['google_api_key'],
             
             # Personal Settings
             'LISTENER_NAME': form_data.get('listener_name', ''),
@@ -159,6 +174,7 @@ class WebConfig:
             'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
             'gemini_api_key': os.environ.get('GEMINI_API_KEY', ''),
             'elevenlabs_api_key': os.environ.get('ELEVENLABS_API_KEY', ''),
+            'google_api_key': os.environ.get('GOOGLE_API_KEY', ''),
         }
         
         defaults.update(api_key_defaults)
@@ -178,12 +194,21 @@ class WebConfig:
         errors = {}
         
         # Required field validation
-        required_fields = {
+        always_required_fields = {
             'newsapi_key': 'NewsAPI Key is required',
             'openweather_api_key': 'OpenWeather API Key is required',
-            'gemini_api_key': 'Google Gemini API Key is required',
-            'elevenlabs_api_key': 'ElevenLabs API Key is required'
+            'gemini_api_key': 'Google Gemini API Key is required'
         }
+        
+        # TTS provider specific validation
+        tts_provider = form_data.get('tts_provider', 'google').lower()
+        tts_required_fields = {}
+        if tts_provider == 'elevenlabs':
+            tts_required_fields['elevenlabs_api_key'] = 'ElevenLabs API Key is required when using ElevenLabs TTS'
+        elif tts_provider == 'google':
+            tts_required_fields['google_api_key'] = 'Google API Key is required when using Google TTS'
+        
+        required_fields = {**always_required_fields, **tts_required_fields}
         
         for field, error_msg in required_fields.items():
             if not form_data.get(field, '').strip():

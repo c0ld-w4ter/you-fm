@@ -48,8 +48,11 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your ElevenLabs API key'}
     )
     
-    # Google TTS doesn't require API key if using default credentials
-    google_cloud_credentials_info = HiddenField()  # Just for display purposes
+    google_api_key = StringField(
+        'Google API Key (Optional - only needed if using Google TTS)',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Enter your Google API key'}
+    )
     
     # Submit button
     submit = SubmitField('Save API Keys & Continue')

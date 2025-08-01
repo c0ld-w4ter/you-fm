@@ -57,6 +57,7 @@ class Config:
         'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
         
         # Audio settings - Google TTS
+        'GOOGLE_API_KEY': '',  # Google API key for TTS (alternative to credentials)
         'GOOGLE_CLOUD_CREDENTIALS_PATH': '',  # Path to service account JSON (optional)
         'GOOGLE_TTS_VOICE_NAME': 'en-US-Journey-D',  # Google TTS voice name
         'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
@@ -352,8 +353,17 @@ class Config:
             if not self.get('ELEVENLABS_API_KEY'):
                 raise ConfigurationError("ELEVENLABS_API_KEY is required when using ElevenLabs TTS provider")
         elif tts_provider == 'google':
-            # Google TTS can use default credentials, so credentials path is optional
-            logger.info("Using Google TTS provider")
+            # Google TTS can use API key or default credentials
+            api_key = self.get('GOOGLE_API_KEY', '')
+            credentials_path = self.get('GOOGLE_CLOUD_CREDENTIALS_PATH', '')
+            
+            if not api_key and not credentials_path:
+                logger.info("Using Google TTS provider with Application Default Credentials")
+            elif api_key:
+                logger.info("Using Google TTS provider with API key authentication")
+            else:
+                logger.info("Using Google TTS provider with service account credentials")
+                
             # Validate voice name format (should be like en-US-Journey-D)
             voice_name = self.get('GOOGLE_TTS_VOICE_NAME', '')
             if voice_name and not voice_name.count('-') >= 2:

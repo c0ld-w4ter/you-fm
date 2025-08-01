@@ -41,6 +41,7 @@ def api_keys():
                 'openweather_api_key': 'OPENWEATHER_API_KEY',
                 'gemini_api_key': 'GEMINI_API_KEY',
                 'elevenlabs_api_key': 'ELEVENLABS_API_KEY',
+                'google_api_key': 'GOOGLE_API_KEY',
             }
             
             for form_field, env_key in env_fallbacks.items():

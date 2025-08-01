@@ -30,6 +30,11 @@ def create_app(config_name='development'):
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     app.config['WTF_CSRF_ENABLED'] = True
     app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year for audio files
+
+    # Configure timeouts for long-running requests (audio generation can take 3+ minutes)
+    app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
+    # Note: Flask dev server doesn't have built-in timeout config, but we'll handle this in production
     
     # Development specific settings
     if config_name == 'development':

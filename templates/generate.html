@@ -72,6 +72,7 @@
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-gray-900 mb-2">Ready to Generate Your Briefing?</h3>
                 <p class="text-gray-600">Preview the script first for quick iteration, or generate the full audio briefing.</p>
+                <p class="text-sm text-amber-600 mt-2">⏱️ <strong>Note:</strong> Full audio generation takes 3-5 minutes depending on content length. Please be patient!</p>
             </div>
             
             <!-- Buttons Container -->
@@ -249,6 +250,111 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressSteps = document.getElementById('progress-steps');
     
+    // Flag to prevent multiple concurrent briefing generations
+    let isGeneratingBriefing = false;
+    
+    // Consolidated briefing generation function
+    function startBriefingGeneration() {
+        // Prevent multiple concurrent requests
+        if (isGeneratingBriefing) {
+            console.log('Briefing generation already in progress, ignoring duplicate request');
+            return;
+        }
+        
+        isGeneratingBriefing = true;
+        console.log('Starting briefing generation...');
+        
+        // Show loading modal
+        loadingModal.classList.remove('hidden');
+        
+        // Update initial status
+        loadingStatus.textContent = 'Starting briefing generation...';
+        progressBar.style.width = '10%';
+        progressSteps.innerHTML = '<p>Initializing...</p>';
+        
+        // Progress steps
+        const steps = [
+            { message: 'Fetching weather data...', step: 'Step 1 of 4', progress: 25, delay: 5000 },
+            { message: 'Gathering news articles...', step: 'Step 2 of 4', progress: 50, delay: 15000 },
+            { message: 'Generating AI briefing script...', step: 'Step 3 of 4', progress: 75, delay: 60000 },  // 1 minute
+            { message: 'Converting to audio... (This may take 2-3 minutes)', step: 'Step 4 of 4', progress: 90, delay: 90000 }  // 1.5 minutes
+        ];
+        
+        // Start progress updates
+        steps.forEach(({ message, step, progress, delay }) => {
+            setTimeout(() => {
+                if (loadingStatus && document.contains(loadingStatus)) {
+                    loadingStatus.textContent = message;
+                }
+                if (progressSteps && document.contains(progressSteps)) {
+                    progressSteps.innerHTML = `<p>${step}: ${message}</p>`;
+                }
+                if (progressBar && document.contains(progressBar)) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, delay);
+        });
+
+        // Add final completion message at 150 seconds (2.5 minutes)
+        setTimeout(() => {
+            if (loadingStatus && document.contains(loadingStatus)) {
+                loadingStatus.textContent = 'Finalizing your briefing...';
+            }
+            if (progressSteps && document.contains(progressSteps)) {
+                progressSteps.innerHTML = '<p>Almost done! Finalizing your briefing...</p>';
+            }
+            if (progressBar && document.contains(progressBar)) {
+                progressBar.style.width = '95%';
+            }
+        }, 150000);  // 2.5 minutes
+        
+        // Start the actual briefing generation
+        fetch('/create-briefing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // No explicit timeout - let the server handle long-running requests
+            // Audio generation can take 3+ minutes, so we need to be patient
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Redirect to results page
+                window.location.href = data.redirect;
+            } else {
+                // Show error
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+                loadingModal.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            let errorMessage = 'Failed to generate briefing';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Request timed out. Audio generation can take 3-5 minutes. Please try again or check your internet connection.';
+            } else if (error.message.includes('HTTP')) {
+                errorMessage = `Server error: ${error.message}`;
+            } else {
+                errorMessage = `Network error: ${error.message}`;
+            }
+            
+            alert('Error: ' + errorMessage);
+            loadingModal.classList.add('hidden');
+        })
+        .finally(() => {
+            // Reset flag when request completes (success or failure)
+            isGeneratingBriefing = false;
+            console.log('Briefing generation request completed');
+        });
+    }
+    
     // Data report elements
     const dataReportBtn = document.getElementById('data-report-btn');
     const dataReportModal = document.getElementById('data-report-modal');
@@ -340,118 +446,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Generate from preview button listener
     generateFromPreviewBtn.addEventListener('click', function() {
-        // Show loading modal
-        loadingModal.classList.remove('hidden');
-        
-        // Update initial status
-        loadingStatus.textContent = 'Starting briefing generation...';
-        progressBar.style.width = '10%';
-        progressSteps.innerHTML = '<p>Initializing...</p>';
-        
-        // Progress steps
-        const steps = [
-            { message: 'Fetching weather data...', step: 'Step 1 of 4', progress: 25, delay: 2000 },
-            { message: 'Gathering news articles...', step: 'Step 2 of 4', progress: 50, delay: 6000 },
-            { message: 'Generating AI briefing script...', step: 'Step 3 of 4', progress: 75, delay: 15000 },
-            { message: 'Converting to audio...', step: 'Step 4 of 4', progress: 95, delay: 25000 }
-        ];
-        
-        // Start progress updates
-        steps.forEach(({ message, step, progress, delay }) => {
-            setTimeout(() => {
-                if (loadingStatus && document.contains(loadingStatus)) {
-                    loadingStatus.textContent = message;
-                }
-                if (progressSteps && document.contains(progressSteps)) {
-                    progressSteps.innerHTML = `<p>${step}: ${message}</p>`;
-                }
-                if (progressBar && document.contains(progressBar)) {
-                    progressBar.style.width = `${progress}%`;
-                }
-            }, delay);
-        });
-        
-        // Start the actual briefing generation
-        fetch('/create-briefing', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Redirect to results page
-                window.location.href = data.redirect;
-            } else {
-                // Show error
-                alert('Error: ' + (data.error || 'Unknown error occurred'));
-                loadingModal.classList.add('hidden');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error: ' + error.message);
-            loadingModal.classList.add('hidden');
-        });
+        startBriefingGeneration();
     });
 
     // Generate button listener
     generateBtn.addEventListener('click', function() {
-        // Show loading modal
-        loadingModal.classList.remove('hidden');
-        
-        // Update initial status
-        loadingStatus.textContent = 'Starting briefing generation...';
-        progressBar.style.width = '10%';
-        progressSteps.innerHTML = '<p>Initializing...</p>';
-        
-        // Progress steps
-        const steps = [
-            { message: 'Fetching weather data...', step: 'Step 1 of 4', progress: 25, delay: 2000 },
-            { message: 'Gathering news articles...', step: 'Step 2 of 4', progress: 50, delay: 6000 },
-            { message: 'Generating AI briefing script...', step: 'Step 3 of 4', progress: 75, delay: 15000 },
-            { message: 'Converting to audio...', step: 'Step 4 of 4', progress: 95, delay: 25000 }
-        ];
-        
-        // Start progress updates
-        steps.forEach(({ message, step, progress, delay }) => {
-            setTimeout(() => {
-                if (loadingStatus && document.contains(loadingStatus)) {
-                    loadingStatus.textContent = message;
-                }
-                if (progressSteps && document.contains(progressSteps)) {
-                    progressSteps.innerHTML = `<p>${step}: ${message}</p>`;
-                }
-                if (progressBar && document.contains(progressBar)) {
-                    progressBar.style.width = `${progress}%`;
-                }
-            }, delay);
-        });
-        
-        // Start the actual briefing generation
-        fetch('/create-briefing', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Redirect to results page
-                window.location.href = data.redirect;
-            } else {
-                // Show error
-                alert('Error: ' + (data.error || 'Unknown error occurred'));
-                loadingModal.classList.add('hidden');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error: ' + error.message);
-            loadingModal.classList.add('hidden');
-        });
+        startBriefingGeneration();
     });
 
     // Data report button listener

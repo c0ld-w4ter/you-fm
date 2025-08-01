@@ -70,14 +70,40 @@
                     <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://makersuite.google.com/" class="text-blue-600 hover:underline" target="_blank">Google AI Studio</a></p>
                 </div>
 
+            </div>
+        </div>
+        
+        <!-- TTS Provider Selection -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🎤 Text-to-Speech Provider</h3>
+            <div class="mb-6">
+                {{ form.tts_provider.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                {{ form.tts_provider(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", onchange="toggleTTSFields()") }}
+                {% if form.tts_provider.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.tts_provider.errors[0] }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Select your preferred text-to-speech provider</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Google API Key -->
+                <div id="google-api-key-field" class="form-group">
+                    {{ form.google_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.google_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+                    {% if form.google_api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.google_api_key.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Required when using Google TTS. Get your key at <a href="https://console.cloud.google.com/" class="text-blue-600 hover:underline" target="_blank">Google Cloud Console</a></p>
+                </div>
+
                 <!-- ElevenLabs API Key -->
-                <div class="form-group">
+                <div id="elevenlabs-api-key-field" class="form-group">
                     {{ form.elevenlabs_api_key.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                    {{ form.elevenlabs_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", required=true) }}
+                    {{ form.elevenlabs_api_key(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
                     {% if form.elevenlabs_api_key.errors %}
                         <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_api_key.errors[0] }}</p>
                     {% endif %}
-                    <p class="mt-1 text-xs text-gray-500">Get your key at <a href="https://elevenlabs.io/" class="text-blue-600 hover:underline" target="_blank">elevenlabs.io</a></p>
+                    <p class="mt-1 text-xs text-gray-500">Required when using ElevenLabs TTS. Get your key at <a href="https://elevenlabs.io/" class="text-blue-600 hover:underline" target="_blank">elevenlabs.io</a></p>
                 </div>
             </div>
         </div>
@@ -88,4 +114,25 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleTTSFields() {
+    const ttsProvider = document.getElementById('tts_provider').value;
+    const googleField = document.getElementById('google-api-key-field');
+    const elevenlabsField = document.getElementById('elevenlabs-api-key-field');
+    
+    if (ttsProvider === 'google') {
+        googleField.style.display = 'block';
+        elevenlabsField.style.display = 'none';
+    } else if (ttsProvider === 'elevenlabs') {
+        googleField.style.display = 'none';
+        elevenlabsField.style.display = 'block';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTTSFields();
+});
+</script>
 {% endblock %} 
