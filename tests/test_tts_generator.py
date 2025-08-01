@@ -1,16 +1,102 @@
 """
 Unit tests for tts_generator module.
 
-Tests the ElevenLabs API integration for text-to-speech conversion.
+Tests the TTS provider switching and both ElevenLabs and Google TTS integrations.
 """
 
 import pytest
 from unittest.mock import MagicMock, patch
-from tts_generator import generate_audio, save_audio_locally
+from tts_generator import generate_audio, generate_audio_elevenlabs, save_audio_locally
 
 
 class TestGenerateAudio:
-    """Test cases for generate_audio function."""
+    """Test cases for generate_audio function with provider switching."""
+    
+    @patch('google_tts_generator.generate_audio_google')
+    @patch('tts_generator.get_config')
+    def test_generate_audio_google_provider(self, mock_config, mock_google_audio):
+        """Test audio generation with Google TTS provider."""
+        # Mock configuration for Google TTS
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key, default=None: {
+            'TTS_PROVIDER': 'google'
+        }.get(key, default)
+        mock_config.return_value = mock_config_instance
+        
+        # Mock Google TTS response
+        mock_google_audio.return_value = b'google_audio_data'
+        
+        # Test
+        result = generate_audio("Test script for Google")
+        
+        # Verify
+        assert result == b'google_audio_data'
+        mock_google_audio.assert_called_once_with("Test script for Google", mock_config_instance)
+    
+    @patch('elevenlabs.client.ElevenLabs')
+    @patch('tts_generator.get_config')
+    def test_generate_audio_elevenlabs_provider(self, mock_config, mock_elevenlabs_class):
+        """Test audio generation with ElevenLabs provider."""
+        # Mock configuration for ElevenLabs
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key, default=None: {
+            'TTS_PROVIDER': 'elevenlabs',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'ELEVENLABS_VOICE_ID': 'test-voice-id'
+        }.get(key, default)
+        mock_config_instance.get_voice_speed.return_value = 1.0
+        mock_config.return_value = mock_config_instance
+        
+        # Mock ElevenLabs client and response
+        mock_client = MagicMock()
+        mock_elevenlabs_class.return_value = mock_client
+        mock_client.text_to_speech.convert.return_value = b'elevenlabs_audio_data'
+        
+        # Test
+        result = generate_audio("Test script for ElevenLabs")
+        
+        # Verify
+        assert result == b'elevenlabs_audio_data'
+        mock_elevenlabs_class.assert_called_once_with(api_key='test-elevenlabs-key')
+    
+    @patch('tts_generator.get_config')
+    def test_generate_audio_unknown_provider(self, mock_config):
+        """Test error handling for unknown TTS provider."""
+        # Mock configuration with unknown provider
+        mock_config_instance = MagicMock()
+        mock_config_instance.get.side_effect = lambda key, default=None: {
+            'TTS_PROVIDER': 'unknown_provider'
+        }.get(key, default)
+        mock_config.return_value = mock_config_instance
+        
+        # Test
+        with pytest.raises(Exception) as exc_info:
+            generate_audio("Test script")
+        
+        assert "Unknown TTS provider: unknown_provider" in str(exc_info.value)
+    
+    @patch('google_tts_generator.generate_audio_google')
+    def test_generate_audio_with_custom_config(self, mock_google_audio):
+        """Test audio generation with custom config object."""
+        # Create custom config
+        custom_config = MagicMock()
+        custom_config.get.side_effect = lambda key, default=None: {
+            'TTS_PROVIDER': 'google'
+        }.get(key, default)
+        
+        # Mock Google TTS response
+        mock_google_audio.return_value = b'custom_config_audio'
+        
+        # Test
+        result = generate_audio("Test with custom config", config=custom_config)
+        
+        # Verify
+        assert result == b'custom_config_audio'
+        mock_google_audio.assert_called_once_with("Test with custom config", custom_config)
+
+
+class TestGenerateAudioElevenLabs:
+    """Test cases for generate_audio_elevenlabs function."""
     
     @patch('elevenlabs.client.ElevenLabs')
     @patch('tts_generator.get_config')
@@ -37,13 +123,13 @@ class TestGenerateAudio:
         script_text = "Good morning! This is your daily briefing for today."
         
         # Call function
-        result = generate_audio(script_text)
+        result = generate_audio_elevenlabs(script_text)
         
         # Verify results
         assert result == test_audio_data
         assert len(result) > 0
         
-                # Verify API calls
+        # Verify API calls
         mock_elevenlabs_class.assert_called_once_with(api_key='test-elevenlabs-key')
         mock_client.text_to_speech.convert.assert_called_once_with(
             text=script_text,
@@ -77,7 +163,7 @@ class TestGenerateAudio:
         mock_client.text_to_speech.convert.return_value = b'audio_data'
         
         # Call function
-        result = generate_audio("Test script")
+        result = generate_audio_elevenlabs("Test script")
         
         # Verify Rachel voice is used when 'default' is specified
         mock_client.text_to_speech.convert.assert_called_once_with(
@@ -115,7 +201,7 @@ class TestGenerateAudio:
         mock_client.text_to_speech.convert.return_value = iter(audio_chunks)
         
         # Call function
-        result = generate_audio("Test streaming script")
+        result = generate_audio_elevenlabs("Test streaming script")
         
         # Verify chunks are joined correctly
         expected_audio = b'chunk1chunk2chunk3'
@@ -125,17 +211,17 @@ class TestGenerateAudio:
         """Test audio generation with empty script."""
         # Test with None
         with pytest.raises(Exception) as exc_info:
-            generate_audio(None)
+            generate_audio_elevenlabs(None)
         assert "Cannot generate audio from empty script text" in str(exc_info.value)
         
         # Test with empty string
         with pytest.raises(Exception) as exc_info:
-            generate_audio("")
+            generate_audio_elevenlabs("")
         assert "Cannot generate audio from empty script text" in str(exc_info.value)
         
         # Test with whitespace only
         with pytest.raises(Exception) as exc_info:
-            generate_audio("   \n\t  ")
+            generate_audio_elevenlabs("   \n\t  ")
         assert "Cannot generate audio from empty script text" in str(exc_info.value)
         
     @patch('tts_generator.get_config')
@@ -149,7 +235,7 @@ class TestGenerateAudio:
         # Mock import error by patching the import inside the function
         with patch('builtins.__import__', side_effect=ImportError("No module named 'elevenlabs'")):
             with pytest.raises(Exception) as exc_info:
-                generate_audio("Test script")
+                generate_audio_elevenlabs("Test script")
             
             assert "ElevenLabs library not installed" in str(exc_info.value)
             
@@ -173,7 +259,7 @@ class TestGenerateAudio:
         
         # Call function and verify error handling
         with pytest.raises(Exception) as exc_info:
-            generate_audio("Test script")
+            generate_audio_elevenlabs("Test script")
             
         assert "ElevenLabs API authentication failed" in str(exc_info.value)
         
@@ -197,7 +283,7 @@ class TestGenerateAudio:
         
         # Call function and verify error handling
         with pytest.raises(Exception) as exc_info:
-            generate_audio("Test script")
+            generate_audio_elevenlabs("Test script")
             
         assert "Voice ID 'invalid-voice-id' not found" in str(exc_info.value)
         
@@ -221,7 +307,7 @@ class TestGenerateAudio:
         
         # Call function and verify error handling
         with pytest.raises(Exception) as exc_info:
-            generate_audio("Test script")
+            generate_audio_elevenlabs("Test script")
             
         assert "ElevenLabs API quota exceeded" in str(exc_info.value)
         
@@ -245,7 +331,7 @@ class TestGenerateAudio:
         
         # Call function and verify error handling
         with pytest.raises(Exception) as exc_info:
-            generate_audio("Test script")
+            generate_audio_elevenlabs("Test script")
             
         assert "Network error connecting to ElevenLabs API" in str(exc_info.value)
 

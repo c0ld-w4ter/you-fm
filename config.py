@@ -34,7 +34,7 @@ class Config:
         'NEWSAPI_KEY',               # NewsAPI API key
         'OPENWEATHER_API_KEY',       # OpenWeatherMap API key
         'GEMINI_API_KEY',            # Google Gemini API key
-        'ELEVENLABS_API_KEY',        # ElevenLabs API key
+        # TTS provider is now configurable - at least one API key required
     ]
     
     # Optional configuration with defaults
@@ -49,8 +49,17 @@ class Config:
         'NEWS_TOPICS': 'technology,business,science',  # Default NewsAPI categories
         'MAX_ARTICLES_PER_TOPIC': '3',
         
-        # Audio settings
+        # TTS Provider settings
+        'TTS_PROVIDER': 'google',  # 'google' or 'elevenlabs'
+        
+        # Audio settings - ElevenLabs
+        'ELEVENLABS_API_KEY': '',  # Optional - only needed if using ElevenLabs
         'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
+        
+        # Audio settings - Google TTS
+        'GOOGLE_CLOUD_CREDENTIALS_PATH': '',  # Path to service account JSON (optional)
+        'GOOGLE_TTS_VOICE_NAME': 'en-US-Journey-D',  # Google TTS voice name
+        'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
         
         # AWS settings (optional for S3 upload)
         'AWS_REGION': 'us-east-1',
@@ -118,6 +127,9 @@ class Config:
             logger.error(error_msg)
             raise ConfigurationError(error_msg)
         
+        # Validate TTS provider configuration
+        self._validate_tts_config()
+        
         logger.info("✓ Configuration loaded successfully")
     
     def _load_from_dict(self, config_dict: Dict[str, str]) -> None:
@@ -150,6 +162,9 @@ class Config:
             error_msg = f"Missing required configuration values: {', '.join(missing_vars)}"
             logger.error(error_msg)
             raise ConfigurationError(error_msg)
+        
+        # Validate TTS provider configuration
+        self._validate_tts_config()
         
         logger.info("✓ Configuration loaded successfully from dictionary")
     
@@ -325,6 +340,24 @@ class Config:
                 raise ConfigurationError("VOICE_SPEED must be one of: 0.8, 1.0, 1.2")
         except ValueError:
             raise ConfigurationError("VOICE_SPEED must be a valid float")
+    
+    def _validate_tts_config(self) -> None:
+        """Validate TTS provider configuration."""
+        tts_provider = self.get('TTS_PROVIDER', 'google').lower()
+        
+        if tts_provider not in ['google', 'elevenlabs']:
+            raise ConfigurationError("TTS_PROVIDER must be either 'google' or 'elevenlabs'")
+        
+        if tts_provider == 'elevenlabs':
+            if not self.get('ELEVENLABS_API_KEY'):
+                raise ConfigurationError("ELEVENLABS_API_KEY is required when using ElevenLabs TTS provider")
+        elif tts_provider == 'google':
+            # Google TTS can use default credentials, so credentials path is optional
+            logger.info("Using Google TTS provider")
+            # Validate voice name format (should be like en-US-Journey-D)
+            voice_name = self.get('GOOGLE_TTS_VOICE_NAME', '')
+            if voice_name and not voice_name.count('-') >= 2:
+                logger.warning(f"Google TTS voice name '{voice_name}' may be invalid. Expected format: language-COUNTRY-VoiceName")
 
 
 # Global configuration instance

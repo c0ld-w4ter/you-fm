@@ -207,6 +207,7 @@ class TestTTSVoiceGeneration:
         # Test with specific voice ID
         config_data = full_config_data.copy()
         config_data['ELEVENLABS_VOICE_ID'] = 'EXAVITQu4vr4xnSDxMaL'  # Bella
+        config_data['TTS_PROVIDER'] = 'elevenlabs'  # Force ElevenLabs
         config = Config(config_data)
         
         generate_audio("Test script", config)
@@ -227,6 +228,7 @@ class TestTTSVoiceGeneration:
         # Test with 'default' voice ID
         config_data = full_config_data.copy()
         config_data['ELEVENLABS_VOICE_ID'] = 'default'
+        config_data['TTS_PROVIDER'] = 'elevenlabs'  # Force ElevenLabs
         config = Config(config_data)
         
         generate_audio("Test script", config)
