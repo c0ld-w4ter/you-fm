@@ -42,7 +42,7 @@ class TestTTSProviderSwitching:
         
         # Verify Google TTS was used
         assert result == b'google_audio_data'
-        mock_google_client.assert_called_once_with('')
+        mock_google_client.assert_called_once_with(api_key=None, credentials_path=None)
         mock_client_instance.synthesize_speech.assert_called_once_with(
             text=script_text,
             voice_name='en-US-Journey-D',

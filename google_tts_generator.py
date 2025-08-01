@@ -12,6 +12,15 @@ import base64
 import requests
 from typing import Optional, Dict, Any
 
+# Import Google Cloud TTS modules at module level for testing
+try:
+    from google.cloud import texttospeech
+    from google.oauth2 import service_account
+except ImportError:
+    # Handle case where Google Cloud libraries are not installed
+    texttospeech = None
+    service_account = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,8 +42,8 @@ class GoogleTTSClient:
         # Try to initialize client library if no API key provided
         if not api_key:
             try:
-                from google.cloud import texttospeech
-                from google.oauth2 import service_account
+                if texttospeech is None or service_account is None:
+                    raise ImportError("Google Cloud TTS libraries not available")
                 
                 if credentials_path and os.path.exists(credentials_path):
                     credentials = service_account.Credentials.from_service_account_file(credentials_path)
@@ -247,7 +256,6 @@ class GoogleTTSClient:
         volume_gain_db: float
     ) -> bytes:
         """Synthesize speech using Google Cloud client library."""
-        from google.cloud import texttospeech
         
         # Google TTS has performance limits around 2000-3000 characters
         # Split text into chunks if needed
@@ -289,7 +297,6 @@ class GoogleTTSClient:
         volume_gain_db: float
     ) -> bytes:
         """Synthesize a single chunk using Google Cloud client library."""
-        from google.cloud import texttospeech
         
         # Set the text input to be synthesized
         synthesis_input = texttospeech.SynthesisInput(text=text)

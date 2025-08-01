@@ -21,7 +21,7 @@ class TestGoogleTTSClient:
         mock_creds_instance = MagicMock()
         mock_credentials.from_service_account_file.return_value = mock_creds_instance
         
-        client = GoogleTTSClient('/path/to/credentials.json')
+        client = GoogleTTSClient(credentials_path='/path/to/credentials.json')
         
         mock_exists.assert_called_once_with('/path/to/credentials.json')
         mock_credentials.from_service_account_file.assert_called_once_with('/path/to/credentials.json')
@@ -118,7 +118,7 @@ class TestGenerateAudioGoogle:
         
         # Verify
         assert result == b'fake_google_audio'
-        mock_client_class.assert_called_once_with('/path/to/creds.json')
+        mock_client_class.assert_called_once_with(api_key=None, credentials_path='/path/to/creds.json')
         mock_client_instance.synthesize_speech.assert_called_once_with(
             text="Test script for Google TTS",
             voice_name='en-US-Journey-F',
