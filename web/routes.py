@@ -6,7 +6,7 @@ This module defines HTTP endpoints for the web application.
 
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file, jsonify, session, current_app
 from werkzeug.utils import secure_filename
 
@@ -576,7 +576,7 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'service': 'ai-daily-briefing-agent',
-        'timestamp': datetime.utcnow().isoformat()
+        'timestamp': datetime.now(UTC).isoformat()
     })
 
 

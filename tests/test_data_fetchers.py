@@ -7,7 +7,7 @@ as specified in Milestone 1 of the technical specification.
 
 import pytest
 from unittest.mock import patch, MagicMock, mock_open
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import json
 from pathlib import Path
 
@@ -60,7 +60,7 @@ class TestNewsCache:
         # Set cache with old timestamp
         cache_data = {
             'test_key': {
-                'timestamp': (datetime.utcnow() - timedelta(hours=7)).isoformat(),
+                'timestamp': (datetime.now(UTC) - timedelta(hours=7)).isoformat(),
                 'articles': test_articles
             }
         }
@@ -80,7 +80,7 @@ class TestNewsCache:
         # Set cache with recent timestamp
         cache_data = {
             'test_key': {
-                'timestamp': (datetime.utcnow() - timedelta(hours=3)).isoformat(),
+                'timestamp': (datetime.now(UTC) - timedelta(hours=3)).isoformat(),
                 'articles': test_articles
             }
         }
@@ -219,7 +219,7 @@ class TestGetNewsArticles:
         # Mock datetime for deterministic date filtering
         mock_now = datetime(2025, 7, 30, 12, 0, 0)
         mock_yesterday = mock_now - timedelta(days=1)
-        mock_datetime.utcnow.return_value = mock_now
+        mock_datetime.now.return_value = mock_now
         mock_datetime.timedelta = timedelta  # Keep real timedelta
         
         # Mock configuration
