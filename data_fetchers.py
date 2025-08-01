@@ -11,7 +11,7 @@ import json
 import os
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 from config import get_config, Config
@@ -84,7 +84,7 @@ class NewsCache:
         cached_time = datetime.fromisoformat(entry['timestamp'])
         
         # Check if cache is expired
-        if datetime.utcnow() - cached_time > timedelta(hours=max_age_hours):
+        if datetime.now(UTC) - cached_time > timedelta(hours=max_age_hours):
             logger.info(f"Cache expired for key: {cache_key}")
             return None
         
@@ -96,7 +96,7 @@ class NewsCache:
         cache_data = self._load_cache()
         
         cache_data[cache_key] = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'articles': articles
         }
         
@@ -119,7 +119,7 @@ class NewsCache:
         
         for key, entry in cache_data.items():
             cached_time = datetime.fromisoformat(entry['timestamp'])
-            age_hours = (datetime.utcnow() - cached_time).total_seconds() / 3600
+            age_hours = (datetime.now(UTC) - cached_time).total_seconds() / 3600
             stats['entries'].append({
                 'key': key,
                 'cached_at': entry['timestamp'],
@@ -222,7 +222,7 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
     max_articles = config.get_max_articles_per_topic()
     
     # Calculate date for past 24 hours
-    from_date = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
+    from_date = (datetime.now(UTC) - timedelta(days=1)).strftime('%Y-%m-%d')
     
     # Initialize cache
     cache = NewsCache() if use_cache else None
