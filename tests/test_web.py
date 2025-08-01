@@ -849,9 +849,11 @@ class TestConfigurationIntegration:
         form_data_without_api_key = valid_form_data.copy()
         del form_data_without_api_key['newsapi_key']
         
-        # Should raise exception because environment fallback doesn't exist in test
-        with pytest.raises(ConfigurationError):
-            config_with_fallback = WebConfig.create_config_from_form(form_data_without_api_key)
+        # Mock environment to ensure no fallback values exist
+        with patch.dict(os.environ, {}, clear=True):
+            # Should raise exception because environment fallback doesn't exist in test
+            with pytest.raises(ConfigurationError):
+                config_with_fallback = WebConfig.create_config_from_form(form_data_without_api_key)
     
     def test_form_data_validation(self, valid_form_data):
         """Test form data validation function."""
