@@ -130,36 +130,16 @@ class SettingsForm(FlaskForm):
         validators=[Optional()]
     )
     
-    # Content Settings
+    # Content Settings - Simplified for fast iteration
     briefing_duration_minutes = IntegerField(
         'Briefing Duration (minutes)',
         validators=[NumberRange(min=1, max=30, message='Duration must be between 1 and 30 minutes')],
         render_kw={'min': 1, 'max': 30}
     )
     
-    # Enhanced: News Topics as checkboxes - ONLY REAL NEWSAPI CATEGORIES
-    news_topics = SelectMultipleField(
-        'News Topics',
-        choices=[
-            ('business', 'Business'),
-            ('entertainment', 'Entertainment'),
-            ('general', 'General'),
-            ('health', 'Health'),
-            ('science', 'Science'),
-            ('sports', 'Sports'),
-            ('technology', 'Technology'),
-        ],
-        default=['technology', 'business', 'science'],
-        validators=[Optional()]
-    )
+    # Removed: news_topics, max_articles_per_topic - now auto-configured for comprehensive coverage
     
-    max_articles_per_topic = IntegerField(
-        'Max Articles per Topic',
-        validators=[NumberRange(min=1, max=100, message='Must be between 1 and 100')],
-        render_kw={'min': 1, 'max': 100}
-    )
-    
-    # Advanced Content Settings (New for Milestone 5)
+    # Content Settings - Simplified (removed complex options for fast iteration)
     briefing_tone = SelectField(
         'Briefing Tone',
         choices=[
@@ -171,26 +151,7 @@ class SettingsForm(FlaskForm):
         validators=[Optional()]
     )
     
-    content_depth = SelectField(
-        'Content Depth',
-        choices=[
-            ('headlines', 'Headlines Only'),
-            ('balanced', 'Balanced'),
-            ('detailed', 'Detailed Analysis')
-        ],
-        default='balanced',
-        validators=[Optional()]
-    )
-    
-    # Enhanced: Keywords to Avoid with better description
-    keywords_exclude = StringField(
-        'Keywords to Avoid',
-        validators=[Optional(), Length(max=200)],
-        render_kw={
-            'placeholder': 'e.g., sports, celebrity, gossip, politics',
-            'title': 'Separate keywords with commas. Articles containing these keywords will be filtered out.'
-        }
-    )
+    # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
     # Audio Settings
     elevenlabs_voice_id = SelectField(
@@ -240,17 +201,7 @@ class SettingsForm(FlaskForm):
         validators=[Optional()]
     )
     
-    # Advanced Audio Settings (New for Milestone 5)
-    voice_speed = SelectField(
-        'Voice Speed',
-        choices=[
-            ('0.8', 'Slow (0.8x)'),
-            ('1.0', 'Normal (1.0x)'),
-            ('1.2', 'Fast (1.2x)')
-        ],
-        default='1.0',
-        validators=[Optional()]
-    )
+    # Removed: voice_speed (users can adjust in audio player if needed)
     
     # Personalization fields - News & Information Preferences
     specific_interests = StringField(
@@ -262,19 +213,7 @@ class SettingsForm(FlaskForm):
         }
     )
     
-    briefing_goal = SelectField(
-        'Briefing Goal',
-        choices=[
-            ('', 'Select your main goal...'),
-            ('work', 'Stay informed for work'),
-            ('discovery', 'Discover interesting tech news'),
-            ('essential', 'Get the day\'s essential world events quickly'),
-            ('personal', 'Keep up with personal interests'),
-            ('learning', 'Learn something new every day')
-        ],
-        default='',
-        validators=[Optional()]
-    )
+    # Removed: briefing_goal (hardcoded to 'work' for UI simplification)
     
     followed_entities = StringField(
         'Followed Entities',

@@ -67,7 +67,7 @@ class TestConfig:
             # Verify default values are loaded
             assert config.get('AWS_REGION') == 'us-east-1'
             assert config.get('LOCATION_CITY') == 'Denver'
-            assert config.get('NEWS_TOPICS') == 'technology,business,science'
+            assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'  # Updated for comprehensive coverage
     
     def test_config_overrides_defaults(self):
         """Test that environment variables override default values."""
@@ -385,7 +385,7 @@ class TestAdvancedConfigurationGetters:
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
             'SPECIFIC_INTERESTS': 'AI, quantum computing',
-            'BRIEFING_GOAL': 'work',
+            # 'BRIEFING_GOAL' removed for UI simplification
             'FOLLOWED_ENTITIES': 'OpenAI, Elon Musk',
             'HOBBIES': 'hiking, gaming',
             'FAVORITE_TEAMS_ARTISTS': 'Lakers, Taylor Swift',
@@ -398,7 +398,7 @@ class TestAdvancedConfigurationGetters:
         
         # Test News & Information Preferences
         assert config.get_specific_interests() == 'AI, quantum computing'
-        assert config.get_briefing_goal() == 'work'
+        # briefing_goal method removed for UI simplification
         assert config.get_followed_entities() == 'OpenAI, Elon Musk'
         
         # Test Hobbies & Personal Interests
@@ -421,12 +421,11 @@ class TestAdvancedConfigurationGetters:
         
         config = Config(config_dict)
         
-        # All should return empty strings
-        assert config.get_specific_interests() == ''
-        assert config.get_briefing_goal() == ''
-        assert config.get_followed_entities() == ''
-        assert config.get_hobbies() == ''
-        assert config.get_favorite_teams_artists() == ''
-        assert config.get_passion_topics() == ''
-        assert config.get_greeting_preference() == ''
-        assert config.get_daily_routine_detail() == '' 
+        # Now have smart defaults instead of empty strings
+        assert config.get_specific_interests() == 'artificial intelligence, machine learning, startup news'
+        # briefing_goal method removed for UI simplification
+        assert config.get_followed_entities() == 'tech industry, major tech companies'
+        assert config.get_hobbies() == 'reading tech blogs, podcasts'
+        assert config.get_passion_topics() == 'technology trends, innovation'
+        assert config.get_greeting_preference() == 'Good morning! Here is your essential tech and business update.'
+        assert config.get_daily_routine_detail() == 'I listen during my morning coffee' 

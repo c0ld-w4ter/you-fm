@@ -55,61 +55,66 @@ class TestSettingsForm:
     """Test settings form validation including new advanced fields."""
     
     def test_valid_settings_form_with_advanced_fields(self, app):
-        """Test form validation with all valid settings including new advanced fields."""
+        """Test form validation with valid settings and remaining advanced fields."""
         with app.app_context():
             form_data = {
                 'listener_name': 'Test User',
                 'location_city': 'Denver',
                 'location_country': 'US',
                 'briefing_duration_minutes': 8,
-                'news_topics': 'technology,business',
-                'max_articles_per_topic': 3,
                 'elevenlabs_voice_id': 'default',
                 'aws_region': 'us-east-1',
-                # Advanced fields
+                # Only remaining advanced field
                 'briefing_tone': 'casual',
-                'content_depth': 'balanced',
-                'keywords_exclude': 'politics,sports',
-                'voice_speed': '1.0'
+                # Removed fields: content_depth, keywords_exclude, voice_speed, news_topics, max_articles_per_topic
             }
             
             form = SettingsForm(data=form_data)
             
-            # Verify all new fields are present and have correct values
+            # Verify remaining field is present and has correct values
             assert form.briefing_tone.data == 'casual'
-            assert form.content_depth.data == 'balanced'
-            assert form.keywords_exclude.data == 'politics,sports'
-            assert form.voice_speed.data == '1.0'
-    
+            # Removed fields should not exist
+            assert not hasattr(form, 'content_depth')
+            assert not hasattr(form, 'keywords_exclude') 
+            assert not hasattr(form, 'voice_speed')
+            assert not hasattr(form, 'news_topics')
+            assert not hasattr(form, 'max_articles_per_topic')
+
     def test_advanced_field_defaults(self, app):
-        """Test that advanced fields have proper default values."""
+        """Test that remaining advanced field has proper default values."""
         with app.app_context():
             form = SettingsForm()
             
-            # Check that defaults are set correctly
+            # Check that defaults are set correctly for remaining field
             assert form.briefing_tone.default == 'professional'
-            assert form.content_depth.default == 'balanced'
-            assert form.voice_speed.default == '1.0'
-    
+            # Removed fields should not exist
+            assert not hasattr(form, 'content_depth')
+            assert not hasattr(form, 'keywords_exclude')
+            assert not hasattr(form, 'voice_speed')
+
     def test_advanced_field_validation(self, app):
-        """Test validation of advanced fields."""
+        """Test validation works without removed fields."""
         with app.app_context():
             form_data = {
                 'briefing_duration_minutes': 8,
-                'keywords_exclude': 'a' * 250,  # Too long
+                'briefing_tone': 'professional',
             }
             
             form = SettingsForm(data=form_data)
             
-            # Test that long keywords_exclude field is present (validation happens on form.validate())
-            assert len(form.keywords_exclude.data) > 200
+            # Test that form can be created without removed fields
+            assert form.briefing_tone.data == 'professional'
+            # Removed fields should not exist
+            assert not hasattr(form, 'keywords_exclude')
+            assert not hasattr(form, 'content_depth')
+            assert not hasattr(form, 'voice_speed')
 
 
 class TestWebConfig:
     """Test web configuration handling including advanced fields."""
     
     def test_create_config_with_advanced_fields(self):
-        """Test creating Config object with new advanced fields."""
+        """Test creating Config object with simplified advanced fields."""
         form_data = {
             'newsapi_key': 'test_news_key',
             'openweather_api_key': 'test_weather_key',
@@ -119,41 +124,36 @@ class TestWebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             'briefing_duration_minutes': 10,
-            'news_topics': 'technology,science',
-            'max_articles_per_topic': 5,
             'elevenlabs_voice_id': 'default',
             'aws_region': 'us-east-1',
-            # New advanced fields
+            # Only remaining advanced field
             'briefing_tone': 'casual',
-            'content_depth': 'detailed',
-            'keywords_exclude': 'sports,gossip',
-            'voice_speed': '1.2',
+            # Removed fields are auto-configured
         }
         
         # This should not raise an exception
         config = WebConfig.create_config_from_form(form_data)
         
-        # Verify advanced fields are included in config
+        # Verify advanced fields are configured correctly
         assert config.get('BRIEFING_TONE') == 'casual'
-        assert config.get('CONTENT_DEPTH') == 'detailed'
-        assert config.get('KEYWORDS_EXCLUDE') == 'sports,gossip'
-        assert config.get('VOICE_SPEED') == '1.2'
-    
+        assert config.get('CONTENT_DEPTH') == 'balanced'  # Hardcoded
+        assert config.get('KEYWORDS_EXCLUDE') == ''  # Hardcoded
+        assert config.get('VOICE_SPEED') == '1.0'  # Hardcoded
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'  # Auto-configured
+        assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'  # Auto-configured
+
     def test_form_defaults_include_advanced_fields(self):
-        """Test that form defaults include values for advanced fields."""
+        """Test that form defaults include values for remaining advanced fields."""
         defaults = WebConfig.get_form_defaults()
         
-        # Verify new advanced field defaults are present
+        # Verify remaining advanced field default is present
         assert 'briefing_tone' in defaults
-        assert 'content_depth' in defaults
-        assert 'keywords_exclude' in defaults
-        assert 'voice_speed' in defaults
-        
-        # Verify default values
-        assert defaults['briefing_tone'] == 'professional'
-        assert defaults['content_depth'] == 'balanced'
-        assert defaults['keywords_exclude'] == ''
-        assert defaults['voice_speed'] == '1.0'
+        # Removed fields should not be in defaults
+        assert 'content_depth' not in defaults
+        assert 'keywords_exclude' not in defaults
+        assert 'voice_speed' not in defaults
+        assert 'news_topics' not in defaults
+        assert 'max_articles_per_topic' not in defaults
     
     def test_config_with_empty_advanced_fields(self):
         """Test configuration creation with empty advanced fields."""
@@ -215,15 +215,11 @@ class TestAdvancedFieldsIntegration:
                 'location_city': 'Boston',
                 'location_country': 'US',
                 'briefing_duration_minutes': 12,
-                'news_topics': 'technology,health,business',
-                'max_articles_per_topic': 4,
                 'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',
                 
-                # Advanced settings
+                # Remaining advanced setting
                 'briefing_tone': 'casual',
-                'content_depth': 'detailed',
-                'keywords_exclude': 'celebrity,gossip,sports',
-                'voice_speed': '1.1',
+                # Removed fields are auto-configured
             }
             
             # Create config from form data
@@ -233,11 +229,12 @@ class TestAdvancedFieldsIntegration:
             assert config.get('LISTENER_NAME') == 'Integration Test User'
             assert config.get('LOCATION_CITY') == 'Boston'
             assert config.get('BRIEFING_DURATION_MINUTES') == '12'
-            assert config.get('NEWS_TOPICS') == 'technology,health,business'
+            assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'  # Auto-configured
+            assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'  # Auto-configured
             assert config.get('BRIEFING_TONE') == 'casual'
-            assert config.get('CONTENT_DEPTH') == 'detailed'
-            assert config.get('KEYWORDS_EXCLUDE') == 'celebrity,gossip,sports'
-            assert config.get('VOICE_SPEED') == '1.1'
+            assert config.get('CONTENT_DEPTH') == 'balanced'  # Hardcoded
+            assert config.get('KEYWORDS_EXCLUDE') == ''  # Hardcoded
+            assert config.get('VOICE_SPEED') == '1.0'  # Hardcoded
 
 
 class TestPreviewFunctionality:
@@ -502,7 +499,7 @@ def valid_settings_data():
         'voice_speed': '1.0',
         # Personalization settings
         'specific_interests': 'AI, renewable energy',
-        'briefing_goal': 'work',
+        # 'briefing_goal' removed for UI simplification
         'followed_entities': 'OpenAI, Tesla',
         'hobbies': 'hiking, reading',
         'favorite_teams_artists': 'Lakers',
@@ -836,7 +833,7 @@ class TestConfigurationIntegration:
         """Test that default values are populated correctly."""
         defaults = WebConfig.get_form_defaults()
         assert defaults['location_city'] == 'Denver'
-        assert defaults['briefing_duration_minutes'] == 3
+        assert defaults['briefing_duration_minutes'] == 5  # Updated from 3 to 5
         assert defaults['elevenlabs_voice_id'] == 'default'
     
     def test_configuration_validation_integration(self, valid_form_data):

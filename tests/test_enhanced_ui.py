@@ -62,29 +62,28 @@ class TestEnhancedUI:
             assert 'DE' in country_codes  # Germany
     
     def test_news_topics_checkbox_defaults(self):
-        """Test that news topics checkboxes have correct defaults."""
+        """Test that news topics are now auto-configured (no user selection needed)."""
         defaults = WebConfig.get_form_defaults()
-        expected_topics = ['technology', 'business', 'science']
-        assert defaults['news_topics'] == expected_topics
-    
+        # news_topics field was removed - it's now auto-configured to all categories
+        assert 'news_topics' not in defaults  # Field removed for UI simplification
+        
+        # Verify that when creating config, all topics are automatically included
+        form_data = {
+            'newsapi_key': 'test_key',
+            'openweather_api_key': 'test_key',
+            'gemini_api_key': 'test_key',
+            'elevenlabs_api_key': 'test_key',
+        }
+        config = WebConfig.create_config_from_form(form_data)
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
+
     def test_news_topics_has_choices(self, app):
-        """Test that news topics field has proper choices."""
+        """Test that news topics field was removed for UI simplification."""
         with app.app_context():
             form = SettingsForm()
-            choices = form.news_topics.choices
-            
-            # Check that default topics are included
-            topic_values = [choice[0] for choice in choices]
-            assert 'technology' in topic_values
-            assert 'business' in topic_values
-            assert 'science' in topic_values
-            
-            # Check that we have exactly 7 real NewsAPI categories
-            assert len(choices) == 7  # Real NewsAPI categories only
-            expected_categories = {'business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology'}
-            actual_categories = {choice[0] for choice in choices}
-            assert actual_categories == expected_categories
-    
+            # news_topics field was intentionally removed for UI simplification
+            assert not hasattr(form, 'news_topics')
+
     # NOTE: Commenting out this test as WTForms validation for SelectMultipleField 
     # is proving problematic. The core functionality works - this is just UI validation.
     # TODO: Implement frontend validation or use a different approach for category limits
@@ -114,54 +113,65 @@ class TestEnhancedUI:
     #         assert 'Maximum 5 categories allowed' in str(form.errors['news_topics'])
     
     def test_max_articles_per_topic_validation(self):
-        """Test that max articles per topic has proper validation."""
+        """Test that max articles per topic is now auto-configured."""
         defaults = WebConfig.get_form_defaults()
-        assert defaults['max_articles_per_topic'] == 3  # Updated default
-    
-    def test_checkbox_list_to_string_conversion(self):
-        """Test conversion of checkbox lists to comma-separated strings."""
+        # max_articles_per_topic field was removed - it's now auto-configured to 100
+        assert 'max_articles_per_topic' not in defaults  # Field removed for UI simplification
+        
+        # Verify that when creating config, max articles is automatically set to 100
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'news_topics': ['technology', 'health', 'sports'],
+        }
+        config = WebConfig.create_config_from_form(form_data)
+        assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'
+
+    def test_checkbox_list_to_string_conversion(self):
+        """Test that news topics are now auto-configured regardless of input."""
+        form_data = {
+            'newsapi_key': 'test_key',
+            'openweather_api_key': 'test_key',
+            'gemini_api_key': 'test_key',
+            'elevenlabs_api_key': 'test_key',
+            # news_topics input is ignored - auto-configured for comprehensive coverage
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
-        # Verify lists were converted to comma-separated strings
-        assert config.get('NEWS_TOPICS') == 'technology,health,sports'
+        # Always uses all categories regardless of user input
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
 
     def test_string_input_still_works(self):
-        """Test that string inputs still work for backwards compatibility."""
+        """Test that news topics are auto-configured (user input ignored)."""
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'news_topics': 'technology,health,sports',  # String format
+            # Any news_topics input is ignored
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
-        # Verify strings are preserved
-        assert config.get('NEWS_TOPICS') == 'technology,health,sports'
+        # Always auto-configured to all categories
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
 
     def test_empty_checkbox_selection(self):
-        """Test handling of empty checkbox selections."""
+        """Test that news topics are auto-configured (empty input ignored)."""
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
             'gemini_api_key': 'test_key',
             'elevenlabs_api_key': 'test_key',
-            'news_topics': [],  # Empty list
+            # Empty news_topics input is ignored
         }
         
         config = WebConfig.create_config_from_form(form_data)
         
-        # Verify empty lists become empty strings
-        assert config.get('NEWS_TOPICS') == ''
+        # Always auto-configured to all categories for comprehensive coverage
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
 
 
 # Manual Testing Guide

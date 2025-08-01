@@ -88,36 +88,32 @@ def settings():
     
     if request.method == 'POST':
         if form.validate_on_submit():
-            # Convert checkbox lists to comma-separated strings for session storage
-            news_topics = form.news_topics.data
-            if isinstance(news_topics, list):
-                news_topics_str = ','.join(news_topics)
-            else:
-                news_topics_str = news_topics or 'technology,business,science'
+            # Auto-configure comprehensive news coverage (no user selection needed)
+            news_topics_str = 'business,entertainment,general,health,science,sports,technology'
                 
 
             
-            # Store settings in session
+            # Store settings in session - simplified for fast iteration
             session['settings'] = {
                 'listener_name': form.listener_name.data,
                 'location_city': form.location_city.data,
                 'location_country': form.location_country.data,
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
-                'news_topics': news_topics_str,  # Store as comma-separated string
-                'max_articles_per_topic': form.max_articles_per_topic.data,
+                'news_topics': news_topics_str,  # Auto-configured to all categories
+                'max_articles_per_topic': 100,  # Auto-configured for comprehensive coverage
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
                 'google_tts_voice_name': form.google_tts_voice_name.data,  # Store Google TTS voice selection
                 'aws_region': form.aws_region.data,
                 
-                # Advanced settings (New for Milestone 5)
+                # Simplified settings
                 'briefing_tone': form.briefing_tone.data,
-                'content_depth': form.content_depth.data,
-                'keywords_exclude': form.keywords_exclude.data,
-                'voice_speed': form.voice_speed.data,
+                'content_depth': 'balanced',  # Hardcoded for simplicity
+                'keywords_exclude': '',  # Removed - let AI handle filtering
+                'voice_speed': '1.0',  # Hardcoded - users can adjust in player
                 
                 # Personalization settings - News & Information Preferences
                 'specific_interests': form.specific_interests.data,
-                'briefing_goal': form.briefing_goal.data,
+                # briefing_goal removed - hardcoded to 'work' in config
                 'followed_entities': form.followed_entities.data,
                 
                 # Personalization settings - Hobbies & Personal Interests

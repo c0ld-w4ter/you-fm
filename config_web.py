@@ -93,12 +93,8 @@ class WebConfig:
             raise ConfigurationError(error_msg)
         
         # Convert form data to config dictionary
-        # Handle news topics (convert list to comma-separated string)
-        news_topics = form_data.get('news_topics', ['technology', 'business', 'science'])
-        if isinstance(news_topics, list):
-            news_topics_str = ','.join(news_topics)
-        else:
-            news_topics_str = news_topics or 'technology,business,science'
+        # Auto-configure news topics for comprehensive coverage (no user selection needed)
+        news_topics_str = 'business,entertainment,general,health,science,sports,technology'  # All NewsAPI categories
         
         config_dict = {
             # API Keys
@@ -113,10 +109,10 @@ class WebConfig:
             'LOCATION_CITY': form_data.get('location_city', 'Denver'),
             'LOCATION_COUNTRY': form_data.get('location_country', 'US'),
             
-            # Content Settings
-            'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 3)),
-            'NEWS_TOPICS': news_topics_str,
-            'MAX_ARTICLES_PER_TOPIC': str(form_data.get('max_articles_per_topic', 3)),
+            # Content Settings - Simplified for fast iteration
+            'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 5)),
+            'NEWS_TOPICS': news_topics_str,  # Auto-configured to all categories
+            'MAX_ARTICLES_PER_TOPIC': '100',  # Auto-configured for comprehensive news gathering
             
             # Audio Settings
             'TTS_PROVIDER': tts_provider,
@@ -128,15 +124,15 @@ class WebConfig:
             'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
             'S3_BUCKET_NAME': form_data.get('s3_bucket_name', ''),
             
-            # Advanced customization settings (Milestone 5)
+            # Customization settings - Simplified UI (some hardcoded for fast iteration)
             'BRIEFING_TONE': form_data.get('briefing_tone', 'professional'),
-            'CONTENT_DEPTH': form_data.get('content_depth', 'balanced'),
-            'KEYWORDS_EXCLUDE': form_data.get('keywords_exclude', ''),
-            'VOICE_SPEED': str(form_data.get('voice_speed', '1.0')),
+            'CONTENT_DEPTH': 'balanced',  # Hardcoded - removed from UI
+            'KEYWORDS_EXCLUDE': '',  # Hardcoded - removed from UI (let AI handle filtering)
+            'VOICE_SPEED': '1.0',  # Hardcoded - removed from UI (users can adjust in player)
             
             # Personalization settings - News & Information Preferences
             'SPECIFIC_INTERESTS': form_data.get('specific_interests', ''),
-            'BRIEFING_GOAL': form_data.get('briefing_goal', ''),
+            # BRIEFING_GOAL removed for UI simplification
             'FOLLOWED_ENTITIES': form_data.get('followed_entities', ''),
             
             # Personalization settings - Hobbies & Personal Interests
@@ -165,17 +161,24 @@ class WebConfig:
             'aws_region': 'us-east-1',
             'location_city': 'Denver',
             'location_country': 'US',
-            'news_topics': ['technology', 'business', 'science'],  # Real NewsAPI categories only
-            'max_articles_per_topic': 3,  # Reasonable default
+            # Removed news_topics, max_articles_per_topic - these are now auto-configured
             'elevenlabs_voice_id': 'default',
-            'briefing_duration_minutes': 3,
+            'briefing_duration_minutes': 5,  # Updated from 3 to 5 minutes
             'listener_name': '',
             
-            # Advanced defaults (New for Milestone 5)
+            # Simplified settings - removed complex options
             'briefing_tone': 'professional',
-            'content_depth': 'balanced',
-            'keywords_exclude': '',
-            'voice_speed': '1.0',
+            # Removed: content_depth, keywords_exclude, voice_speed - now hardcoded for simplicity
+            
+            # Smart personalization defaults with environment variable support
+            'specific_interests': os.environ.get('DEFAULT_INTERESTS', 'artificial intelligence, machine learning, startup news'),
+            # Removed: briefing_goal (hardcoded to 'work' for simplicity)
+            'followed_entities': os.environ.get('DEFAULT_ENTITIES', 'tech industry, major tech companies'),
+            'hobbies': os.environ.get('DEFAULT_HOBBIES', 'reading tech blogs, podcasts'),
+            'favorite_teams_artists': os.environ.get('DEFAULT_TEAMS_ARTISTS', ''),
+            'passion_topics': os.environ.get('DEFAULT_PASSION_TOPICS', 'technology trends, innovation'),
+            'greeting_preference': os.environ.get('DEFAULT_GREETING', 'Good morning! Here is your essential tech and business update.'),
+            'daily_routine_detail': os.environ.get('DEFAULT_ROUTINE', 'I listen during my morning coffee'),
         }
         
         # Add API keys from environment variables for local development
@@ -236,16 +239,10 @@ class WebConfig:
             if not form_data.get(field, '').strip():
                 errors[field] = error_msg
         
-        # Numeric field validation
-        try:
-            max_articles = int(form_data.get('max_articles_per_topic', 3))
-            if max_articles < 1 or max_articles > 10:
-                errors['max_articles_per_topic'] = 'Must be between 1 and 10'
-        except (ValueError, TypeError):
-            errors['max_articles_per_topic'] = 'Must be a valid number'
+        # Numeric field validation - removed max_articles_per_topic (now hardcoded)
         
         try:
-            duration = int(form_data.get('briefing_duration_minutes', 8))
+            duration = int(form_data.get('briefing_duration_minutes', 5))  # Updated default to 5
             if duration < 1 or duration > 30:
                 errors['briefing_duration_minutes'] = 'Must be between 1 and 30 minutes'
         except (ValueError, TypeError):

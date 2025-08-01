@@ -4,8 +4,17 @@ A modern web application that generates personalized, AI-powered daily audio new
 
 ## 🏗️ Project Status
 
-**Current Status**: Milestone 5 ✅ Complete - Enhanced Customization  
+**Current Status**: UI Simplified ✅ Complete - Streamlined for Fast Iteration  
+**Previous**: Milestone 5 ✅ Complete - Enhanced Customization  
 **Next**: Milestone 6 - Production Deployment
+
+### 🚀 Recent UI Simplification
+The interface has been significantly streamlined to enable **rapid testing and development**:
+- ⚡ **Pre-populated Defaults**: All personalization fields now have smart defaults
+- 📰 **Comprehensive News**: Automatically fetches all news categories (no user selection needed)
+- 🎯 **Simplified Settings**: Removed complex options (content depth, voice speed, keyword exclusion)
+- 🕐 **5-minute Default**: Extended default briefing length for more content
+- 🤖 **AI Curation**: Let AI handle content filtering instead of manual keyword exclusion
 
 ### Milestone Progress
 - ✅ **Milestone 0**: Secure Setup & Configuration
@@ -108,27 +117,49 @@ The following API keys are required and can be entered through the web form:
 - **ElevenLabs API Key**: For text-to-speech conversion
 
 ### Optional Configuration (via Web Interface)
-- **Listener Name**: For personalized greetings (default: "Seamus")
-- **Location**: City and country code (default: Denver, US)
-- **Briefing Duration**: Target length in minutes (default: 8)
-- **News Topics**: Comma-separated topics (default: technology,business,science)
-- **Max Articles per Topic**: Number limit (default: 3)
+**Simplified UI for Fast Iteration** - Configuration made streamlined for rapid development:
 
-- **Voice Selection**: Choose from multiple ElevenLabs voices
-- **Advanced Customization (Milestone 5)**:
-  - **Briefing Tone**: Professional, Casual, or Energetic
-  - **Content Depth**: Headlines, Balanced, or Detailed Analysis
-  - **Keyword Filtering**: Exclude specific topics (comma-separated)
-  - **Voice Speed**: Slow (0.8x), Normal (1.0x), or Fast (1.2x)
+**Basic Settings** (User Configurable):
+- **Listener Name**: For personalized greetings (pre-populated)
+- **Location**: City and country code (default: Denver, US)
+- **Briefing Duration**: Target length in minutes (default: 5 minutes)
+- **Voice Selection**: Choose from multiple ElevenLabs/Google TTS voices
+- **Briefing Tone**: Professional, Casual, or Energetic
+
+**Auto-Configured Settings** (Optimized for Speed):
+- **News Topics**: All categories (business, entertainment, general, health, science, sports, technology)
+- **Max Articles**: 100 per topic for comprehensive coverage
+- **Content Depth**: Balanced (hardcoded for optimal results)
+- **Voice Speed**: Normal (users can adjust in audio player)
+- **Content Filtering**: AI-powered (removed keyword exclusion for better curation)
+
+**Personalization Fields** (Pre-populated with Smart Defaults):
+- **Specific Interests**: What topics you care about most
+- **Briefing Goal**: Your primary listening objective  
+- **Followed Entities**: Industries or figures you follow
+- **Hobbies & Interests**: Personal activities and passions
+- **Greeting & Routine**: How you prefer to be addressed
 
 ### Environment Variables (Alternative)
 For automated/CLI usage, you can still use environment variables:
 ```bash
+# Required API Keys
 NEWSAPI_KEY=your_newsapi_key_here
 OPENWEATHER_API_KEY=your_openweather_key_here
 GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
-# Optional settings...
+
+# Optional Personalization Defaults (New in UI Simplification)
+DEFAULT_INTERESTS="artificial intelligence, machine learning, startup news"
+# DEFAULT_BRIEFING_GOAL removed - hardcoded to 'work' for simplicity
+DEFAULT_ENTITIES="tech industry, major tech companies"
+DEFAULT_HOBBIES="reading tech blogs, podcasts"
+DEFAULT_TEAMS_ARTISTS=""
+DEFAULT_PASSION_TOPICS="technology trends, innovation"
+DEFAULT_GREETING="Good morning! Here is your essential tech and business update."
+DEFAULT_ROUTINE="I listen during my morning coffee"
+
+# Other optional settings...
 ```
 
 ### Getting API Keys

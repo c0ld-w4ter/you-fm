@@ -106,54 +106,15 @@
                         <p class="field-description">Choose the overall tone of your briefing</p>
                     </div>
 
-                    <div class="field-group">
-                        {{ form.content_depth.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.content_depth(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.content_depth.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.content_depth.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">Control how detailed your briefing should be</p>
-                    </div>
+                    <!-- Removed: Content Depth (now hardcoded to 'balanced' for simplicity) -->
 
-                    <div class="field-group">
-                        {{ form.max_articles_per_topic.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.max_articles_per_topic(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.max_articles_per_topic.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.max_articles_per_topic.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">Maximum articles per news topic</p>
-                    </div>
+                    <!-- Removed: Max Articles per Topic (now hardcoded to 100 for comprehensive coverage) -->
 
-                    <!-- Enhanced: News Topics as checkboxes -->
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        {{ form.news_topics.label(class="block text-sm font-medium text-gray-700 mb-3") }}
-                        {% if form.news_topics.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.news_topics.errors[0] }}</p>
-                        {% endif %}
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {% for value, label in form.news_topics.choices %}
-                                <label class="flex items-center space-x-2 p-2 rounded border cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="checkbox" name="news_topics" value="{{ value }}" 
-                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                           {% if value in form.news_topics.data %}checked{% endif %}>
-                                    <span class="text-sm text-gray-700">{{ label }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                        <p class="field-description mt-2">Select the news topics you're interested in</p>
-                    </div>
+                    <!-- Removed: News Topics Selection (now auto-configured to all categories for comprehensive coverage) -->
 
 
 
-                    <!-- Enhanced: Keywords to Avoid with better description -->
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        {{ form.keywords_exclude.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.keywords_exclude(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.keywords_exclude.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.keywords_exclude.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">Topics to avoid in your briefing. Separate keywords with commas (e.g., sports, celebrity, politics)</p>
-                    </div>
+                    <!-- Removed: Keywords to Avoid (let AI handle content filtering instead) -->
                 </div>
             </div>
         </div>
@@ -204,14 +165,7 @@
                         <p class="field-description">Choose the Google TTS voice for your briefing</p>
                     </div>
 
-                    <div class="field-group">
-                        {{ form.voice_speed.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.voice_speed(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.voice_speed.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.voice_speed.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">Adjust the speed of your briefing</p>
-                    </div>
+                    <!-- Removed: Voice Speed (users can adjust in audio player if needed) -->
                 </div>
             </div>
         </div>
@@ -237,14 +191,7 @@
                         <p class="field-description">{{ form.specific_interests.render_kw.title }}</p>
                     </div>
 
-                    <div class="field-group">
-                        {{ form.briefing_goal.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.briefing_goal(class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                        {% if form.briefing_goal.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.briefing_goal.errors[0] }}</p>
-                        {% endif %}
-                        <p class="field-description">What is your main goal for listening to this briefing?</p>
-                    </div>
+                    <!-- Removed: Briefing Goal (hardcoded to 'work' for UI simplification) -->
 
                     <div class="field-group full-width">
                         {{ form.followed_entities.label(class="block text-sm font-medium text-gray-700 mb-2") }}

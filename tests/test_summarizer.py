@@ -321,7 +321,7 @@ class TestStyleAwareBriefingScript:
             'ELEVENLABS_API_KEY': 'test_key',
             'LISTENER_NAME': 'Alice',
             'SPECIFIC_INTERESTS': 'quantum computing, renewable energy',
-            'BRIEFING_GOAL': 'work',
+            # 'BRIEFING_GOAL' removed for UI simplification
             'FOLLOWED_ENTITIES': 'OpenAI, Tesla',
             'HOBBIES': 'hiking, photography',
             'FAVORITE_TEAMS_ARTISTS': 'Lakers, Beatles',
@@ -342,7 +342,7 @@ class TestStyleAwareBriefingScript:
         assert 'USER PROFILE:' in prompt
         assert 'Name: Alice' in prompt
         assert 'Specific Interests: quantum computing, renewable energy' in prompt
-        assert 'Briefing Goal: Stay informed for work' in prompt
+        # Briefing Goal removed for UI simplification
         assert 'Followed Entities: OpenAI, Tesla' in prompt
         assert 'Hobbies: hiking, photography' in prompt
         assert 'Favorite Teams/Artists: Lakers, Beatles' in prompt

@@ -195,7 +195,7 @@ def create_briefing_script(weather_data, articles: List[Article], config=None) -
         
         # Get personalization settings
         specific_interests = config.get_specific_interests()
-        briefing_goal = config.get_briefing_goal()
+        # briefing_goal removed for UI simplification
         followed_entities = config.get_followed_entities()
         hobbies = config.get_hobbies()
         favorite_teams_artists = config.get_favorite_teams_artists()
@@ -221,15 +221,7 @@ def create_briefing_script(weather_data, articles: List[Article], config=None) -
         # News & Information Preferences
         if specific_interests:
             user_profile_parts.append(f"Specific Interests: {specific_interests}")
-        if briefing_goal:
-            goal_descriptions = {
-                'work': 'Stay informed for work',
-                'discovery': 'Discover interesting tech news',
-                'essential': "Get the day's essential world events quickly",
-                'personal': 'Keep up with personal interests',
-                'learning': 'Learn something new every day'
-            }
-            user_profile_parts.append(f"Briefing Goal: {goal_descriptions.get(briefing_goal, briefing_goal)}")
+        # briefing_goal section removed for UI simplification
         if followed_entities:
             user_profile_parts.append(f"Followed Entities: {followed_entities}")
         

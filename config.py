@@ -44,10 +44,10 @@ class Config:
         'LOCATION_CITY': 'Denver',
         'LOCATION_COUNTRY': 'US',
         
-        # Content settings
-        'BRIEFING_DURATION_MINUTES': '3',
-        'NEWS_TOPICS': 'technology,business,science',  # Default NewsAPI categories
-        'MAX_ARTICLES_PER_TOPIC': '3',
+        # Content settings - Simplified for fast iteration
+        'BRIEFING_DURATION_MINUTES': '5',  # Updated from 3 to 5 minutes for more content
+        'NEWS_TOPICS': 'business,entertainment,general,health,science,sports,technology',  # All NewsAPI categories for comprehensive coverage
+        'MAX_ARTICLES_PER_TOPIC': '100',  # Maximum articles for comprehensive news gathering
         
         # TTS Provider settings
         'TTS_PROVIDER': 'google',  # 'google' or 'elevenlabs'
@@ -72,19 +72,19 @@ class Config:
         'KEYWORDS_EXCLUDE': '',            # Comma-separated keywords to filter out
         'VOICE_SPEED': '1.0',              # 0.8 (slow), 1.0 (normal), 1.2 (fast)
         
-        # Personalization settings - News & Information Preferences
-        'SPECIFIC_INTERESTS': '',          # Specific sub-topics, companies, or technologies
-        'BRIEFING_GOAL': '',               # Main goal for listening to the briefing
-        'FOLLOWED_ENTITIES': '',           # Specific industries or public figures to follow
+        # Personalization settings - News & Information Preferences (Smart defaults for fast iteration)
+        'SPECIFIC_INTERESTS': 'artificial intelligence, machine learning, startup news',  # Tech-focused default
+        # BRIEFING_GOAL removed for UI simplification
+        'FOLLOWED_ENTITIES': 'tech industry, major tech companies',  # Industry focus
         
-        # Personalization settings - Hobbies & Personal Interests
-        'HOBBIES': '',                     # Main hobbies and free time activities
-        'FAVORITE_TEAMS_ARTISTS': '',      # Favorite sports teams, artists, or franchises
-        'PASSION_TOPICS': '',              # Topics the user could talk about for hours
+        # Personalization settings - Hobbies & Personal Interests (Smart defaults)
+        'HOBBIES': 'reading tech blogs, podcasts',  # Common tech professional hobbies
+        'FAVORITE_TEAMS_ARTISTS': '',      # Keep empty as this varies greatly
+        'PASSION_TOPICS': 'technology trends, innovation',  # Tech professional focus
         
-        # Personalization settings - Personal Quirks & Style
-        'GREETING_PREFERENCE': '',         # How the anchor should greet the user
-        'DAILY_ROUTINE_DETAIL': '',        # Unique detail about daily routine
+        # Personalization settings - Personal Quirks & Style (Smart defaults)
+        'GREETING_PREFERENCE': 'Good morning! Here is your essential tech and business update.',  # Professional greeting
+        'DAILY_ROUTINE_DETAIL': 'I listen during my morning coffee',  # Common routine
     }
     
     def __init__(self, config_dict: Optional[Dict[str, str]] = None):
@@ -251,9 +251,7 @@ class Config:
         """Get specific interests/sub-topics."""
         return self.get('SPECIFIC_INTERESTS')
     
-    def get_briefing_goal(self) -> str:
-        """Get main goal for listening to the briefing."""
-        return self.get('BRIEFING_GOAL')
+    # get_briefing_goal method removed for UI simplification
     
     def get_followed_entities(self) -> str:
         """Get followed industries or public figures."""
