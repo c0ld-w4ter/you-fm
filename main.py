@@ -9,7 +9,7 @@ This module orchestrates the entire workflow:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Dict, Any
 
 from config import get_config, ConfigurationError, Config
@@ -44,7 +44,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'body': {
                 'message': 'Daily briefing generated successfully',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(UTC).isoformat(),
                 'result': result
             }
         }
@@ -56,7 +56,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': {
                 'error': 'Configuration error',
                 'message': str(e),
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(UTC).isoformat()
             }
         }
     
@@ -67,7 +67,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': {
                 'error': 'Internal server error',
                 'message': str(e),
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(UTC).isoformat()
             }
         }
 
