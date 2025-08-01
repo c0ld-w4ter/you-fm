@@ -48,17 +48,17 @@ class WebConfig:
         ]
         
         # TTS provider specific requirements
-        # Auto-detect TTS provider if not explicitly set
+        # Use explicit TTS provider choice, with fallback to auto-detection
         tts_provider = form_data.get('tts_provider', '').lower()
         if not tts_provider:
-            # Auto-detect based on which API key is provided
-            if form_data.get('elevenlabs_api_key', '').strip():
+            # Only auto-detect if no explicit choice was made
+            if form_data.get('google_api_key', '').strip():
+                tts_provider = 'google'  # Default to Google TTS (user preference)
+            elif form_data.get('elevenlabs_api_key', '').strip():
                 tts_provider = 'elevenlabs'
-            elif form_data.get('google_api_key', '').strip():
-                tts_provider = 'google'
             else:
-                # Default to elevenlabs for backward compatibility
-                tts_provider = 'elevenlabs'
+                # Default to google for new installations
+                tts_provider = 'google'
         
         tts_required_fields = []
         if tts_provider == 'elevenlabs':
@@ -212,17 +212,17 @@ class WebConfig:
         }
         
         # TTS provider specific validation
-        # Auto-detect TTS provider if not explicitly set (same logic as create_config_from_form)
+        # Use explicit TTS provider choice, with fallback to auto-detection (same logic as create_config_from_form)
         tts_provider = form_data.get('tts_provider', '').lower()
         if not tts_provider:
-            # Auto-detect based on which API key is provided
-            if form_data.get('elevenlabs_api_key', '').strip():
+            # Only auto-detect if no explicit choice was made
+            if form_data.get('google_api_key', '').strip():
+                tts_provider = 'google'  # Default to Google TTS (user preference)
+            elif form_data.get('elevenlabs_api_key', '').strip():
                 tts_provider = 'elevenlabs'
-            elif form_data.get('google_api_key', '').strip():
-                tts_provider = 'google'
             else:
-                # Default to elevenlabs for backward compatibility
-                tts_provider = 'elevenlabs'
+                # Default to google for new installations
+                tts_provider = 'google'
         
         tts_required_fields = {}
         if tts_provider == 'elevenlabs':

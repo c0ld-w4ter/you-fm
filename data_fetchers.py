@@ -83,6 +83,10 @@ class NewsCache:
         entry = cache_data[cache_key]
         cached_time = datetime.fromisoformat(entry['timestamp'])
         
+        # Ensure cached_time is timezone-aware
+        if cached_time.tzinfo is None:
+            cached_time = cached_time.replace(tzinfo=UTC)
+        
         # Check if cache is expired
         if datetime.now(UTC) - cached_time > timedelta(hours=max_age_hours):
             logger.info(f"Cache expired for key: {cache_key}")
@@ -119,6 +123,11 @@ class NewsCache:
         
         for key, entry in cache_data.items():
             cached_time = datetime.fromisoformat(entry['timestamp'])
+            
+            # Ensure cached_time is timezone-aware
+            if cached_time.tzinfo is None:
+                cached_time = cached_time.replace(tzinfo=UTC)
+            
             age_hours = (datetime.now(UTC) - cached_time).total_seconds() / 3600
             stats['entries'].append({
                 'key': key,

@@ -55,9 +55,11 @@ def api_keys():
                     # If both are available, prefer form value but don't store to reduce session size
                     api_keys_to_store[form_field] = form_value
             
-            # Store minimal API keys in session
+            # Store minimal API keys and TTS provider selection in session
+            api_keys_to_store['tts_provider'] = form.tts_provider.data  # Preserve TTS provider choice
             session['api_keys'] = api_keys_to_store
             logger.info(f"Stored {len(api_keys_to_store)} API keys in session (optimization)")
+            logger.info(f"Stored TTS provider choice: {form.tts_provider.data}")
             
             flash('API keys saved successfully!', 'success')
             return redirect(url_for('web.settings'))
@@ -104,6 +106,7 @@ def settings():
                 'news_topics': news_topics_str,  # Store as comma-separated string
                 'max_articles_per_topic': form.max_articles_per_topic.data,
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
+                'google_tts_voice_name': form.google_tts_voice_name.data,  # Store Google TTS voice selection
                 'aws_region': form.aws_region.data,
                 
                 # Advanced settings (New for Milestone 5)
