@@ -111,7 +111,7 @@ The application can be configured through the **web interface** or via environme
 
 ### Required API Keys
 The following API keys are required and can be entered through the web form:
-- **NewsAPI Key**: For fetching news articles
+- **NewsAPI.ai Key**: For fetching news articles (replacement for NewsAPI.org)
 - **OpenWeatherMap API Key**: For weather data
 - **Google Gemini API Key**: For AI summarization and script generation
 - **ElevenLabs API Key**: For text-to-speech conversion
@@ -144,7 +144,7 @@ The following API keys are required and can be entered through the web form:
 For automated/CLI usage, you can still use environment variables:
 ```bash
 # Required API Keys
-NEWSAPI_KEY=your_newsapi_key_here
+NEWSAPI_AI_KEY=your_newsapi_ai_key_here
 OPENWEATHER_API_KEY=your_openweather_key_here
 GEMINI_API_KEY=your_google_gemini_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_key_here
@@ -163,7 +163,7 @@ DEFAULT_ROUTINE="I listen during my morning coffee"
 ```
 
 ### Getting API Keys
-1. **NewsAPI**: Register at [newsapi.org](https://newsapi.org/)
+1. **NewsAPI.ai**: Register at [newsapi.ai](https://newsapi.ai/) (replacement for NewsAPI.org with better pricing and features)
 2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
 3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
 4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)

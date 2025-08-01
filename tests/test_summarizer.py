@@ -228,7 +228,7 @@ class TestStyleAwareBriefingScript:
         
         # Mock config with style preferences
         config = Config({
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -277,7 +277,7 @@ class TestStyleAwareBriefingScript:
         
         articles = create_test_articles()
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -315,7 +315,7 @@ class TestStyleAwareBriefingScript:
         )
         
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -370,7 +370,7 @@ class TestStyleAwareBriefingScript:
         
         articles = create_test_articles()
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',

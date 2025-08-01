@@ -52,7 +52,7 @@ def client(app):
 def full_config_data():
     """Provide full configuration data with all required keys for Config class."""
     return {
-        'NEWSAPI_KEY': 'test_newsapi_key',
+        'NEWSAPI_AI_KEY': 'test_newsapi_key',
         'OPENWEATHER_API_KEY': 'test_openweather_key',
         'GEMINI_API_KEY': 'test_gemini_key',
         'ELEVENLABS_API_KEY': 'test_elevenlabs_key',

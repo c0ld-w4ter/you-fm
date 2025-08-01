@@ -212,20 +212,21 @@ class TestGetNewsArticles:
     
     @patch('data_fetchers.NewsCache')
     @patch('data_fetchers.datetime')
-    @patch('requests.get')
+    @patch('requests.post')
     @patch('data_fetchers.get_config')
     def test_get_news_articles_success(self, mock_config, mock_requests, mock_datetime, mock_cache_class):
         """Test successful news articles fetching from top headlines."""
         # Mock datetime for deterministic date filtering
-        mock_now = datetime(2025, 7, 30, 12, 0, 0)
+        mock_now = datetime(2025, 7, 30, 12, 0, 0, tzinfo=UTC)
         mock_yesterday = mock_now - timedelta(days=1)
         mock_datetime.now.return_value = mock_now
         mock_datetime.timedelta = timedelta  # Keep real timedelta
+        mock_datetime.UTC = UTC  # Keep real UTC
         
         # Mock configuration
         mock_config_instance = MagicMock()
         mock_config_instance.get.side_effect = lambda key: {
-            'NEWSAPI_KEY': 'test-news-key'
+            'NEWSAPI_AI_KEY': 'test-newsapi-ai-key'
         }[key]
         mock_config_instance.get_news_topics.return_value = ['technology', 'business']
         mock_config_instance.get_max_articles_per_topic.return_value = 2
@@ -239,23 +240,25 @@ class TestGetNewsArticles:
         # Mock API response
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            'status': 'ok',
-            'articles': [
-                {
-                    'title': 'Test Tech Article',
-                    'source': {'name': 'TechCrunch'},
-                    'url': 'https://example.com/tech1',
-                    'content': 'Tech article content...',
-                    'description': 'Tech article description'
-                },
-                {
-                    'title': 'Test Business Article',
-                    'source': {'name': 'Bloomberg'},
-                    'url': 'https://example.com/business1',
-                    'content': 'Business article content...',
-                    'description': 'Business article description'
-                }
-            ]
+            'articles': {
+                'results': [
+                    {
+                        'title': 'Test Tech Article',
+                        'source': {'title': 'TechCrunch'},
+                        'url': 'https://example.com/tech1',
+                        'body': 'Tech article content...',
+                        'dateTime': '2025-07-30T12:00:00Z'
+                    },
+                    {
+                        'title': 'Test Business Article',
+                        'source': {'title': 'Bloomberg'},
+                        'url': 'https://example.com/business1',
+                        'body': 'Business article content...',
+                        'dateTime': '2025-07-30T12:00:00Z'
+                    }
+                ],
+                'totalResults': 2
+            }
         }
         mock_response.raise_for_status.return_value = None
         mock_requests.return_value = mock_response
@@ -274,22 +277,26 @@ class TestGetNewsArticles:
         
         # Verify API endpoint
         first_call = mock_requests.call_args_list[0]
-        assert 'top-headlines' in first_call[0][0]  # Check URL contains top-headlines
+        assert 'newsapi.ai' in first_call[0][0]  # Check URL contains newsapi.ai
         
-        # Verify API call parameters for first category
-        first_params = first_call[1]['params']
-        assert first_params['category'] == 'technology'  # Changed from 'q' to 'category'
-        assert first_params['country'] == 'us'           # New parameter
-        assert first_params['from'] == '2025-07-29'      # New date filtering
-        assert first_params['apiKey'] == 'test-news-key'
-        assert first_params['pageSize'] == 2
-        assert first_params['sortBy'] == 'publishedAt'
-        assert first_params['language'] == 'en'
+        # Verify API call payload for first category
+        first_payload = first_call[1]['json']
+        assert first_payload['apiKey'] == 'test-newsapi-ai-key'
+        assert first_payload['articlesCount'] == 2
+        assert first_payload['resultType'] == 'articles'
+        assert first_payload['articlesSortBy'] == 'date'
         
-        # Verify second category call
+        # Check query structure
+        query = first_payload['query']['$query']['$and']
+        assert any(item.get('lang') == 'eng' for item in query)
+        assert any('keyword' in item for item in query)
+        assert any('dateStart' in item for item in query)
+        assert any('dateEnd' in item for item in query)
+        
+        # Verify second category call exists
         second_call = mock_requests.call_args_list[1]
-        second_params = second_call[1]['params']
-        assert second_params['category'] == 'business'
+        second_payload = second_call[1]['json']
+        assert second_payload['apiKey'] == 'test-newsapi-ai-key'
         
         # Verify result
         assert len(result) == 4  # 2 articles × 2 categories
@@ -305,7 +312,7 @@ class TestGetNewsArticles:
     
     @patch('data_fetchers.NewsCache')
     @patch('data_fetchers.datetime')
-    @patch('requests.get')
+    @patch('requests.post')
     @patch('data_fetchers.get_config')
     def test_get_news_articles_with_cache_hit(self, mock_config, mock_requests, mock_datetime, mock_cache_class):
         """Test news articles fetching with cache hit."""
@@ -317,7 +324,7 @@ class TestGetNewsArticles:
         # Mock configuration
         mock_config_instance = MagicMock()
         mock_config_instance.get.side_effect = lambda key: {
-            'NEWSAPI_KEY': 'test-news-key'
+            'NEWSAPI_AI_KEY': 'test-newsapi-ai-key'
         }[key]
         mock_config_instance.get_news_topics.return_value = ['technology']
         mock_config_instance.get_max_articles_per_topic.return_value = 2
@@ -354,7 +361,7 @@ class TestGetNewsArticles:
     
     @patch('data_fetchers.NewsCache')
     @patch('data_fetchers.datetime')
-    @patch('requests.get')
+    @patch('requests.post')
     @patch('data_fetchers.get_config')
     def test_get_news_articles_without_cache(self, mock_config, mock_requests, mock_datetime, mock_cache_class):
         """Test news articles fetching with cache disabled."""
@@ -366,7 +373,7 @@ class TestGetNewsArticles:
         # Mock configuration
         mock_config_instance = MagicMock()
         mock_config_instance.get.side_effect = lambda key: {
-            'NEWSAPI_KEY': 'test-news-key'
+            'NEWSAPI_AI_KEY': 'test-newsapi-ai-key'
         }[key]
         mock_config_instance.get_news_topics.return_value = ['technology']
         mock_config_instance.get_max_articles_per_topic.return_value = 1
@@ -375,16 +382,18 @@ class TestGetNewsArticles:
         # Mock API response
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            'status': 'ok',
-            'articles': [
-                {
-                    'title': 'Test Article',
-                    'source': {'name': 'Test Source'},
-                    'url': 'https://example.com/test',
-                    'content': 'Test content',
-                    'description': 'Test description'
-                }
-            ]
+            'articles': {
+                'results': [
+                    {
+                        'title': 'Test Article',
+                        'source': {'title': 'Test Source'},
+                        'url': 'https://example.com/test',
+                        'body': 'Test content',
+                        'dateTime': '2025-07-30T12:00:00Z'
+                    }
+                ],
+                'totalResults': 1
+            }
         }
         mock_response.raise_for_status.return_value = None
         mock_requests.return_value = mock_response
@@ -404,7 +413,7 @@ class TestGetNewsArticles:
     
     @patch('data_fetchers.NewsCache')
     @patch('data_fetchers.datetime')
-    @patch('requests.get')
+    @patch('requests.post')
     @patch('data_fetchers.get_config')
     def test_get_news_articles_skip_invalid(self, mock_config, mock_requests, mock_datetime, mock_cache_class):
         """Test news articles fetching skips invalid articles."""
@@ -416,7 +425,7 @@ class TestGetNewsArticles:
         # Mock configuration
         mock_config_instance = MagicMock()
         mock_config_instance.get.side_effect = lambda key: {
-            'NEWSAPI_KEY': 'test-news-key'
+            'NEWSAPI_AI_KEY': 'test-newsapi-ai-key'
         }[key]
         mock_config_instance.get_news_topics.return_value = ['technology']
         mock_config_instance.get_max_articles_per_topic.return_value = 3
@@ -430,27 +439,30 @@ class TestGetNewsArticles:
         # Mock API response with some invalid articles
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            'status': 'ok',
-            'articles': [
-                {
-                    'title': 'Valid Article',
-                    'source': {'name': 'TechCrunch'},
-                    'url': 'https://example.com/valid',
-                    'content': 'Valid content...'
-                },
-                {
-                    'title': None,  # Invalid - no title
-                    'source': {'name': 'Source'},
-                    'url': 'https://example.com/invalid1',
-                    'content': 'Invalid content...'
-                },
-                {
-                    'title': 'No URL Article',
-                    'source': {'name': 'Source'},
-                    'url': None,  # Invalid - no URL
-                    'content': 'Invalid content...'
-                }
-            ]
+            'articles': {
+                'results': [
+                    {
+                        'title': 'Valid Article',
+                        'source': {'title': 'TechCrunch'},
+                        'url': 'https://example.com/valid',
+                        'body': 'Valid content...',
+                        'dateTime': '2025-07-30T12:00:00Z'
+                    },
+                    {
+                        'title': None,  # Invalid - no title
+                        'source': {'title': 'Source'},
+                        'url': 'https://example.com/invalid1',
+                        'body': 'Invalid content...'
+                    },
+                    {
+                        'title': 'No URL Article',
+                        'source': {'title': 'Source'},
+                        'url': None,  # Invalid - no URL
+                        'body': 'Invalid content...'
+                    }
+                ],
+                'totalResults': 3
+            }
         }
         mock_response.raise_for_status.return_value = None
         mock_requests.return_value = mock_response
@@ -464,7 +476,7 @@ class TestGetNewsArticles:
     
     @patch('data_fetchers.NewsCache')
     @patch('data_fetchers.datetime')
-    @patch('requests.get')
+    @patch('requests.post')
     @patch('data_fetchers.get_config')
     def test_get_news_articles_api_error(self, mock_config, mock_requests, mock_datetime, mock_cache_class):
         """Test news API error handling."""
@@ -475,7 +487,7 @@ class TestGetNewsArticles:
         # Mock configuration
         mock_config_instance = MagicMock()
         mock_config_instance.get.side_effect = lambda key: {
-            'NEWSAPI_KEY': 'test-news-key'
+            'NEWSAPI_AI_KEY': 'test-newsapi-ai-key'
         }[key]
         mock_config_instance.get_news_topics.return_value = ['technology']
         mock_config_instance.get_max_articles_per_topic.return_value = 2

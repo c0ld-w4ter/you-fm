@@ -209,8 +209,8 @@ def get_weather(config=None) -> WeatherData:
 
 def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
     """
-    Fetch news articles from NewsAPI top headlines for configured categories.
-    Only fetches articles from the past 24 hours.
+    Fetch news articles from NewsAPI.ai for configured categories.
+    Fetches articles from the past 24 hours using keyword-based searches.
     
     Args:
         config: Optional Config object. If None, loads from environment.
@@ -222,16 +222,28 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
     Raises:
         Exception: If API call fails
     """
-    logger.info("Fetching news articles from top headlines...")
+    logger.info("Fetching news articles from NewsAPI.ai...")
     
     if config is None:
         config = get_config()
-    api_key = config.get('NEWSAPI_KEY')
-    topics = config.get_news_topics()  # These are now real NewsAPI categories
+    api_key = config.get('NEWSAPI_AI_KEY')
+    topics = config.get_news_topics()
     max_articles = config.get_max_articles_per_topic()
     
     # Calculate date for past 24 hours
     from_date = (datetime.now(UTC) - timedelta(days=1)).strftime('%Y-%m-%d')
+    to_date = datetime.now(UTC).strftime('%Y-%m-%d')
+    
+    # Map NewsAPI categories to NewsAPI.ai keyword searches
+    category_keywords = {
+        'business': 'business OR finance OR economy OR market OR corporate',
+        'entertainment': 'entertainment OR movie OR music OR celebrity OR Hollywood',
+        'general': 'breaking news OR headlines OR politics OR world news',
+        'health': 'health OR medicine OR medical OR healthcare OR disease',
+        'science': 'science OR research OR technology OR innovation OR discovery',
+        'sports': 'sports OR football OR basketball OR baseball OR soccer',
+        'technology': 'technology OR tech OR software OR artificial intelligence OR startup'
+    }
     
     # Initialize cache
     cache = NewsCache() if use_cache else None
@@ -264,45 +276,68 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
                     continue
             
             # If not in cache or cache disabled, fetch from API
-            logger.info(f"Fetching top headlines for category: {category}")
+            keywords = category_keywords.get(category, category)
+            logger.info(f"Fetching articles for category '{category}' using keywords: {keywords}")
             api_calls_made += 1
             
-            # NewsAPI Top Headlines endpoint with date filtering
-            url = "https://newsapi.org/v2/top-headlines"
-            params = {
-                'category': category,      # Use category instead of query search
-                'country': 'us',          # Focus on US news for now
-                'from': from_date,        # Only articles from past 24 hours
-                'apiKey': api_key,
-                'sortBy': 'publishedAt',
-                'pageSize': max_articles,
-                'language': 'en'
+            # NewsAPI.ai article search endpoint
+            url = "https://newsapi.ai/api/v1/article/getArticles"
+            payload = {
+                "query": {
+                    "$query": {
+                        "$and": [
+                            {"lang": "eng"},
+                            {"keyword": keywords},
+                            {"dateStart": from_date},
+                            {"dateEnd": to_date}
+                        ]
+                    }
+                },
+                "resultType": "articles",
+                "articlesSortBy": "date",
+                "articlesCount": max_articles,
+                "apiKey": api_key
             }
             
-            response = requests.get(url, params=params, timeout=10)
+            headers = {
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
             response.raise_for_status()
             
             data = response.json()
             
-            if data['status'] != 'ok':
-                logger.warning(f"NewsAPI returned non-ok status for category {category}: {data.get('message', 'Unknown error')}")
+            # Check if we have articles in the response
+            articles_data = data.get('articles', {}).get('results', [])
+            if not articles_data:
+                logger.info(f"No articles found for category '{category}'")
                 continue
             
             # Parse articles
             articles_for_category = []
             articles_count = 0
-            for article_data in data.get('articles', []):
+            for article_data in articles_data:
                 # Skip articles with null/empty essential fields
                 if not article_data.get('title') or not article_data.get('url'):
                     continue
                 
+                # Extract source name
+                source_name = 'Unknown Source'
+                if 'source' in article_data and article_data['source']:
+                    source_name = article_data['source'].get('title', 'Unknown Source')
+                
+                # Use full body content if available, fallback to title
+                content = article_data.get('body', '') or article_data.get('title', '')
+                
                 article = Article(
                     title=article_data['title'],
-                    source=article_data.get('source', {}).get('name', 'Unknown Source'),
+                    source=source_name,
                     url=article_data['url'],
-                    content=(article_data.get('content') or article_data.get('description') or ''),
-                    category=category, # Assign the category
-                    summary=""  # Will be populated in Milestone 2
+                    content=content,
+                    category=category,
+                    summary=""  # Will be populated later
                 )
                 all_articles.append(article)
                 articles_for_category.append(asdict(article))
@@ -319,19 +354,22 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
         return all_articles
         
     except requests.exceptions.RequestException as e:
-        logger.error(f"News API request failed: {e}")
+        logger.error(f"NewsAPI.ai request failed: {e}")
         # Try to get more details from the response if available
         if hasattr(e, 'response') and e.response is not None:
             try:
                 error_details = e.response.json()
                 logger.error(f"API error details: {error_details}")
-                raise Exception(f"News API error: {error_details.get('message', str(e))}")
+                if 'error' in error_details:
+                    raise Exception(f"NewsAPI.ai error: {error_details['error']}")
+                else:
+                    raise Exception(f"NewsAPI.ai error: {error_details}")
             except:
                 pass
         raise Exception(f"Failed to fetch news articles: {e}")
     except KeyError as e:
-        logger.error(f"Unexpected news API response format: {e}")
-        raise Exception(f"Invalid news API response: {e}")
+        logger.error(f"Unexpected NewsAPI.ai response format: {e}")
+        raise Exception(f"Invalid NewsAPI.ai response: {e}")
     except Exception as e:
         logger.error(f"News articles fetch error: {e}")
         raise 

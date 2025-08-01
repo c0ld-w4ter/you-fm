@@ -19,7 +19,7 @@ class TestConfig:
         """Test that Config loads all required environment variables."""
         # Mock all required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -37,7 +37,7 @@ class TestConfig:
         """Test that Config raises error when required variables are missing."""
         # Mock environment with missing required variables
         mock_env = {
-            'NEWSAPI_KEY': 'test-key',
+            'NEWSAPI_AI_KEY': 'test-key',
             # Missing other required vars
         }
         
@@ -54,7 +54,7 @@ class TestConfig:
         """Test that Config loads default values for optional variables."""
         # Mock only required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -72,7 +72,7 @@ class TestConfig:
     def test_config_overrides_defaults(self):
         """Test that environment variables override default values."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -90,7 +90,7 @@ class TestConfig:
     def test_get_with_default(self):
         """Test the get method with default value."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -101,7 +101,7 @@ class TestConfig:
             config = Config()
             
             # Test existing key
-            assert config.get('NEWSAPI_KEY') == 'test-newsapi-key'
+            assert config.get('NEWSAPI_AI_KEY') == 'test-newsapi-key'
             
             # Test non-existing key with default
             assert config.get('NON_EXISTING_KEY', 'default_value') == 'default_value'
@@ -113,7 +113,7 @@ class TestConfig:
     def test_get_news_topics(self):
         """Test parsing news topics into a list."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -130,7 +130,7 @@ class TestConfig:
     def test_get_max_articles_per_topic(self):
         """Test parsing max articles as integer."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -148,7 +148,7 @@ class TestConfig:
     def test_is_aws_environment(self):
         """Test AWS environment detection."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -169,7 +169,7 @@ class TestConfig:
     def test_validate_config(self):
         """Test configuration validation."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -194,7 +194,7 @@ class TestConfig:
         """Test that briefing duration returns default value when not set."""
         # Mock required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test_news_key',
+            'NEWSAPI_AI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
@@ -209,7 +209,7 @@ class TestConfig:
         """Test that briefing duration returns custom value when set."""
         # Mock required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test_news_key',
+            'NEWSAPI_AI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
@@ -223,7 +223,7 @@ class TestConfig:
         """Test that briefing duration handles invalid values gracefully."""
         # Mock required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test_news_key',
+            'NEWSAPI_AI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
@@ -238,7 +238,7 @@ class TestConfig:
         """Test that listener name returns default value when not set."""
         # Mock required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test_news_key',
+            'NEWSAPI_AI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
@@ -251,7 +251,7 @@ class TestConfig:
         """Test that listener name returns custom value when set."""
         # Mock required environment variables
         mock_env = {
-            'NEWSAPI_KEY': 'test_news_key',
+            'NEWSAPI_AI_KEY': 'test_news_key',
             'OPENWEATHER_API_KEY': 'test_weather_key',
             'GEMINI_API_KEY': 'test_gemini_key',
             'ELEVENLABS_API_KEY': 'test_elevenlabs_key',
@@ -268,7 +268,7 @@ class TestGetConfig:
     def test_get_config_returns_instance(self):
         """Test that get_config returns a Config instance."""
         mock_env = {
-            'NEWSAPI_KEY': 'test-newsapi-key',
+            'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
@@ -282,7 +282,7 @@ class TestGetConfig:
             
             instance = get_config()
             assert isinstance(instance, Config)
-            assert instance.get('NEWSAPI_KEY') == 'test-newsapi-key' 
+            assert instance.get('NEWSAPI_AI_KEY') == 'test-newsapi-key' 
 
 
 class TestAdvancedConfigurationGetters:
@@ -291,7 +291,7 @@ class TestAdvancedConfigurationGetters:
     def test_get_briefing_tone(self):
         """Test briefing tone getter method."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -304,7 +304,7 @@ class TestAdvancedConfigurationGetters:
     def test_get_content_depth(self):
         """Test content depth getter method."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -317,7 +317,7 @@ class TestAdvancedConfigurationGetters:
     def test_get_keywords_exclude_with_values(self):
         """Test keywords exclude getter with actual keywords."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -333,7 +333,7 @@ class TestAdvancedConfigurationGetters:
     def test_get_keywords_exclude_empty(self):
         """Test keywords exclude getter with empty string."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -349,7 +349,7 @@ class TestAdvancedConfigurationGetters:
     def test_get_voice_speed(self):
         """Test voice speed getter method."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -380,7 +380,7 @@ class TestAdvancedConfigurationGetters:
     def test_personalization_getters(self):
         """Test all personalization getter methods."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -413,7 +413,7 @@ class TestAdvancedConfigurationGetters:
     def test_personalization_defaults(self):
         """Test personalization fields have proper defaults."""
         config_dict = {
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key'

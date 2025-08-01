@@ -359,7 +359,7 @@ class TestGenerateScriptOnly:
         
         # Create test config
         config = Config({
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key',
@@ -404,7 +404,7 @@ class TestGenerateScriptOnly:
         
         # Create test config
         config = Config({
-            'NEWSAPI_KEY': 'test_key',
+            'NEWSAPI_AI_KEY': 'test_key',
             'OPENWEATHER_API_KEY': 'test_key',
             'GEMINI_API_KEY': 'test_key',
             'ELEVENLABS_API_KEY': 'test_key'
@@ -826,7 +826,7 @@ class TestConfigurationIntegration:
         """Test that web form data correctly maps to Config object."""
         config = WebConfig.create_config_from_form(valid_form_data)
         assert isinstance(config, Config)
-        assert config.get('NEWSAPI_KEY') == 'test_newsapi_key'
+        assert config.get('NEWSAPI_AI_KEY') == 'test_newsapi_key'
         assert config.get('LISTENER_NAME') == 'Test User'
     
     def test_default_values_populate_correctly(self):

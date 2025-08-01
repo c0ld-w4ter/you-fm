@@ -98,7 +98,7 @@ class WebConfig:
         
         config_dict = {
             # API Keys
-            'NEWSAPI_KEY': form_data['newsapi_key'],
+            'NEWSAPI_AI_KEY': form_data['newsapi_key'],
             'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
             'GEMINI_API_KEY': form_data['gemini_api_key'],
             'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'],
@@ -184,7 +184,7 @@ class WebConfig:
         # Add API keys from environment variables for local development
         # These will be empty in production and filled by AWS Secrets Manager
         api_key_defaults = {
-            'newsapi_key': os.environ.get('NEWSAPI_KEY', ''),
+            'newsapi_key': os.environ.get('NEWSAPI_AI_KEY', ''),
             'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
             'gemini_api_key': os.environ.get('GEMINI_API_KEY', ''),
             'elevenlabs_api_key': os.environ.get('ELEVENLABS_API_KEY', ''),
@@ -209,7 +209,7 @@ class WebConfig:
         
         # Required field validation
         always_required_fields = {
-            'newsapi_key': 'NewsAPI Key is required',
+            'newsapi_key': 'NewsAPI.ai Key is required',
             'openweather_api_key': 'OpenWeather API Key is required',
             'gemini_api_key': 'Google Gemini API Key is required'
         }

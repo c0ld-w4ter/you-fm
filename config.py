@@ -31,7 +31,7 @@ class Config:
     
     # Required configuration keys
     REQUIRED_KEYS = [
-        'NEWSAPI_KEY',               # NewsAPI API key
+        'NEWSAPI_AI_KEY',            # NewsAPI.ai API key (replacement for NewsAPI.org)
         'OPENWEATHER_API_KEY',       # OpenWeatherMap API key
         'GEMINI_API_KEY',            # Google Gemini API key
         # TTS provider is now configurable - at least one API key required

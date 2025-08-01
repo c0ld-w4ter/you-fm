@@ -118,7 +118,7 @@ class TestTTSConfigurationValidation:
         """Test Google TTS configuration validation."""
         # Test valid Google TTS configuration
         config_data = {
-            'NEWSAPI_KEY': 'test-news-key',
+            'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key', 
             'GEMINI_API_KEY': 'test-gemini-key',
             'TTS_PROVIDER': 'google',
@@ -133,7 +133,7 @@ class TestTTSConfigurationValidation:
     def test_elevenlabs_config_validation_with_api_key(self):
         """Test ElevenLabs configuration validation with API key."""
         config_data = {
-            'NEWSAPI_KEY': 'test-news-key',
+            'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'TTS_PROVIDER': 'elevenlabs',
@@ -147,7 +147,7 @@ class TestTTSConfigurationValidation:
     def test_elevenlabs_config_validation_missing_api_key(self):
         """Test ElevenLabs configuration validation without API key."""
         config_data = {
-            'NEWSAPI_KEY': 'test-news-key',
+            'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'TTS_PROVIDER': 'elevenlabs'
@@ -163,7 +163,7 @@ class TestTTSConfigurationValidation:
     def test_invalid_tts_provider(self):
         """Test validation with invalid TTS provider."""
         config_data = {
-            'NEWSAPI_KEY': 'test-news-key',
+            'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
             'TTS_PROVIDER': 'invalid_provider'
@@ -310,7 +310,7 @@ class TestTTSMigrationCompatibility:
     def test_default_provider_is_google(self):
         """Test that Google is the default TTS provider after migration."""
         config_data = {
-            'NEWSAPI_KEY': 'test-news-key',
+            'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key'
         }
