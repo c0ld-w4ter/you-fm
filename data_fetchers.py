@@ -234,15 +234,15 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
     from_date = (datetime.now(UTC) - timedelta(days=1)).strftime('%Y-%m-%d')
     to_date = datetime.now(UTC).strftime('%Y-%m-%d')
     
-    # Map NewsAPI categories to NewsAPI.ai keyword searches
+    # Map NewsAPI categories to single effective keywords (Boolean OR doesn't work with date filters)
     category_keywords = {
-        'business': 'business OR finance OR economy OR market OR corporate',
-        'entertainment': 'entertainment OR movie OR music OR celebrity OR Hollywood',
-        'general': 'breaking news OR headlines OR politics OR world news',
-        'health': 'health OR medicine OR medical OR healthcare OR disease',
-        'science': 'science OR research OR technology OR innovation OR discovery',
-        'sports': 'sports OR football OR basketball OR baseball OR soccer',
-        'technology': 'technology OR tech OR software OR artificial intelligence OR startup'
+        'business': 'business',
+        'entertainment': 'entertainment', 
+        'general': 'politics',
+        'health': 'health',
+        'science': 'science',
+        'sports': 'sports',
+        'technology': 'technology'
     }
     
     # Initialize cache

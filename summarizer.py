@@ -315,14 +315,15 @@ NEWS ARTICLES (analyze and select the most newsworthy):
 SCRIPT GENERATION INSTRUCTIONS:
 1. {"START WITH EXACTLY THIS GREETING: '" + greeting_preference + "' then mention the date" if greeting_preference else "Create a warm greeting that matches the specified TONE and includes the date"}{f" and addresses {listener_name} by name" if listener_name and not greeting_preference else ""}
 2. Present the weather information conversationally, mentioning notable conditions using the specified TONE
-3. INTELLIGENTLY SELECT and SUMMARIZE news stories, giving STRONG PRIORITY to:
+3. INTELLIGENTLY SELECT and SUMMARIZE news stories, giving priority to:
+   - Breaking news of high importance
    - Stories directly related to the user's specific interests
    - News about their followed entities
    - Topics connected to their hobbies or passion topics
 4. For a {briefing_duration}-minute briefing, include approximately {3 if briefing_duration <= 3 else 4 if briefing_duration <= 5 else 5 if briefing_duration <= 7 else 6} news stories, prioritizing quality and relevance over quantity
 5. Adjust the detail level of each story based on the target duration and DEPTH preference
 6. EXPLICITLY mention when a story relates to the user's interests (e.g., "Since you follow Tesla..." or "Given your interest in quantum computing...")
-7. Present stories in order of relevance to the user, then by general importance
+7. Present stories in order of general importance, then by relevance to the user
 8. Include podcast recommendations naturally in the specified TONE
 9. End with a positive, encouraging closing that matches the TONE{f" and includes {listener_name}'s name" if listener_name else ""}
 10. Use natural transitions between sections that match the TONE
