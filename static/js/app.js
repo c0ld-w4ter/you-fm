@@ -658,9 +658,9 @@ function initVoicePreview() {
     console.log('Voice preview functionality initialized');
     
     previewBtn.addEventListener('click', async function() {
-        const selectedVoiceId = voiceSelect.value;
+        const selectedVoiceName = voiceSelect.value;
         
-        if (!selectedVoiceId) {
+        if (!selectedVoiceName) {
             showPreviewError('Please select a voice first');
             return;
         }
@@ -670,7 +670,7 @@ function initVoicePreview() {
         hidePreviewMessages();
         
         try {
-            console.log('Requesting voice preview for:', selectedVoiceId);
+            console.log('Requesting Google TTS voice preview for:', selectedVoiceName);
             
             const response = await fetch('/preview-voice', {
                 method: 'POST',
@@ -678,7 +678,7 @@ function initVoicePreview() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    voice_id: selectedVoiceId
+                    voice_name: selectedVoiceName
                 })
             });
             
@@ -700,13 +700,13 @@ function initVoicePreview() {
                     showPreviewSuccess('Preview ready! Click play to listen.');
                 }
                 
-                console.log('Voice preview generated successfully');
+                console.log('Google TTS voice preview generated successfully');
             } else {
                 showPreviewError(result.error || 'Failed to generate voice preview');
-                console.error('Voice preview failed:', result);
+                console.error('Google TTS voice preview failed:', result);
             }
         } catch (error) {
-            console.error('Voice preview error:', error);
+            console.error('Google TTS voice preview error:', error);
             showPreviewError('Network error: Unable to generate preview');
         } finally {
             setPreviewLoading(false);

@@ -21,6 +21,75 @@ logger = logging.getLogger(__name__)
 web_bp = Blueprint('web', __name__)
 
 
+def categorize_google_voices(voices):
+    """
+    Categorize Google TTS voices into Studio, Neural2, and Standard tiers.
+    
+    Args:
+        voices: List of voice dictionaries from get_available_voices
+        
+    Returns:
+        Dict with categorized voices: {'Studio': [...], 'Neural2': [...], 'Standard': [...]}
+    """
+    categorized = {
+        'Studio': [],
+        'Neural2': [],
+        'Standard': []
+    }
+    
+    for voice in voices:
+        name = voice.get('name', '')
+        gender = voice.get('gender', 'NEUTRAL')
+        
+        # Create display name
+        if 'Studio' in name:
+            tier = 'Studio'
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        elif 'Neural2' in name:
+            tier = 'Neural2'
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        elif 'Standard' in name:
+            tier = 'Standard'
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        elif 'Journey' in name:
+            tier = 'Studio'  # Journey voices are high-quality
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        elif 'News' in name:
+            tier = 'Neural2'  # News voices are Neural2 quality
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        elif 'Wavenet' in name:
+            tier = 'Neural2'  # Wavenet voices are Neural2 quality
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        else:
+            tier = 'Standard'  # Default to Standard
+            display_name = f"{name.split('-')[-1]} - {gender.title()}"
+        
+        categorized[tier].append((name, display_name))
+    
+    return categorized
+
+
+def build_voice_choices(categorized_voices):
+    """
+    Build form choices from categorized voices for SelectField with optgroups.
+    
+    Args:
+        categorized_voices: Dict with categorized voices
+        
+    Returns:
+        List of tuples suitable for WTForms SelectField choices
+    """
+    choices = []
+    
+    # Add voices in order of quality: Studio, Neural2, Standard
+    for tier in ['Studio', 'Neural2', 'Standard']:
+        if tier in categorized_voices and categorized_voices[tier]:
+            for voice_name, display_name in categorized_voices[tier]:
+                choices.append((voice_name, f"{tier}: {display_name}"))
+    
+    return choices
+
+
 @web_bp.route('/', methods=['GET', 'POST'])
 def index():
     """Landing page - redirect to API keys page."""
@@ -86,6 +155,28 @@ def settings():
     
     form = SettingsForm()
     
+    # Get available Google TTS voices and categorize them
+    categorized_voices = None
+    try:
+        from google_tts_generator import get_available_voices
+        api_keys = session.get('api_keys', {})
+        google_api_key = api_keys.get('google_api_key') or os.environ.get('GOOGLE_API_KEY', '')
+        
+        if google_api_key:
+            voices = get_available_voices(api_key=google_api_key)
+            categorized_voices = categorize_google_voices(voices)
+            
+            # Update form choices dynamically
+            form.google_voice_name.choices = build_voice_choices(categorized_voices)
+    except Exception as e:
+        logger.warning(f"Failed to load Google TTS voices: {e}")
+        # Use default choices if voice loading fails
+        categorized_voices = {
+            'Studio': [('en-US-Studio-M', 'Studio-M - Narrative Male'), ('en-US-Studio-O', 'Studio-O - Narrative Female')],
+            'Neural2': [('en-US-Neural2-A', 'Neural2-A - Male'), ('en-US-Neural2-C', 'Neural2-C - Female')],
+            'Standard': [('en-US-Standard-A', 'Standard-A - Male'), ('en-US-Standard-C', 'Standard-C - Female')]
+        }
+    
     if request.method == 'POST':
         if form.validate_on_submit():
             # Auto-configure comprehensive news coverage (no user selection needed)
@@ -101,8 +192,7 @@ def settings():
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
                 'news_topics': news_topics_str,  # Auto-configured to all categories
                 'max_articles_per_topic': 100,  # Auto-configured for comprehensive coverage
-                'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
-                'google_tts_voice_name': form.google_tts_voice_name.data,  # Store Google TTS voice selection
+                'google_voice_name': form.google_voice_name.data,  # Store Google TTS voice selection
                 'aws_region': form.aws_region.data,
                 
                 # Simplified settings
@@ -137,7 +227,7 @@ def settings():
             if hasattr(form, field_name):
                 getattr(form, field_name).data = default_value
     
-    return render_template('settings.html', form=form)
+    return render_template('settings.html', form=form, categorized_voices=categorized_voices)
 
 
 @web_bp.route('/generate', methods=['GET'])
@@ -350,79 +440,69 @@ def data_report():
 
 @web_bp.route('/preview-voice', methods=['POST'])
 def preview_voice():
-    """AJAX endpoint to generate voice preview audio."""
+    """AJAX endpoint to generate Google TTS voice preview audio."""
     try:
-        # Get voice ID from request
+        # Get voice name from request
         data = request.get_json()
-        voice_id = data.get('voice_id')
+        voice_name = data.get('voice_name')
         
-        if not voice_id:
+        if not voice_name:
             return jsonify({
                 'success': False,
-                'error': 'No voice ID provided'
+                'error': 'No voice name provided'
             })
         
         # Check if API keys are configured
         if 'api_keys' not in session:
             return jsonify({
                 'success': False, 
-                'error': 'ElevenLabs API key not configured. Please set up your API keys first.'
+                'error': 'Google API key not configured. Please set up your API keys first.'
             })
         
         # Create a minimal config for preview
         api_keys = session.get('api_keys', {})
-        elevenlabs_api_key = api_keys.get('elevenlabs_api_key')
+        google_api_key = api_keys.get('google_api_key') or os.environ.get('GOOGLE_API_KEY', '')
         
-        if not elevenlabs_api_key:
+        if not google_api_key:
             return jsonify({
                 'success': False,
-                'error': 'ElevenLabs API key not found. Please configure your API keys.'
+                'error': 'Google API key not found. Please configure your API keys.'
             })
         
         # Sample text for voice preview
-        preview_text = "Hello! This is a preview of your selected voice for the AI Daily Briefing. I'll be delivering your personalized news and weather summaries in this style."
+        preview_text = "This is the selected voice for your daily briefing."
         
-        # Import TTS generator
-        from tts_generator import generate_audio
+        # Import Google TTS generator
+        from google_tts_generator import generate_audio_google
         from config import Config
         
         # Create a minimal config object for the preview
-        # We need to bypass the validation for preview, so we'll create a simple config object
         preview_config = type('PreviewConfig', (), {
             'get': lambda self, key, default=None: {
-                'ELEVENLABS_API_KEY': elevenlabs_api_key,
-                'ELEVENLABS_VOICE_ID': voice_id
+                'GOOGLE_API_KEY': google_api_key,
+                'GOOGLE_TTS_VOICE_NAME': voice_name,
+                'GOOGLE_TTS_LANGUAGE_CODE': 'en-US'
             }.get(key, default),
             'get_voice_speed': lambda self: 1.0
         })()
         
-        logger.info(f"Generating voice preview for voice ID: {voice_id}")
+        logger.info(f"Generating Google TTS voice preview for voice: {voice_name}")
         
-        # Generate preview audio
-        audio_bytes = generate_audio(preview_text, preview_config)
-        
-        # Save preview to temporary file
-        import tempfile
-        import base64
-        
-        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
-            temp_file.write(audio_bytes)
-            temp_filename = temp_file.name
+        # Generate preview audio using Google TTS
+        audio_bytes = generate_audio_google(preview_text, preview_config)
         
         # Convert to base64 for easy transmission
+        import base64
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
-        
-        # Clean up temp file
-        os.unlink(temp_filename)
         
         return jsonify({
             'success': True,
             'audio_data': f"data:audio/mp3;base64,{audio_base64}",
-            'voice_id': voice_id
+            'voice_name': voice_name
         })
         
     except Exception as e:
-        logger.error(f"Error during voice preview: {e}")
+        logger.error(f"Error during Google TTS voice preview: {e}")
         return jsonify({
             'success': False,
             'error': 'Failed to generate voice preview',

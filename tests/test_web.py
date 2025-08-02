@@ -62,7 +62,7 @@ class TestSettingsForm:
                 'location_city': 'Denver',
                 'location_country': 'US',
                 'briefing_duration_minutes': 8,
-                'elevenlabs_voice_id': 'default',
+                'google_voice_name': 'en-US-Journey-D',
                 'aws_region': 'us-east-1',
                 # Only remaining advanced field
                 'briefing_tone': 'casual',
@@ -124,7 +124,7 @@ class TestWebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             'briefing_duration_minutes': 10,
-            'elevenlabs_voice_id': 'default',
+            'google_voice_name': 'en-US-Journey-D',
             'aws_region': 'us-east-1',
             # Only remaining advanced field
             'briefing_tone': 'casual',
@@ -215,7 +215,7 @@ class TestAdvancedFieldsIntegration:
                 'location_city': 'Boston',
                 'location_country': 'US',
                 'briefing_duration_minutes': 12,
-                'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',
+                'google_voice_name': 'en-US-Studio-M',
                 
                 # Remaining advanced setting
                 'briefing_tone': 'casual',
@@ -490,7 +490,7 @@ def valid_settings_data():
         'briefing_duration_minutes': 5,
         'news_topics': ['technology', 'business'],  # Updated to list format for checkboxes
         'max_articles_per_topic': 3,
-        'elevenlabs_voice_id': 'default',
+        'google_voice_name': 'en-US-Journey-D',
         'aws_region': 'us-east-1',
         # Advanced settings (Milestone 5)
         'briefing_tone': 'professional',
@@ -523,7 +523,7 @@ def valid_form_data():
         'briefing_duration_minutes': 5,
         'news_topics': 'technology,business',
         'max_articles_per_topic': 3,
-        'elevenlabs_voice_id': 'default',
+        'google_voice_name': 'en-US-Journey-D',
         'aws_region': 'us-east-1'
     }
 
@@ -652,7 +652,7 @@ class TestFormValidation:
                 'briefing_duration_minutes': 5,
                 'news_topics': ['technology'],  # Fixed: use list format and valid category
                 'max_articles_per_topic': 3,
-                'elevenlabs_voice_id': 'default'
+                'google_voice_name': 'en-US-Journey-D'
             }
             form = SettingsForm(data=valid_data)
             assert form.validate() is True
@@ -806,7 +806,7 @@ class TestRouteHandlers:
                 'briefing_duration_minutes': 3,
                 'news_topics': 'technology',
                 'max_articles_per_topic': 3,
-                'elevenlabs_voice_id': 'test_voice'
+                'google_voice_name': 'en-US-Studio-O'
             }
         
         # This would fail due to invalid API keys, but we're testing the endpoint exists
@@ -834,8 +834,59 @@ class TestConfigurationIntegration:
         defaults = WebConfig.get_form_defaults()
         assert defaults['location_city'] == 'Denver'
         assert defaults['briefing_duration_minutes'] == 5  # Updated from 3 to 5
-        assert defaults['elevenlabs_voice_id'] == 'default'
+        assert defaults['google_voice_name'] == 'en-US-Journey-D'
     
+    def test_google_voice_preview_endpoint(self, app):
+        """Test the new Google TTS voice preview endpoint."""
+        with app.test_client() as client:
+            # Set up session with API keys
+            with client.session_transaction() as sess:
+                sess['api_keys'] = {
+                    'google_api_key': 'test_google_key'
+                }
+            
+            # Test valid voice preview request
+            response = client.post('/preview-voice', 
+                json={'voice_name': 'en-US-Studio-M'},
+                content_type='application/json')
+            
+            # Should fail due to missing mock, but endpoint should exist and handle request
+            assert response.status_code in [200, 500]  # 500 expected due to no mock
+            data = response.get_json()
+            assert 'success' in data
+    
+    def test_google_voice_preview_missing_voice_name(self, app):
+        """Test voice preview endpoint with missing voice name."""
+        with app.test_client() as client:
+            # Set up session with API keys
+            with client.session_transaction() as sess:
+                sess['api_keys'] = {
+                    'google_api_key': 'test_google_key'
+                }
+            
+            # Test request without voice_name
+            response = client.post('/preview-voice', 
+                json={},
+                content_type='application/json')
+            
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data['success'] is False
+            assert 'No voice name provided' in data['error']
+    
+    def test_google_voice_preview_missing_api_key(self, app):
+        """Test voice preview endpoint without API key configured."""
+        with app.test_client() as client:
+            # Test request without API key in session
+            response = client.post('/preview-voice', 
+                json={'voice_name': 'en-US-Studio-M'},
+                content_type='application/json')
+            
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data['success'] is False
+            assert 'Google API key not configured' in data['error']
+
     def test_configuration_validation_integration(self, valid_form_data):
         """Test configuration validation with web form data."""
         # Test valid configuration

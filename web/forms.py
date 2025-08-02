@@ -153,33 +153,9 @@ class SettingsForm(FlaskForm):
     
     # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
-    # Audio Settings
-    elevenlabs_voice_id = SelectField(
+    # Google TTS Voice Selection (replaces ElevenLabs)
+    google_voice_name = SelectField(
         'Voice Selection',
-        choices=[
-            ('default', 'Rachel (Default) - Professional Female'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
-            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
-            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
-            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
-            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
-            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
-            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
-            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
-            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
-            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
-            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
-        ],
-        default='default',
-        validators=[Optional()]
-    )
-    
-    # Google TTS Voice Selection
-    google_tts_voice_name = SelectField(
-        'Google TTS Voice Selection',
         choices=[
             ('en-US-Journey-D', 'Journey-D - Professional Male (Default)'),
             ('en-US-Journey-F', 'Journey-F - Professional Female'),
