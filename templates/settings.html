@@ -135,7 +135,7 @@
                         <div class="flex items-center space-x-2">
                             {% if categorized_voices %}
                                 <select name="google_voice_name" id="voice-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    {% for tier in ['Studio', 'Neural2', 'Standard'] %}
+                                    {% for tier in ['Neural2', 'Standard'] %}
                                         {% if tier in categorized_voices and categorized_voices[tier] %}
                                             <optgroup label="{{ tier }} Voices">
                                                 {% for voice_name, display_name in categorized_voices[tier] %}

@@ -62,7 +62,7 @@ class TestSettingsForm:
                 'location_city': 'Denver',
                 'location_country': 'US',
                 'briefing_duration_minutes': 8,
-                'google_voice_name': 'en-US-Journey-D',
+                'google_voice_name': 'en-US-News-K',
                 'aws_region': 'us-east-1',
                 # Only remaining advanced field
                 'briefing_tone': 'casual',
@@ -124,7 +124,7 @@ class TestWebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             'briefing_duration_minutes': 10,
-            'google_voice_name': 'en-US-Journey-D',
+            'google_voice_name': 'en-US-News-K',
             'aws_region': 'us-east-1',
             # Only remaining advanced field
             'briefing_tone': 'casual',
@@ -215,7 +215,7 @@ class TestAdvancedFieldsIntegration:
                 'location_city': 'Boston',
                 'location_country': 'US',
                 'briefing_duration_minutes': 12,
-                'google_voice_name': 'en-US-Studio-M',
+                'google_voice_name': 'en-US-Neural2-A',
                 
                 # Remaining advanced setting
                 'briefing_tone': 'casual',
@@ -476,7 +476,9 @@ def valid_api_keys_data():
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
         'gemini_api_key': 'test_gemini_key',
-        'elevenlabs_api_key': 'test_elevenlabs_key'
+        'elevenlabs_api_key': 'test_elevenlabs_key',
+        'google_api_key': 'test_google_key',
+        'tts_provider': 'google'
     }
 
 
@@ -490,7 +492,7 @@ def valid_settings_data():
         'briefing_duration_minutes': 5,
         'news_topics': ['technology', 'business'],  # Updated to list format for checkboxes
         'max_articles_per_topic': 3,
-        'google_voice_name': 'en-US-Journey-D',
+        'google_voice_name': 'en-US-News-K',
         'aws_region': 'us-east-1',
         # Advanced settings (Milestone 5)
         'briefing_tone': 'professional',
@@ -523,7 +525,7 @@ def valid_form_data():
         'briefing_duration_minutes': 5,
         'news_topics': 'technology,business',
         'max_articles_per_topic': 3,
-        'google_voice_name': 'en-US-Journey-D',
+        'google_voice_name': 'en-US-News-K',
         'aws_region': 'us-east-1'
     }
 
@@ -589,8 +591,15 @@ class TestMultiPageFlow:
         assert b'Personal Settings' in response.data
         assert b'Save Settings &amp; Continue' in response.data
     
-    def test_settings_form_success_redirects_to_generate(self, client, valid_api_keys_data, valid_settings_data):
+    @patch('google_tts_generator.get_available_voices')
+    def test_settings_form_success_redirects_to_generate(self, mock_get_voices, client, valid_api_keys_data, valid_settings_data):
         """Test successful settings submission redirects to generate."""
+        # Mock voice loading
+        mock_get_voices.return_value = [
+            {'name': 'en-US-News-K', 'language': 'en-US', 'gender': 'MALE'},
+            {'name': 'en-US-Wavenet-A', 'language': 'en-US', 'gender': 'MALE'}
+        ]
+        
         # First set API keys
         client.post('/api-keys', data=valid_api_keys_data)
         
@@ -605,8 +614,15 @@ class TestMultiPageFlow:
         assert response.status_code == 302
         assert '/api-keys' in response.location
     
-    def test_generate_page_loads_after_both_forms(self, client, valid_api_keys_data, valid_settings_data):
+    @patch('google_tts_generator.get_available_voices')
+    def test_generate_page_loads_after_both_forms(self, mock_get_voices, client, valid_api_keys_data, valid_settings_data):
         """Test that generate page loads after both forms are completed."""
+        # Mock voice loading
+        mock_get_voices.return_value = [
+            {'name': 'en-US-News-K', 'language': 'en-US', 'gender': 'MALE'},
+            {'name': 'en-US-Wavenet-A', 'language': 'en-US', 'gender': 'MALE'}
+        ]
+        
         # Set API keys
         client.post('/api-keys', data=valid_api_keys_data)
         # Set settings
@@ -652,7 +668,7 @@ class TestFormValidation:
                 'briefing_duration_minutes': 5,
                 'news_topics': ['technology'],  # Fixed: use list format and valid category
                 'max_articles_per_topic': 3,
-                'google_voice_name': 'en-US-Journey-D'
+                'google_voice_name': 'en-US-News-K'
             }
             form = SettingsForm(data=valid_data)
             assert form.validate() is True
@@ -718,8 +734,14 @@ class TestRouteHandlers:
         assert response.status_code == 302  # Redirects with flash message
     
     @patch('web.routes.generate_daily_briefing')
-    def test_briefing_generation_success(self, mock_generate, client, valid_api_keys_data, valid_settings_data):
+    @patch('google_tts_generator.get_available_voices')
+    def test_briefing_generation_success(self, mock_get_voices, mock_generate, client, valid_api_keys_data, valid_settings_data):
         """Test successful briefing generation through AJAX endpoint."""
+        # Mock voice loading
+        mock_get_voices.return_value = [
+            {'name': 'en-US-News-K', 'language': 'en-US', 'gender': 'MALE'}
+        ]
+        
         # Set up session data
         client.post('/api-keys', data=valid_api_keys_data)
         client.post('/settings', data=valid_settings_data)
@@ -753,8 +775,14 @@ class TestRouteHandlers:
         mock_generate.assert_called_once()
     
     @patch('web.routes.generate_daily_briefing')
-    def test_briefing_generation_failure(self, mock_generate, client, valid_api_keys_data, valid_settings_data):
+    @patch('google_tts_generator.get_available_voices')
+    def test_briefing_generation_failure(self, mock_get_voices, mock_generate, client, valid_api_keys_data, valid_settings_data):
         """Test briefing generation failure handling."""
+        # Mock voice loading
+        mock_get_voices.return_value = [
+            {'name': 'en-US-News-K', 'language': 'en-US', 'gender': 'MALE'}
+        ]
+        
         # Set up session data
         client.post('/api-keys', data=valid_api_keys_data)
         client.post('/settings', data=valid_settings_data)
@@ -806,7 +834,7 @@ class TestRouteHandlers:
                 'briefing_duration_minutes': 3,
                 'news_topics': 'technology',
                 'max_articles_per_topic': 3,
-                'google_voice_name': 'en-US-Studio-O'
+                'google_voice_name': 'en-US-Neural2-C'
             }
         
         # This would fail due to invalid API keys, but we're testing the endpoint exists
@@ -834,7 +862,7 @@ class TestConfigurationIntegration:
         defaults = WebConfig.get_form_defaults()
         assert defaults['location_city'] == 'Denver'
         assert defaults['briefing_duration_minutes'] == 5  # Updated from 3 to 5
-        assert defaults['google_voice_name'] == 'en-US-Journey-D'
+        assert defaults['google_voice_name'] == 'en-US-News-K'
     
     def test_google_voice_preview_endpoint(self, app):
         """Test the new Google TTS voice preview endpoint."""
@@ -921,8 +949,16 @@ class TestCompleteWorkflow:
     """Test complete multi-page workflow."""
     
     @patch('web.routes.generate_daily_briefing')
-    def test_complete_multi_page_workflow(self, mock_generate, client, valid_api_keys_data, valid_settings_data):
+    @patch('google_tts_generator.get_available_voices')
+    def test_complete_multi_page_workflow(self, mock_get_voices, mock_generate, client, valid_api_keys_data, valid_settings_data):
         """Test complete workflow from start to finish."""
+        # Mock voice loading
+        mock_get_voices.return_value = [
+            {'name': 'en-US-News-K', 'language': 'en-US', 'gender': 'MALE'},
+            {'name': 'en-US-Wavenet-A', 'language': 'en-US', 'gender': 'MALE'},
+            {'name': 'en-US-Standard-A', 'language': 'en-US', 'gender': 'MALE'}
+        ]
+        
         # Mock successful generation
         mock_result = {
             'success': True,

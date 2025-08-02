@@ -153,27 +153,27 @@ class SettingsForm(FlaskForm):
     
     # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
-    # Google TTS Voice Selection (replaces ElevenLabs)
+    # Google TTS Voice Selection (replaces ElevenLabs, Studio voices excluded due to cost)
     google_voice_name = SelectField(
         'Voice Selection',
         choices=[
-            ('en-US-Journey-D', 'Journey-D - Professional Male (Default)'),
-            ('en-US-Journey-F', 'Journey-F - Professional Female'),
-            ('en-US-Journey-O', 'Journey-O - Young Female'),
             ('en-US-News-K', 'News-K - News Anchor Male'),
             ('en-US-News-L', 'News-L - News Anchor Female'),
             ('en-US-News-N', 'News-N - News Anchor Neutral'),
             ('en-US-Polyglot-1', 'Polyglot-1 - Multilingual Male'),
-            ('en-US-Studio-M', 'Studio-M - Narrative Male'),
-            ('en-US-Studio-O', 'Studio-O - Narrative Female'),
             ('en-US-Wavenet-A', 'Wavenet-A - Male'),
             ('en-US-Wavenet-B', 'Wavenet-B - Male'),
             ('en-US-Wavenet-C', 'Wavenet-C - Female'),
             ('en-US-Wavenet-D', 'Wavenet-D - Male'),
             ('en-US-Wavenet-E', 'Wavenet-E - Female'),
             ('en-US-Wavenet-F', 'Wavenet-F - Female'),
+            ('en-US-Standard-A', 'Standard-A - Male'),
+            ('en-US-Standard-B', 'Standard-B - Male'),
+            ('en-US-Standard-C', 'Standard-C - Female'),
+            ('en-US-Standard-D', 'Standard-D - Male'),
+            ('en-US-Standard-E', 'Standard-E - Female'),
         ],
-        default='en-US-Journey-D',
+        default='en-US-News-K',
         validators=[Optional()]
     )
     

@@ -23,16 +23,16 @@ web_bp = Blueprint('web', __name__)
 
 def categorize_google_voices(voices):
     """
-    Categorize Google TTS voices into Studio, Neural2, and Standard tiers.
+    Categorize Google TTS voices into Neural2 and Standard tiers.
+    Studio voices are excluded due to high cost.
     
     Args:
         voices: List of voice dictionaries from get_available_voices
         
     Returns:
-        Dict with categorized voices: {'Studio': [...], 'Neural2': [...], 'Standard': [...]}
+        Dict with categorized voices: {'Neural2': [...], 'Standard': [...]}
     """
     categorized = {
-        'Studio': [],
         'Neural2': [],
         'Standard': []
     }
@@ -41,18 +41,16 @@ def categorize_google_voices(voices):
         name = voice.get('name', '')
         gender = voice.get('gender', 'NEUTRAL')
         
+        # Skip Studio and Journey voices (too expensive)
+        if 'Studio' in name or 'Journey' in name:
+            continue
+        
         # Create display name
-        if 'Studio' in name:
-            tier = 'Studio'
-            display_name = f"{name.split('-')[-1]} - {gender.title()}"
-        elif 'Neural2' in name:
+        if 'Neural2' in name:
             tier = 'Neural2'
             display_name = f"{name.split('-')[-1]} - {gender.title()}"
         elif 'Standard' in name:
             tier = 'Standard'
-            display_name = f"{name.split('-')[-1]} - {gender.title()}"
-        elif 'Journey' in name:
-            tier = 'Studio'  # Journey voices are high-quality
             display_name = f"{name.split('-')[-1]} - {gender.title()}"
         elif 'News' in name:
             tier = 'Neural2'  # News voices are Neural2 quality
@@ -81,8 +79,8 @@ def build_voice_choices(categorized_voices):
     """
     choices = []
     
-    # Add voices in order of quality: Studio, Neural2, Standard
-    for tier in ['Studio', 'Neural2', 'Standard']:
+    # Add voices in order of quality: Neural2, Standard (Studio excluded due to cost)
+    for tier in ['Neural2', 'Standard']:
         if tier in categorized_voices and categorized_voices[tier]:
             for voice_name, display_name in categorized_voices[tier]:
                 choices.append((voice_name, f"{tier}: {display_name}"))
@@ -170,9 +168,8 @@ def settings():
             form.google_voice_name.choices = build_voice_choices(categorized_voices)
     except Exception as e:
         logger.warning(f"Failed to load Google TTS voices: {e}")
-        # Use default choices if voice loading fails
+        # Use default choices if voice loading fails (Studio voices excluded due to cost)
         categorized_voices = {
-            'Studio': [('en-US-Studio-M', 'Studio-M - Narrative Male'), ('en-US-Studio-O', 'Studio-O - Narrative Female')],
             'Neural2': [('en-US-Neural2-A', 'Neural2-A - Male'), ('en-US-Neural2-C', 'Neural2-C - Female')],
             'Standard': [('en-US-Standard-A', 'Standard-A - Male'), ('en-US-Standard-C', 'Standard-C - Female')]
         }
