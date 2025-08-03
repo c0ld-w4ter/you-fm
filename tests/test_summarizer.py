@@ -352,7 +352,7 @@ class TestStyleAwareBriefingScript:
         
         # Verify personalization instructions are in the prompt
         assert "START WITH EXACTLY THIS GREETING: 'Rise and shine, Alice!'" in prompt
-        assert 'giving STRONG PRIORITY to' in prompt  # Part of the personalization instructions
+        assert 'give strong preference to' in prompt  # Part of the personalization instructions
         assert 'acknowledge or reference it appropriately' in prompt  # For daily routine
     
     @patch('summarizer.get_config')

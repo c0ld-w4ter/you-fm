@@ -476,7 +476,8 @@ def valid_api_keys_data():
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
         'gemini_api_key': 'test_gemini_key',
-        'elevenlabs_api_key': 'test_elevenlabs_key'
+        'elevenlabs_api_key': 'test_elevenlabs_key',
+        'google_api_key': 'test_google_key'
     }
 
 
