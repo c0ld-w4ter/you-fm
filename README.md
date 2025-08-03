@@ -166,8 +166,7 @@ DEFAULT_ROUTINE="I listen during my morning coffee"
 1. **NewsAPI.ai**: Register at [newsapi.ai](https://newsapi.ai/) (replacement for NewsAPI.org with better pricing and features)
 2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
 3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
-4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/)
-5. **Amazon S3**: Create S3 bucket and configure permissions (optional)
+
 
 ## 🏃 Running the Application
 
@@ -201,7 +200,6 @@ python app.py
   - **🎨 Style Control**: Professional, casual, or energetic briefing tones  
   - **📊 Content Depth**: Headlines-only, balanced, or detailed analysis
   - **🚫 Keyword Filtering**: Exclude unwanted topics with smart filtering
-  - **⚡ Voice Speed**: Adjustable speech rate for optimal listening
   - **🎯 Organized UI**: Collapsible sections with logical field grouping
 
 ### Complete Pipeline Features:
@@ -243,12 +241,6 @@ export LISTENER_NAME="John"   # "Good morning, John!"
 # Leave unset for generic greetings
 ```
 
-### Future Functionality
-After upcoming milestones, the application will:  
-- Convert text to speech using ElevenLabs (Milestone 3)
-- Upload audio files to Google Drive (Milestone 3)
-- Deploy to AWS Lambda for automated daily execution (Milestone 4)
-
 ## 🏗️ Technical Documentation
 
 We maintain comprehensive technical documentation in two focused documents:
@@ -260,15 +252,6 @@ We maintain comprehensive technical documentation in two focused documents:
 - **Module Design**: Detailed breakdown of each implemented component
 - **API Integrations**: Current external service integrations with error handling
 - **Testing Architecture**: 81+ comprehensive tests with mocking strategies
-
-### **📋 Complete Project Plan**
-**[TECHNICAL_SPECIFICATION_FULL.md](TECHNICAL_SPECIFICATION_FULL.md)** - Full roadmap and future milestones
-- **Complete Architecture**: Development through production deployment plans
-- **All Milestones**: Detailed roadmap from foundation through advanced features
-- **Technology Stack**: Current and planned technologies for each phase
-- **Scalability Plans**: Database, containerization, and cloud deployment strategies
-
-Perfect for new developers joining the project or understanding both current state and future direction.
 
 ## 📁 Project Structure
 
@@ -332,25 +315,6 @@ python -m pytest tests/test_<module>.py -v
 - Modular design with clear separation of concerns
 - Error handling with custom exceptions
 
-## 📋 Next Steps
-
-1. **Milestone 5**: Enhanced Customization
-   - Advanced configuration options for filtering and style
-   - Extended AI prompt generation based on user preferences
-   - Voice parameter customization and preview mode
-   - Multi-tab interface for complex configuration management
-
-2. **Future Milestones**: Production Deployment
-   - **Milestone 6**: AWS deployment with database migration (ECS Fargate + RDS)
-   - **Milestone 7**: Multi-user support with authentication
-   - **Milestone 8**: Scheduled briefing generation and automation
-   - **Milestone 9**: Extended data sources (RSS, Reddit, financial data)
-   - **Milestone 10**: Advanced features and security hardening
-
-3. **Immediate Improvements Available**:
-   - Enhanced voice selection and audio customization
-   - Content filtering by keywords and sources
-   - Style and tone customization for briefing scripts
 
 ## 🐛 Troubleshooting
 
@@ -401,5 +365,3 @@ python -m pytest tests/test_<module>.py -v
 This project is part of a technical specification implementation for an AI Daily Briefing Agent system.
 
 ---
-
-*Last updated: Milestone 4 completion - Web UI MVP* 
