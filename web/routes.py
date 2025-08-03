@@ -101,7 +101,7 @@ def settings():
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
                 'news_topics': news_topics_str,  # Auto-configured to all categories
                 'max_articles_per_topic': 100,  # Auto-configured for comprehensive coverage
-                'elevenlabs_voice_id': form.elevenlabs_voice_id.data,
+
                 'google_tts_voice_name': form.google_tts_voice_name.data,  # Store Google TTS voice selection
                 'aws_region': form.aws_region.data,
                 
@@ -350,53 +350,62 @@ def data_report():
 
 @web_bp.route('/preview-voice', methods=['POST'])
 def preview_voice():
-    """AJAX endpoint to generate voice preview audio."""
+    """AJAX endpoint to generate voice preview audio using Google TTS."""
     try:
-        # Get voice ID from request
+        # Get voice name from request
         data = request.get_json()
-        voice_id = data.get('voice_id')
+        voice_name = data.get('voice_id')  # Keep same parameter name for compatibility
         
-        if not voice_id:
+        if not voice_name:
             return jsonify({
                 'success': False,
-                'error': 'No voice ID provided'
+                'error': 'No voice name provided'
             })
         
         # Check if API keys are configured
         if 'api_keys' not in session:
             return jsonify({
                 'success': False, 
-                'error': 'ElevenLabs API key not configured. Please set up your API keys first.'
+                'error': 'Google API key not configured. Please set up your API keys first.'
             })
         
         # Create a minimal config for preview
         api_keys = session.get('api_keys', {})
-        elevenlabs_api_key = api_keys.get('elevenlabs_api_key')
+        google_api_key = api_keys.get('google_api_key')
         
-        if not elevenlabs_api_key:
+        if not google_api_key:
             return jsonify({
                 'success': False,
-                'error': 'ElevenLabs API key not found. Please configure your API keys.'
+                'error': 'Google API key not found. Please configure your API keys.'
             })
         
         # Sample text for voice preview
-        preview_text = "Hello! This is a preview of your selected voice for the AI Daily Briefing. I'll be delivering your personalized news and weather summaries in this style."
+        preview_text = "Hello! This is a preview of your selected Google TTS voice for the AI Daily Briefing. I'll be delivering your personalized news and weather summaries in this style."
         
         # Import TTS generator
         from tts_generator import generate_audio
         from config import Config
         
+        # Extract language code from voice name (e.g., 'en-US-Standard-C' -> 'en-US')
+        voice_parts = voice_name.split('-')
+        if len(voice_parts) >= 2:
+            language_code = f"{voice_parts[0]}-{voice_parts[1]}"
+        else:
+            language_code = 'en-US'  # Default fallback
+        
         # Create a minimal config object for the preview
         # We need to bypass the validation for preview, so we'll create a simple config object
         preview_config = type('PreviewConfig', (), {
             'get': lambda self, key, default=None: {
-                'ELEVENLABS_API_KEY': elevenlabs_api_key,
-                'ELEVENLABS_VOICE_ID': voice_id
+                'TTS_PROVIDER': 'google',
+                'GOOGLE_API_KEY': google_api_key,
+                'GOOGLE_TTS_VOICE_NAME': voice_name,
+                'GOOGLE_TTS_LANGUAGE_CODE': language_code
             }.get(key, default),
             'get_voice_speed': lambda self: 1.0
         })()
         
-        logger.info(f"Generating voice preview for voice ID: {voice_id}")
+        logger.info(f"Generating voice preview for Google TTS voice: {voice_name}")
         
         # Generate preview audio
         audio_bytes = generate_audio(preview_text, preview_config)
@@ -418,7 +427,7 @@ def preview_voice():
         return jsonify({
             'success': True,
             'audio_data': f"data:audio/mp3;base64,{audio_base64}",
-            'voice_id': voice_id
+            'voice_name': voice_name
         })
         
     except Exception as e:

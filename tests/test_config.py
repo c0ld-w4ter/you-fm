@@ -22,7 +22,7 @@ class TestConfig:
             'NEWSAPI_AI_KEY': 'test-newsapi-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
-            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',
+            'GOOGLE_API_KEY': 'test-google-key',
             'GOOGLE_DRIVE_FOLDER_ID': 'test-folder-id',
         }
         

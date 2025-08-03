@@ -139,18 +139,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Voice Selection -->
                 <div>
-                    {{ form.elevenlabs_voice_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.google_tts_voice_name.label(class="block text-sm font-medium text-gray-700 mb-2") }}
                     <div class="flex items-center space-x-2">
-                        {{ form.elevenlabs_voice_id(class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", id="voice-select") }}
+                        {{ form.google_tts_voice_name(class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", id="voice-select") }}
                         <button type="button" id="preview-voice-btn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed" title="Preview selected voice">
                             <span class="preview-text">🔊 Preview</span>
                             <span class="loading-text hidden">⏳ Loading...</span>
                         </button>
                     </div>
-                    {% if form.elevenlabs_voice_id.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.elevenlabs_voice_id.errors[0] }}</p>
+                    {% if form.google_tts_voice_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.google_tts_voice_name.errors[0] }}</p>
                     {% endif %}
-                    <p class="mt-1 text-xs text-gray-500">Choose the voice for your briefing - Click preview to hear a sample</p>
+                    <p class="mt-1 text-xs text-gray-500">Choose Google TTS voice: Standard voices are cost-effective, Neural2 voices are higher quality</p>
                     
                     <!-- Audio element for preview playback -->
                     <audio id="voice-preview-audio" class="hidden mt-2" controls preload="none">

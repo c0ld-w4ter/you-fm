@@ -14,6 +14,14 @@ from config import Config, ConfigurationError
 logger = logging.getLogger(__name__)
 
 
+def _extract_language_code(voice_name):
+    """Extract language code from Google TTS voice name (e.g., 'en-US-Standard-C' -> 'en-US')."""
+    voice_parts = voice_name.split('-')
+    if len(voice_parts) >= 2:
+        return f"{voice_parts[0]}-{voice_parts[1]}"
+    return 'en-US'  # Default fallback
+
+
 class WebConfig:
     """
     Configuration manager that creates Config objects from web form data.
@@ -47,24 +55,9 @@ class WebConfig:
             'gemini_api_key'
         ]
         
-        # TTS provider specific requirements
-        # Use explicit TTS provider choice, with fallback to auto-detection
-        tts_provider = form_data.get('tts_provider', '').lower()
-        if not tts_provider:
-            # Only auto-detect if no explicit choice was made
-            if form_data.get('google_api_key', '').strip():
-                tts_provider = 'google'  # Default to Google TTS (user preference)
-            elif form_data.get('elevenlabs_api_key', '').strip():
-                tts_provider = 'elevenlabs'
-            else:
-                # Default to google for new installations
-                tts_provider = 'google'
-        
-        tts_required_fields = []
-        if tts_provider == 'elevenlabs':
-            tts_required_fields = ['elevenlabs_api_key']
-        elif tts_provider == 'google':
-            tts_required_fields = ['google_api_key']
+        # TTS provider - now Google TTS only
+        tts_provider = 'google'  # Fixed to Google TTS only
+        tts_required_fields = ['google_api_key']
         
         required_fields = always_required_fields + tts_required_fields
         
@@ -81,10 +74,9 @@ class WebConfig:
                 form_data[field] = env_value
                 logger.info(f"Using environment variable fallback for {field}")
         
-        # Always ensure we have values for both TTS providers (even if empty) for config creation
-        for tts_field in ['elevenlabs_api_key', 'google_api_key']:
-            if tts_field not in form_data:
-                form_data[tts_field] = os.environ.get(tts_field.upper().replace('_KEY', '_KEY'), '')
+        # Ensure we have value for Google TTS API key (even if empty) for config creation
+        if 'google_api_key' not in form_data:
+            form_data['google_api_key'] = os.environ.get('GOOGLE_API_KEY', '')
         
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
@@ -101,7 +93,7 @@ class WebConfig:
             'NEWSAPI_AI_KEY': form_data['newsapi_key'],
             'OPENWEATHER_API_KEY': form_data['openweather_api_key'],
             'GEMINI_API_KEY': form_data['gemini_api_key'],
-            'ELEVENLABS_API_KEY': form_data['elevenlabs_api_key'],
+
             'GOOGLE_API_KEY': form_data['google_api_key'],
             
             # Personal Settings
@@ -116,9 +108,8 @@ class WebConfig:
             
             # Audio Settings
             'TTS_PROVIDER': tts_provider,
-            'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
-            'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Journey-D'),
-            'GOOGLE_TTS_LANGUAGE_CODE': form_data.get('google_tts_language_code', 'en-US'),
+            'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Standard-C'),
+            'GOOGLE_TTS_LANGUAGE_CODE': _extract_language_code(form_data.get('google_tts_voice_name', 'en-US-Standard-C')),
             
             # AWS Settings
             'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
@@ -162,7 +153,7 @@ class WebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             # Removed news_topics, max_articles_per_topic - these are now auto-configured
-            'elevenlabs_voice_id': 'default',
+            'google_tts_voice_name': 'en-US-Standard-C',
             'briefing_duration_minutes': 5,  # Updated from 3 to 5 minutes
             'listener_name': '',
             
@@ -187,7 +178,7 @@ class WebConfig:
             'newsapi_key': os.environ.get('NEWSAPI_AI_KEY', ''),
             'openweather_api_key': os.environ.get('OPENWEATHER_API_KEY', ''),
             'gemini_api_key': os.environ.get('GEMINI_API_KEY', ''),
-            'elevenlabs_api_key': os.environ.get('ELEVENLABS_API_KEY', ''),
+
             'google_api_key': os.environ.get('GOOGLE_API_KEY', ''),
         }
         
@@ -214,24 +205,11 @@ class WebConfig:
             'gemini_api_key': 'Google Gemini API Key is required'
         }
         
-        # TTS provider specific validation
-        # Use explicit TTS provider choice, with fallback to auto-detection (same logic as create_config_from_form)
-        tts_provider = form_data.get('tts_provider', '').lower()
-        if not tts_provider:
-            # Only auto-detect if no explicit choice was made
-            if form_data.get('google_api_key', '').strip():
-                tts_provider = 'google'  # Default to Google TTS (user preference)
-            elif form_data.get('elevenlabs_api_key', '').strip():
-                tts_provider = 'elevenlabs'
-            else:
-                # Default to google for new installations
-                tts_provider = 'google'
-        
-        tts_required_fields = {}
-        if tts_provider == 'elevenlabs':
-            tts_required_fields['elevenlabs_api_key'] = 'ElevenLabs API Key is required when using ElevenLabs TTS'
-        elif tts_provider == 'google':
-            tts_required_fields['google_api_key'] = 'Google API Key is required when using Google TTS'
+        # TTS provider - now Google TTS only
+        tts_provider = 'google'  # Fixed to Google TTS only
+        tts_required_fields = {
+            'google_api_key': 'Google API Key is required for Google TTS'
+        }
         
         required_fields = {**always_required_fields, **tts_required_fields}
         

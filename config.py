@@ -50,16 +50,12 @@ class Config:
         'MAX_ARTICLES_PER_TOPIC': '100',  # Maximum articles for comprehensive news gathering
         
         # TTS Provider settings
-        'TTS_PROVIDER': 'google',  # 'google' or 'elevenlabs'
-        
-        # Audio settings - ElevenLabs
-        'ELEVENLABS_API_KEY': '',  # Optional - only needed if using ElevenLabs
-        'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
+        'TTS_PROVIDER': 'google',  # Google TTS only
         
         # Audio settings - Google TTS
         'GOOGLE_API_KEY': '',  # Google API key for TTS (alternative to credentials)
         'GOOGLE_CLOUD_CREDENTIALS_PATH': '',  # Path to service account JSON (optional)
-        'GOOGLE_TTS_VOICE_NAME': 'en-US-Journey-D',  # Google TTS voice name
+        'GOOGLE_TTS_VOICE_NAME': 'en-US-Standard-C',  # Google TTS voice name (Standard for cost efficiency)
         'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
         
         # AWS settings (optional for S3 upload)
@@ -341,26 +337,22 @@ class Config:
             raise ConfigurationError("VOICE_SPEED must be a valid float")
     
     def _validate_tts_config(self) -> None:
-        """Validate TTS provider configuration."""
+        """Validate Google TTS configuration."""
         tts_provider = self.get('TTS_PROVIDER', 'google').lower()
         
-        if tts_provider not in ['google', 'elevenlabs']:
-            raise ConfigurationError("TTS_PROVIDER must be either 'google' or 'elevenlabs'")
+        if tts_provider != 'google':
+            raise ConfigurationError("TTS_PROVIDER must be 'google' (ElevenLabs is no longer supported)")
         
-        if tts_provider == 'elevenlabs':
-            if not self.get('ELEVENLABS_API_KEY'):
-                raise ConfigurationError("ELEVENLABS_API_KEY is required when using ElevenLabs TTS provider")
-        elif tts_provider == 'google':
-            # Google TTS can use API key or default credentials
-            api_key = self.get('GOOGLE_API_KEY', '')
-            credentials_path = self.get('GOOGLE_CLOUD_CREDENTIALS_PATH', '')
-            
-            if not api_key and not credentials_path:
-                logger.info("Using Google TTS provider with Application Default Credentials")
-            elif api_key:
-                logger.info("Using Google TTS provider with API key authentication")
-            else:
-                logger.info("Using Google TTS provider with service account credentials")
+        # Google TTS can use API key or default credentials
+        api_key = self.get('GOOGLE_API_KEY', '')
+        credentials_path = self.get('GOOGLE_CLOUD_CREDENTIALS_PATH', '')
+        
+        if not api_key and not credentials_path:
+            logger.info("Using Google TTS provider with Application Default Credentials")
+        elif api_key:
+            logger.info("Using Google TTS provider with API key authentication")
+        else:
+            logger.info("Using Google TTS provider with service account credentials")
                 
             # Validate voice name format (should be like en-US-Journey-D)
             voice_name = self.get('GOOGLE_TTS_VOICE_NAME', '')

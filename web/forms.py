@@ -31,26 +31,19 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
-    # TTS Provider Selection
+    # TTS Provider Selection (Google TTS only)
     tts_provider = SelectField(
         'Text-to-Speech Provider',
         choices=[
-            ('google', 'Google Cloud Text-to-Speech'),
-            ('elevenlabs', 'ElevenLabs')
+            ('google', 'Google Cloud Text-to-Speech (Standard & Neural2 voices)')
         ],
         default='google',
         validators=[DataRequired()]
     )
     
-    elevenlabs_api_key = StringField(
-        'ElevenLabs API Key (Optional - only needed if using ElevenLabs)',
-        validators=[Optional()],
-        render_kw={'placeholder': 'Enter your ElevenLabs API key'}
-    )
-    
     google_api_key = StringField(
-        'Google API Key (Optional - only needed if using Google TTS)',
-        validators=[Optional()],
+        'Google API Key (Required for Google TTS)',
+        validators=[DataRequired(message='Google API Key is required for Text-to-Speech')],
         render_kw={'placeholder': 'Enter your Google API key'}
     )
     
@@ -154,50 +147,53 @@ class SettingsForm(FlaskForm):
     # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
     # Audio Settings
-    elevenlabs_voice_id = SelectField(
-        'Voice Selection',
-        choices=[
-            ('default', 'Rachel (Default) - Professional Female'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
-            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
-            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
-            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
-            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
-            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
-            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
-            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
-            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
-            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
-            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
-        ],
-        default='default',
-        validators=[Optional()]
-    )
-    
-    # Google TTS Voice Selection
     google_tts_voice_name = SelectField(
         'Google TTS Voice Selection',
         choices=[
-            ('en-US-Journey-D', 'Journey-D - Professional Male (Default)'),
-            ('en-US-Journey-F', 'Journey-F - Professional Female'),
-            ('en-US-Journey-O', 'Journey-O - Young Female'),
-            ('en-US-News-K', 'News-K - News Anchor Male'),
-            ('en-US-News-L', 'News-L - News Anchor Female'),
-            ('en-US-News-N', 'News-N - News Anchor Neutral'),
-            ('en-US-Polyglot-1', 'Polyglot-1 - Multilingual Male'),
-            ('en-US-Studio-M', 'Studio-M - Narrative Male'),
-            ('en-US-Studio-O', 'Studio-O - Narrative Female'),
-            ('en-US-Wavenet-A', 'Wavenet-A - Male'),
-            ('en-US-Wavenet-B', 'Wavenet-B - Male'),
-            ('en-US-Wavenet-C', 'Wavenet-C - Female'),
-            ('en-US-Wavenet-D', 'Wavenet-D - Male'),
-            ('en-US-Wavenet-E', 'Wavenet-E - Female'),
-            ('en-US-Wavenet-F', 'Wavenet-F - Female'),
+            # Standard voices (most cost-effective - $4 per 1M characters)
+            ('en-US-Standard-A', 'Standard-A - Male (Cost-effective)'),
+            ('en-US-Standard-B', 'Standard-B - Male (Cost-effective)'),
+            ('en-US-Standard-C', 'Standard-C - Female (Cost-effective)'),
+            ('en-US-Standard-D', 'Standard-D - Male (Cost-effective)'),
+            ('en-US-Standard-E', 'Standard-E - Female (Cost-effective)'),
+            ('en-US-Standard-F', 'Standard-F - Female (Cost-effective)'),
+            ('en-US-Standard-G', 'Standard-G - Female (Cost-effective)'),
+            ('en-US-Standard-H', 'Standard-H - Female (Cost-effective)'),
+            ('en-US-Standard-I', 'Standard-I - Male (Cost-effective)'),
+            ('en-US-Standard-J', 'Standard-J - Male (Cost-effective)'),
+            
+            # Neural2 voices (higher quality - $16 per 1M characters)
+            ('en-US-Neural2-A', 'Neural2-A - Male (High Quality)'),
+            ('en-US-Neural2-C', 'Neural2-C - Female (High Quality)'),
+            ('en-US-Neural2-D', 'Neural2-D - Male (High Quality)'),
+            ('en-US-Neural2-E', 'Neural2-E - Female (High Quality)'),
+            ('en-US-Neural2-F', 'Neural2-F - Female (High Quality)'),
+            ('en-US-Neural2-G', 'Neural2-G - Female (High Quality)'),
+            ('en-US-Neural2-H', 'Neural2-H - Female (High Quality)'),
+            ('en-US-Neural2-I', 'Neural2-I - Male (High Quality)'),
+            ('en-US-Neural2-J', 'Neural2-J - Male (High Quality)'),
+            
+            # Additional Standard voices for variety
+            ('en-GB-Standard-A', 'Standard-A - British Female (Cost-effective)'),
+            ('en-GB-Standard-B', 'Standard-B - British Male (Cost-effective)'),
+            ('en-GB-Standard-C', 'Standard-C - British Female (Cost-effective)'),
+            ('en-GB-Standard-D', 'Standard-D - British Male (Cost-effective)'),
+            ('en-AU-Standard-A', 'Standard-A - Australian Female (Cost-effective)'),
+            ('en-AU-Standard-B', 'Standard-B - Australian Male (Cost-effective)'),
+            ('en-AU-Standard-C', 'Standard-C - Australian Female (Cost-effective)'),
+            ('en-AU-Standard-D', 'Standard-D - Australian Male (Cost-effective)'),
+            
+            # Additional Neural2 voices for variety
+            ('en-GB-Neural2-A', 'Neural2-A - British Female (High Quality)'),
+            ('en-GB-Neural2-B', 'Neural2-B - British Male (High Quality)'),
+            ('en-GB-Neural2-C', 'Neural2-C - British Female (High Quality)'),
+            ('en-GB-Neural2-D', 'Neural2-D - British Male (High Quality)'),
+            ('en-AU-Neural2-A', 'Neural2-A - Australian Female (High Quality)'),
+            ('en-AU-Neural2-B', 'Neural2-B - Australian Male (High Quality)'),
+            ('en-AU-Neural2-C', 'Neural2-C - Australian Female (High Quality)'),
+            ('en-AU-Neural2-D', 'Neural2-D - Australian Male (High Quality)'),
         ],
-        default='en-US-Journey-D',
+        default='en-US-Standard-C',  # Default to cost-effective female voice
         validators=[Optional()]
     )
     
@@ -304,10 +300,10 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
-    elevenlabs_api_key = StringField(
-        'ElevenLabs API Key',
-        validators=[DataRequired(message='ElevenLabs API Key is required')],
-        render_kw={'placeholder': 'Enter your ElevenLabs API key'}
+    google_api_key = StringField(
+        'Google API Key',
+        validators=[DataRequired(message='Google API Key is required')],
+        render_kw={'placeholder': 'Enter your Google API key'}
     )
     
     # Personal Settings
@@ -349,26 +345,53 @@ class BriefingConfigForm(FlaskForm):
     )
     
     # Audio Settings
-    elevenlabs_voice_id = SelectField(
-        'Voice Selection',
+    google_tts_voice_name = SelectField(
+        'Google TTS Voice Selection',
         choices=[
-            ('default', 'Rachel (Default) - Professional Female'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
-            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
-            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
-            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
-            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
-            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
-            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
-            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
-            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
-            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
-            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
+            # Standard voices (most cost-effective - $4 per 1M characters)
+            ('en-US-Standard-A', 'Standard-A - Male (Cost-effective)'),
+            ('en-US-Standard-B', 'Standard-B - Male (Cost-effective)'),
+            ('en-US-Standard-C', 'Standard-C - Female (Cost-effective)'),
+            ('en-US-Standard-D', 'Standard-D - Male (Cost-effective)'),
+            ('en-US-Standard-E', 'Standard-E - Female (Cost-effective)'),
+            ('en-US-Standard-F', 'Standard-F - Female (Cost-effective)'),
+            ('en-US-Standard-G', 'Standard-G - Female (Cost-effective)'),
+            ('en-US-Standard-H', 'Standard-H - Female (Cost-effective)'),
+            ('en-US-Standard-I', 'Standard-I - Male (Cost-effective)'),
+            ('en-US-Standard-J', 'Standard-J - Male (Cost-effective)'),
+            
+            # Neural2 voices (higher quality - $16 per 1M characters)
+            ('en-US-Neural2-A', 'Neural2-A - Male (High Quality)'),
+            ('en-US-Neural2-C', 'Neural2-C - Female (High Quality)'),
+            ('en-US-Neural2-D', 'Neural2-D - Male (High Quality)'),
+            ('en-US-Neural2-E', 'Neural2-E - Female (High Quality)'),
+            ('en-US-Neural2-F', 'Neural2-F - Female (High Quality)'),
+            ('en-US-Neural2-G', 'Neural2-G - Female (High Quality)'),
+            ('en-US-Neural2-H', 'Neural2-H - Female (High Quality)'),
+            ('en-US-Neural2-I', 'Neural2-I - Male (High Quality)'),
+            ('en-US-Neural2-J', 'Neural2-J - Male (High Quality)'),
+            
+            # Additional Standard voices for variety
+            ('en-GB-Standard-A', 'Standard-A - British Female (Cost-effective)'),
+            ('en-GB-Standard-B', 'Standard-B - British Male (Cost-effective)'),
+            ('en-GB-Standard-C', 'Standard-C - British Female (Cost-effective)'),
+            ('en-GB-Standard-D', 'Standard-D - British Male (Cost-effective)'),
+            ('en-AU-Standard-A', 'Standard-A - Australian Female (Cost-effective)'),
+            ('en-AU-Standard-B', 'Standard-B - Australian Male (Cost-effective)'),
+            ('en-AU-Standard-C', 'Standard-C - Australian Female (Cost-effective)'),
+            ('en-AU-Standard-D', 'Standard-D - Australian Male (Cost-effective)'),
+            
+            # Additional Neural2 voices for variety
+            ('en-GB-Neural2-A', 'Neural2-A - British Female (High Quality)'),
+            ('en-GB-Neural2-B', 'Neural2-B - British Male (High Quality)'),
+            ('en-GB-Neural2-C', 'Neural2-C - British Female (High Quality)'),
+            ('en-GB-Neural2-D', 'Neural2-D - British Male (High Quality)'),
+            ('en-AU-Neural2-A', 'Neural2-A - Australian Female (High Quality)'),
+            ('en-AU-Neural2-B', 'Neural2-B - Australian Male (High Quality)'),
+            ('en-AU-Neural2-C', 'Neural2-C - Australian Female (High Quality)'),
+            ('en-AU-Neural2-D', 'Neural2-D - Australian Male (High Quality)'),
         ],
-        default='default',
+        default='en-US-Standard-C',  # Default to cost-effective female voice
         validators=[Optional()]
     )
     
