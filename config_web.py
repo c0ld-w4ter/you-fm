@@ -117,7 +117,7 @@ class WebConfig:
             # Audio Settings
             'TTS_PROVIDER': tts_provider,
             'ELEVENLABS_VOICE_ID': form_data.get('elevenlabs_voice_id', 'default'),
-            'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Journey-D'),
+            'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Neural2-C'),
             'GOOGLE_TTS_LANGUAGE_CODE': form_data.get('google_tts_language_code', 'en-US'),
             
             # AWS Settings
@@ -162,7 +162,7 @@ class WebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             # Removed news_topics, max_articles_per_topic - these are now auto-configured
-            'elevenlabs_voice_id': 'default',
+            'google_tts_voice_name': 'en-US-Neural2-C',
             'briefing_duration_minutes': 5,  # Updated from 3 to 5 minutes
             'listener_name': '',
             

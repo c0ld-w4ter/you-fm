@@ -129,21 +129,20 @@ class TestVoiceFixes:
             briefing_form = BriefingConfigForm()
             
             # Test that forms have same choices
-            settings_choices = settings_form.elevenlabs_voice_id.choices
-            briefing_choices = briefing_form.elevenlabs_voice_id.choices
+            settings_choices = settings_form.google_tts_voice_name.choices
+            briefing_choices = briefing_form.google_tts_voice_name.choices
             
-            assert settings_choices == briefing_choices, "Voice choices should be identical"
+            assert settings_choices == briefing_choices
             
-            # Test structure of choices
-            assert len(settings_choices) > 5, "Should have expanded voice selection"
-            
-            # First choice should be default (Rachel)
-            default_choice = settings_choices[0]
-            assert default_choice[0] == 'default', "First choice value should be 'default'"
-            assert 'Rachel' in default_choice[1], "First choice should mention Rachel"
-            assert 'Female' in default_choice[1], "First choice should indicate Female"
-            
-            # Test that we have both male and female voices
-            choice_text = ' '.join([choice[1] for choice in settings_choices])
-            assert 'Male' in choice_text, "Should have male voices"
-            assert 'Female' in choice_text, "Should have female voices" 
+            # Check structure of choices
+            for voice_id, description in settings_choices:
+                assert isinstance(voice_id, str), "Voice ID should be string"
+                assert isinstance(description, str), "Description should be string"
+                assert len(voice_id) > 0, "Voice ID should not be empty"
+                assert len(description) > 0, "Description should not be empty"
+                
+            # Should have Neural2 voices
+            choice_texts = [choice[1] for choice in settings_choices]
+            assert any('Neural2' in choice_text for choice_text in choice_texts), "Should have Neural2 voices"
+            assert any('Female' in choice_text for choice_text in choice_texts), "Should have female voices"
+            assert any('Male' in choice_text for choice_text in choice_texts), "Should have male voices" 

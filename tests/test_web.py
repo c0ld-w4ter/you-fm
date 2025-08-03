@@ -28,7 +28,9 @@ class TestAPIKeysForm:
                 'newsapi_key': valid_form_data['newsapi_key'],
                 'openweather_api_key': valid_form_data['openweather_api_key'],
                 'gemini_api_key': valid_form_data['gemini_api_key'],
-                'elevenlabs_api_key': valid_form_data['elevenlabs_api_key']
+                'google_api_key': valid_form_data['google_api_key'],
+                'elevenlabs_api_key': '',  # Optional field
+                'tts_provider': 'google'
             }
             
             form = APIKeysForm(data=form_data)
@@ -62,7 +64,7 @@ class TestSettingsForm:
                 'location_city': 'Denver',
                 'location_country': 'US',
                 'briefing_duration_minutes': 8,
-                'elevenlabs_voice_id': 'default',
+                'google_tts_voice_name': 'en-US-Neural2-C',
                 'aws_region': 'us-east-1',
                 # Only remaining advanced field
                 'briefing_tone': 'casual',
@@ -124,7 +126,7 @@ class TestWebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             'briefing_duration_minutes': 10,
-            'elevenlabs_voice_id': 'default',
+            'google_tts_voice_name': 'en-US-Neural2-C',
             'aws_region': 'us-east-1',
             # Only remaining advanced field
             'briefing_tone': 'casual',
@@ -215,7 +217,7 @@ class TestAdvancedFieldsIntegration:
                 'location_city': 'Boston',
                 'location_country': 'US',
                 'briefing_duration_minutes': 12,
-                'elevenlabs_voice_id': 'EXAVITQu4vr4xnSDxMaL',
+                'google_tts_voice_name': 'en-US-Neural2-F',
                 
                 # Remaining advanced setting
                 'briefing_tone': 'casual',
@@ -488,25 +490,12 @@ def valid_settings_data():
         'listener_name': 'Test User',
         'location_city': 'Denver',
         'location_country': 'US',
-        'briefing_duration_minutes': 5,
-        'news_topics': ['technology', 'business'],  # Updated to list format for checkboxes
-        'max_articles_per_topic': 3,
-        'elevenlabs_voice_id': 'default',
+        'briefing_duration_minutes': 8,
+        'google_tts_voice_name': 'en-US-Neural2-C',
         'aws_region': 'us-east-1',
-        # Advanced settings (Milestone 5)
-        'briefing_tone': 'professional',
-        'content_depth': 'balanced',
-        'keywords_exclude': '',
-        'voice_speed': '1.0',
-        # Personalization settings
-        'specific_interests': 'AI, renewable energy',
-        # 'briefing_goal' removed for UI simplification
-        'followed_entities': 'OpenAI, Tesla',
-        'hobbies': 'hiking, reading',
-        'favorite_teams_artists': 'Lakers',
-        'passion_topics': 'space exploration',
-        'greeting_preference': 'Good morning!',
-        'daily_routine_detail': 'I commute by train'
+        # Only remaining advanced field
+        'briefing_tone': 'casual',
+        # Removed fields: content_depth, keywords_exclude, voice_speed, news_topics, max_articles_per_topic
     }
 
 
@@ -517,14 +506,14 @@ def valid_form_data():
         'newsapi_key': 'test_newsapi_key',
         'openweather_api_key': 'test_openweather_key',
         'gemini_api_key': 'test_gemini_key',
-        'elevenlabs_api_key': 'test_elevenlabs_key',
+        'google_api_key': 'test_google_key',
         'listener_name': 'Test User',
         'location_city': 'Denver',
         'location_country': 'US',
         'briefing_duration_minutes': 5,
         'news_topics': 'technology,business',
         'max_articles_per_topic': 3,
-        'elevenlabs_voice_id': 'default',
+        'google_tts_voice_name': 'en-US-Neural2-C',
         'aws_region': 'us-east-1'
     }
 
@@ -653,7 +642,7 @@ class TestFormValidation:
                 'briefing_duration_minutes': 5,
                 'news_topics': ['technology'],  # Fixed: use list format and valid category
                 'max_articles_per_topic': 3,
-                'elevenlabs_voice_id': 'default'
+                'google_tts_voice_name': 'en-US-Neural2-C'
             }
             form = SettingsForm(data=valid_data)
             assert form.validate() is True
@@ -807,7 +796,7 @@ class TestRouteHandlers:
                 'briefing_duration_minutes': 3,
                 'news_topics': 'technology',
                 'max_articles_per_topic': 3,
-                'elevenlabs_voice_id': 'test_voice'
+                'google_tts_voice_name': 'en-US-Neural2-A'
             }
         
         # This would fail due to invalid API keys, but we're testing the endpoint exists
@@ -835,7 +824,7 @@ class TestConfigurationIntegration:
         defaults = WebConfig.get_form_defaults()
         assert defaults['location_city'] == 'Denver'
         assert defaults['briefing_duration_minutes'] == 5  # Updated from 3 to 5
-        assert defaults['elevenlabs_voice_id'] == 'default'
+        assert defaults['google_tts_voice_name'] == 'en-US-Neural2-C'
     
     def test_configuration_validation_integration(self, valid_form_data):
         """Test configuration validation with web form data."""

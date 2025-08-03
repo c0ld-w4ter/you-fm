@@ -61,7 +61,7 @@ class GoogleTTSClient:
     def synthesize_speech(
         self,
         text: str,
-        voice_name: str = "en-US-Journey-D",
+        voice_name: str = "en-US-Neural2-C",
         language_code: str = "en-US",
         speaking_rate: float = 1.0,
         pitch: float = 0.0,
@@ -356,7 +356,7 @@ def generate_audio_google(script_text: str, config=None) -> bytes:
         # Get Google TTS configuration
         api_key = config.get('GOOGLE_API_KEY', '')
         credentials_path = config.get('GOOGLE_CLOUD_CREDENTIALS_PATH', '')
-        voice_name = config.get('GOOGLE_TTS_VOICE_NAME', 'en-US-Journey-D')
+        voice_name = config.get('GOOGLE_TTS_VOICE_NAME', 'en-US-Neural2-C')
         language_code = config.get('GOOGLE_TTS_LANGUAGE_CODE', 'en-US')
         
         # Get voice speed from config (same as ElevenLabs for consistency)

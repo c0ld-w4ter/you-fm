@@ -11,19 +11,19 @@ from unittest.mock import patch
 
 @patch('tts_generator.generate_audio')
 def test_voice_preview_endpoint_integration(mock_generate_audio, client):
-    """Test voice preview endpoint with Flask test client."""
+    """Test voice preview endpoint with Flask test client using Google TTS."""
     # Mock the audio generation
     mock_generate_audio.return_value = b'fake_audio_data'
     
     # Set up session with API keys (simulating user has completed step 1)
     with client.session_transaction() as sess:
         sess['api_keys'] = {
-            'elevenlabs_api_key': 'test_api_key_12345'
+            'google_api_key': 'test_api_key_12345'
         }
     
-    # Test voice preview request
-    response = client.post('/preview-voice', 
-                          json={'voice_id': 'EXAVITQu4vr4xnSDxMaL'},  # Bella
+    # Test voice preview request with Neural2 voice
+    response = client.post('/preview-voice',
+                          json={'voice_id': 'en-US-Neural2-C'},  # Neural2 Female
                           content_type='application/json')
     
     assert response.status_code == 200
@@ -32,22 +32,16 @@ def test_voice_preview_endpoint_integration(mock_generate_audio, client):
     # Verify successful response
     assert data['success'] is True
     assert 'audio_data' in data
-    assert data['voice_id'] == 'EXAVITQu4vr4xnSDxMaL'
-    assert data['audio_data'].startswith('data:audio/mp3;base64,')
+    assert data['voice_id'] == 'en-US-Neural2-C'
     
     # Verify generate_audio was called with correct config
     mock_generate_audio.assert_called_once()
-    call_args = mock_generate_audio.call_args
+    args, kwargs = mock_generate_audio.call_args
+    preview_text, config_obj = args
     
-    # Check the text used for preview
-    preview_text = call_args[0][0]
-    assert 'Hello!' in preview_text
-    assert 'AI Daily Briefing' in preview_text
-    
-    # Check the config object passed
-    config_obj = call_args[0][1]
-    assert config_obj.get('ELEVENLABS_API_KEY') == 'test_api_key_12345'
-    assert config_obj.get('ELEVENLABS_VOICE_ID') == 'EXAVITQu4vr4xnSDxMaL'
+    assert "Neural2 voice" in preview_text
+    assert config_obj.get('TTS_PROVIDER') == 'google'
+    assert config_obj.get('GOOGLE_TTS_VOICE_NAME') == 'en-US-Neural2-C'
 
 
 def test_voice_preview_endpoint_no_session(client):
@@ -66,7 +60,7 @@ def test_voice_preview_endpoint_no_session(client):
 def test_voice_preview_endpoint_missing_voice_id(client):
     """Test voice preview fails without voice_id."""
     with client.session_transaction() as sess:
-        sess['api_keys'] = {'elevenlabs_api_key': 'test_key'}
+        sess['api_keys'] = {'google_api_key': 'test_key'}
     
     response = client.post('/preview-voice',
                           json={},  # No voice_id
@@ -76,32 +70,36 @@ def test_voice_preview_endpoint_missing_voice_id(client):
     data = json.loads(response.data)
     
     assert data['success'] is False
-    assert 'No voice ID provided' in data['error']
+    assert 'No voice name provided' in data['error']
 
 
 @patch('tts_generator.generate_audio')
 def test_voice_preview_with_default_voice(mock_generate_audio, client):
-    """Test voice preview with default voice selection."""
+    """Test voice preview with Neural2 default voice selection."""
     mock_generate_audio.return_value = b'fake_audio_data'
     
     with client.session_transaction() as sess:
-        sess['api_keys'] = {'elevenlabs_api_key': 'test_api_key'}
+        sess['api_keys'] = {'google_api_key': 'test_api_key'}
     
-    # Test with default voice
+    # Test with Neural2 default voice
     response = client.post('/preview-voice',
-                          json={'voice_id': 'default'},
+                          json={'voice_id': 'en-US-Neural2-C'},  # Default Neural2 voice
                           content_type='application/json')
     
     assert response.status_code == 200
     data = json.loads(response.data)
     
     assert data['success'] is True
-    assert data['voice_id'] == 'default'
+    assert 'audio_data' in data
+    assert data['voice_id'] == 'en-US-Neural2-C'
     
-    # Verify config was set up correctly
+    # Verify the config was created correctly
     mock_generate_audio.assert_called_once()
-    config_obj = mock_generate_audio.call_args[0][1]
-    assert config_obj.get('ELEVENLABS_VOICE_ID') == 'default'
+    args, kwargs = mock_generate_audio.call_args
+    preview_text, config_obj = args
+    
+    assert config_obj.get('TTS_PROVIDER') == 'google'
+    assert config_obj.get('GOOGLE_TTS_VOICE_NAME') == 'en-US-Neural2-C'
 
 
 @pytest.fixture

@@ -31,12 +31,12 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
-    # TTS Provider Selection
+    # TTS Provider Selection - Google TTS (Neural2) Recommended
     tts_provider = SelectField(
         'Text-to-Speech Provider',
         choices=[
-            ('google', 'Google Cloud Text-to-Speech'),
-            ('elevenlabs', 'ElevenLabs')
+            ('google', 'Google Cloud Text-to-Speech (Recommended - Neural2 Voices)'),
+            ('elevenlabs', 'ElevenLabs (Legacy Support)')
         ],
         default='google',
         validators=[DataRequired()]
@@ -153,51 +153,21 @@ class SettingsForm(FlaskForm):
     
     # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
-    # Audio Settings
-    elevenlabs_voice_id = SelectField(
-        'Voice Selection',
-        choices=[
-            ('default', 'Rachel (Default) - Professional Female'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
-            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
-            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
-            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
-            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
-            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
-            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
-            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
-            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
-            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
-            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
-        ],
-        default='default',
-        validators=[Optional()]
-    )
-    
-    # Google TTS Voice Selection
+    # Audio Settings - Google TTS Neural2 Voice Selection Only
     google_tts_voice_name = SelectField(
-        'Google TTS Voice Selection',
+        'Voice Selection (Google Neural2 - High Quality)',
         choices=[
-            ('en-US-Journey-D', 'Journey-D - Professional Male (Default)'),
-            ('en-US-Journey-F', 'Journey-F - Professional Female'),
-            ('en-US-Journey-O', 'Journey-O - Young Female'),
-            ('en-US-News-K', 'News-K - News Anchor Male'),
-            ('en-US-News-L', 'News-L - News Anchor Female'),
-            ('en-US-News-N', 'News-N - News Anchor Neutral'),
-            ('en-US-Polyglot-1', 'Polyglot-1 - Multilingual Male'),
-            ('en-US-Studio-M', 'Studio-M - Narrative Male'),
-            ('en-US-Studio-O', 'Studio-O - Narrative Female'),
-            ('en-US-Wavenet-A', 'Wavenet-A - Male'),
-            ('en-US-Wavenet-B', 'Wavenet-B - Male'),
-            ('en-US-Wavenet-C', 'Wavenet-C - Female'),
-            ('en-US-Wavenet-D', 'Wavenet-D - Male'),
-            ('en-US-Wavenet-E', 'Wavenet-E - Female'),
-            ('en-US-Wavenet-F', 'Wavenet-F - Female'),
+            ('en-US-Neural2-C', 'Neural2-C - Professional Female (Default)'),
+            ('en-US-Neural2-A', 'Neural2-A - Professional Male'),
+            ('en-US-Neural2-D', 'Neural2-D - Conversational Male'),
+            ('en-US-Neural2-E', 'Neural2-E - Conversational Female'),
+            ('en-US-Neural2-F', 'Neural2-F - Warm Female'),
+            ('en-US-Neural2-G', 'Neural2-G - Clear Female'),
+            ('en-US-Neural2-H', 'Neural2-H - Expressive Female'),
+            ('en-US-Neural2-I', 'Neural2-I - Deep Male'),
+            ('en-US-Neural2-J', 'Neural2-J - Authoritative Male'),
         ],
-        default='en-US-Journey-D',
+        default='en-US-Neural2-C',
         validators=[Optional()]
     )
     
@@ -304,10 +274,10 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
-    elevenlabs_api_key = StringField(
-        'ElevenLabs API Key',
-        validators=[DataRequired(message='ElevenLabs API Key is required')],
-        render_kw={'placeholder': 'Enter your ElevenLabs API key'}
+    google_api_key = StringField(
+        'Google API Key (for TTS)',
+        validators=[DataRequired(message='Google API Key is required')],
+        render_kw={'placeholder': 'Enter your Google API key'}
     )
     
     # Personal Settings
@@ -348,27 +318,21 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'min': 1, 'max': 10}
     )
     
-    # Audio Settings
-    elevenlabs_voice_id = SelectField(
-        'Voice Selection',
+    # Audio Settings - Google TTS Neural2 Voice Selection Only
+    google_tts_voice_name = SelectField(
+        'Voice Selection (Google Neural2 - High Quality)',
         choices=[
-            ('default', 'Rachel (Default) - Professional Female'),
-            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Warm Female'),
-            ('VR6AewLTigWG4xSOukaG', 'Arnold - Deep Male'),
-            ('pNInz6obpgDQGcFmaJgB', 'Adam - Clear Male'),
-            ('yoZ06aMxZJJ28mfd3POQ', 'Sam - Young Male'),
-            ('kdmDKE6EkgrWrrykO9Qt', 'Alexandra - Realistic Young Female'),
-            ('L0Dsvb3SLTyegXwtm47J', 'Archer - Friendly British Male'),
-            ('g6xIsTj2HwM6VR4iXFCw', 'Jessica - Empathetic Female'),
-            ('OYTbf65OHHFELVut7v2H', 'Hope - Bright & Uplifting Female'),
-            ('dj3G1R1ilKoFKhBnWOzG', 'Eryn - Friendly & Relatable Female'),
-            ('HDA9tsk27wYi3uq0fPcK', 'Stuart - Professional Australian Male'),
-            ('1SM7GgM6IMuvQlz2BwM3', 'Mark - Relaxed & Laid Back Male'),
-            ('PT4nqlKZfc06VW1BuClj', 'Angela - Down to Earth Female'),
-            ('vBKc2FfBKJfcZNyEt1n6', 'Finn - Podcast Friendly Male'),
-            ('56AoDkrOh6qfVPDXZ7Pt', 'Cassidy - Energetic Female'),
+            ('en-US-Neural2-C', 'Neural2-C - Professional Female (Default)'),
+            ('en-US-Neural2-A', 'Neural2-A - Professional Male'),
+            ('en-US-Neural2-D', 'Neural2-D - Conversational Male'),
+            ('en-US-Neural2-E', 'Neural2-E - Conversational Female'),
+            ('en-US-Neural2-F', 'Neural2-F - Warm Female'),
+            ('en-US-Neural2-G', 'Neural2-G - Clear Female'),
+            ('en-US-Neural2-H', 'Neural2-H - Expressive Female'),
+            ('en-US-Neural2-I', 'Neural2-I - Deep Male'),
+            ('en-US-Neural2-J', 'Neural2-J - Authoritative Male'),
         ],
-        default='default',
+        default='en-US-Neural2-C',
         validators=[Optional()]
     )
     

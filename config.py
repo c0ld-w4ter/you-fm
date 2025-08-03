@@ -50,7 +50,7 @@ class Config:
         'MAX_ARTICLES_PER_TOPIC': '100',  # Maximum articles for comprehensive news gathering
         
         # TTS Provider settings
-        'TTS_PROVIDER': 'google',  # 'google' or 'elevenlabs'
+        'TTS_PROVIDER': 'google',  # 'google' (recommended - Neural2) or 'elevenlabs' (legacy)
         
         # Audio settings - ElevenLabs
         'ELEVENLABS_API_KEY': '',  # Optional - only needed if using ElevenLabs
@@ -59,7 +59,7 @@ class Config:
         # Audio settings - Google TTS
         'GOOGLE_API_KEY': '',  # Google API key for TTS (alternative to credentials)
         'GOOGLE_CLOUD_CREDENTIALS_PATH': '',  # Path to service account JSON (optional)
-        'GOOGLE_TTS_VOICE_NAME': 'en-US-Journey-D',  # Google TTS voice name
+        'GOOGLE_TTS_VOICE_NAME': 'en-US-Neural2-C',  # Google TTS Neural2 voice name (recommended)
         'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
         
         # AWS settings (optional for S3 upload)
