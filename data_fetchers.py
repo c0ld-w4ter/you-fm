@@ -238,11 +238,18 @@ def get_news_articles(config=None, use_cache: bool = True) -> List[Article]:
     category_keywords = {
         'business': 'business',
         'entertainment': 'entertainment', 
-        'general': 'politics',
         'health': 'health',
         'science': 'science',
         'sports': 'sports',
-        'technology': 'technology'
+        'technology': 'technology',
+        # New categories for expanded coverage
+        'politics': 'politics',
+        'world': 'international',
+        'environment': 'climate',
+        'finance': 'finance',
+        'crime': 'crime',
+        'education': 'education',
+        'weather': 'weather'
     }
     
     # Initialize cache

@@ -6,7 +6,7 @@ as specified in Milestone 1 of the technical specification.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock, mock_open, Mock
 from datetime import datetime, timedelta, UTC
 import json
 from pathlib import Path

@@ -94,7 +94,7 @@ class WebConfig:
         
         # Convert form data to config dictionary
         # Auto-configure news topics for comprehensive coverage (no user selection needed)
-        news_topics_str = 'business,entertainment,general,health,science,sports,technology'  # All NewsAPI categories
+        news_topics_str = 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'  # Expanded categories
         
         config_dict = {
             # API Keys

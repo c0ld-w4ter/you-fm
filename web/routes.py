@@ -316,6 +316,8 @@ def data_report():
             report_lines.append(f"Error fetching news articles: {str(e)}")
             report_lines.append("")
         
+
+        
         # Footer
         end_time = time.perf_counter()
         fetch_time = round(end_time - start_time, 2)

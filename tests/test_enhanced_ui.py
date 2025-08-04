@@ -75,7 +75,7 @@ class TestEnhancedUI:
             'elevenlabs_api_key': 'test_key',
         }
         config = WebConfig.create_config_from_form(form_data)
-        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'
 
     def test_news_topics_has_choices(self, app):
         """Test that news topics field was removed for UI simplification."""
@@ -141,7 +141,7 @@ class TestEnhancedUI:
         config = WebConfig.create_config_from_form(form_data)
         
         # Always uses all categories regardless of user input
-        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'
 
     def test_string_input_still_works(self):
         """Test that news topics are auto-configured (user input ignored)."""
@@ -156,7 +156,7 @@ class TestEnhancedUI:
         config = WebConfig.create_config_from_form(form_data)
         
         # Always auto-configured to all categories
-        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'
 
     def test_empty_checkbox_selection(self):
         """Test that news topics are auto-configured (empty input ignored)."""
@@ -171,7 +171,7 @@ class TestEnhancedUI:
         config = WebConfig.create_config_from_form(form_data)
         
         # Always auto-configured to all categories for comprehensive coverage
-        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'
 
 
 # Manual Testing Guide

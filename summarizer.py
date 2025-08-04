@@ -272,6 +272,8 @@ Source: {article.source}
 Content: {content}
 """)
             news_info = "\n".join(news_items)
+
+
         
         # Create enhanced prompt for combined summarization and script generation with style awareness
         listener_greeting = f" for {listener_name}" if listener_name else ""

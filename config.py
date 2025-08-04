@@ -46,7 +46,7 @@ class Config:
         
         # Content settings - Simplified for fast iteration
         'BRIEFING_DURATION_MINUTES': '5',  # Updated from 3 to 5 minutes for more content
-        'NEWS_TOPICS': 'business,entertainment,general,health,science,sports,technology',  # All NewsAPI categories for comprehensive coverage
+        'NEWS_TOPICS': 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather',  # Expanded categories for comprehensive coverage
         'MAX_ARTICLES_PER_TOPIC': '100',  # Maximum articles for comprehensive news gathering
         
         # TTS Provider settings

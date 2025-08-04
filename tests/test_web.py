@@ -141,7 +141,7 @@ class TestWebConfig:
         assert config.get('CONTENT_DEPTH') == 'balanced'  # Hardcoded
         assert config.get('KEYWORDS_EXCLUDE') == ''  # Hardcoded
         assert config.get('VOICE_SPEED') == '1.0'  # Hardcoded
-        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'  # Auto-configured
+        assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'  # Auto-configured
         assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'  # Auto-configured
 
     def test_form_defaults_include_advanced_fields(self):
@@ -231,7 +231,7 @@ class TestAdvancedFieldsIntegration:
             assert config.get('LISTENER_NAME') == 'Integration Test User'
             assert config.get('LOCATION_CITY') == 'Boston'
             assert config.get('BRIEFING_DURATION_MINUTES') == '12'
-            assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology'  # Auto-configured
+            assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'  # Auto-configured
             assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'  # Auto-configured
             assert config.get('BRIEFING_TONE') == 'casual'
             assert config.get('CONTENT_DEPTH') == 'balanced'  # Hardcoded
