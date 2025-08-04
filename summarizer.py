@@ -89,79 +89,6 @@ def generate_style_instructions(tone: str, depth: str, listener_name: str = "") 
     }
 
 
-def summarize_articles(articles: List[Article]) -> List[Article]:
-    """
-    Summarize a list of articles using Google Gemini API.
-    
-    Args:
-        articles: List of Article objects to summarize
-        
-    Returns:
-        List of Article objects with populated summary fields
-        
-    Raises:
-        Exception: If Gemini API call fails
-    """
-    logger.info(f"Summarizing {len(articles)} articles...")
-    
-    if not articles:
-        logger.info("No articles to summarize")
-        return articles
-    
-    try:
-        import google.generativeai as genai
-        
-        # Get configuration
-        config = get_config()
-        api_key = config.get('GEMINI_API_KEY')
-        
-        # Configure the Gemini API
-        genai.configure(api_key=api_key)
-        
-        # Use Gemini 2.5 Pro for high-quality summarization
-        model = genai.GenerativeModel('gemini-2.5-pro')
-        
-        # Summarize each article
-        for i, article in enumerate(articles, 1):
-            logger.info(f"Summarizing article {i}/{len(articles)}: {article.title}")
-            
-            try:
-                # Create a prompt for summarization
-                prompt = f"""
-Please provide a concise, informative summary of this news article in 2-3 sentences.
-Focus on the key facts, main points, and any important implications.
-Keep the summary objective and factual.
-
-Article Title: {article.title}
-Source: {article.source}
-Content: {article.content}
-
-Summary:"""
-
-                # Call Gemini API
-                response = model.generate_content(prompt)
-                
-                # Update the article with the summary
-                article.summary = response.text.strip()
-                logger.info(f"✓ Successfully summarized: {article.title}")
-                
-            except Exception as e:
-                logger.error(f"Failed to summarize article '{article.title}': {e}")
-                # Fallback to truncated content
-                article.summary = f"[Auto-summary unavailable] {article.content[:200]}..." if len(article.content) > 200 else article.content
-                
-        logger.info("✓ Article summarization completed")
-        return articles
-        
-    except Exception as e:
-        logger.error(f"Gemini API setup failed: {e}")
-        # Fallback: use truncated content as summary
-        for article in articles:
-            article.summary = f"[Summary unavailable] {article.content[:200]}..." if len(article.content) > 200 else article.content
-        
-        raise Exception(f"Failed to summarize articles with Gemini API: {e}")
-
-
 def create_briefing_script(weather_data, articles: List[Article], config=None) -> str:
     """
     Create the final briefing script from all data sources using AI.
@@ -315,7 +242,7 @@ NEWS ARTICLES (analyze and select the most newsworthy):
 {news_info}
 
 SCRIPT GENERATION INSTRUCTIONS:
-1. {"START WITH EXACTLY THIS GREETING: '" + greeting_preference + "' then mention the date" if greeting_preference else "Create a warm greeting that matches the specified TONE and includes the date"}{f" and addresses {listener_name} by name" if listener_name and not greeting_preference else ""}
+1. {"Start with the user's preferred greeting: '" + greeting_preference + "' then mention the date" if greeting_preference else "Create a warm greeting that matches the specified TONE and includes the date"}{f" and addresses {listener_name} by name" if listener_name and not greeting_preference else ""}
 2. Present the weather information conversationally, mentioning notable conditions using the specified TONE
 3. INTELLIGENTLY SELECT and SUMMARIZE news stories, giving priority to:
    - Breaking news of high importance

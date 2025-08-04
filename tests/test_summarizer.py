@@ -12,7 +12,6 @@ from typing import List
 import google.generativeai as genai
 
 from summarizer import (
-    summarize_articles, 
     create_briefing_script,
     filter_articles_by_keywords,
     generate_style_instructions
