@@ -100,7 +100,7 @@ def settings():
                 'location_country': form.location_country.data,
                 'briefing_duration_minutes': form.briefing_duration_minutes.data,
                 'news_topics': news_topics_str,  # Auto-configured to all categories
-                'max_articles_per_topic': 100,  # Auto-configured for comprehensive coverage
+                'max_articles_per_topic': 25,  # Reduced from 100 to prevent overwhelming Flash model
                 'google_tts_voice_name': form.google_tts_voice_name.data,  # Store Google TTS voice selection
                 'aws_region': form.aws_region.data,
                 

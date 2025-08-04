@@ -112,7 +112,7 @@ class WebConfig:
             # Content Settings - Simplified for fast iteration
             'BRIEFING_DURATION_MINUTES': str(form_data.get('briefing_duration_minutes', 5)),
             'NEWS_TOPICS': news_topics_str,  # Auto-configured to all categories
-            'MAX_ARTICLES_PER_TOPIC': '100',  # Auto-configured for comprehensive news gathering
+            'MAX_ARTICLES_PER_TOPIC': '25',  # Reduced from 100 to prevent overwhelming Flash model
             
             # Audio Settings
             'TTS_PROVIDER': tts_provider,

@@ -47,7 +47,7 @@ class Config:
         # Content settings - Simplified for fast iteration
         'BRIEFING_DURATION_MINUTES': '5',  # Updated from 3 to 5 minutes for more content
         'NEWS_TOPICS': 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather',  # Expanded categories for comprehensive coverage
-        'MAX_ARTICLES_PER_TOPIC': '100',  # Maximum articles for comprehensive news gathering
+        'MAX_ARTICLES_PER_TOPIC': '25',  # Reduced from 100 to prevent overwhelming Flash model
         
         # TTS Provider settings
         'TTS_PROVIDER': 'google',  # 'google' (recommended - Neural2) or 'elevenlabs' (legacy)

@@ -9,7 +9,8 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from typing import List
 
-import google.generativeai as genai
+# Remove the module-level import that causes authentication warnings
+# import google.generativeai as genai  # <-- Removed this line
 
 from summarizer import (
     create_briefing_script,
@@ -193,12 +194,28 @@ class TestStyleAwareBriefingScript:
     """Test style-aware briefing script generation."""
     
     @patch('summarizer.filter_articles_by_keywords')
+    @patch('summarizer.summarize_articles_with_flash')
     @patch('google.generativeai.configure')
     @patch('google.generativeai.GenerativeModel')
-    def test_create_briefing_script_with_style_filtering(self, mock_model_class, mock_configure, mock_filter):
+    def test_create_briefing_script_with_style_filtering(self, mock_model_class, mock_configure, mock_flash, mock_filter):
         """Test briefing script creation with keyword filtering and style awareness."""
         # Setup mocks
         mock_filter.return_value = create_test_articles()[:2]  # Return filtered articles
+        
+        # Mock Flash analysis to return analyzed articles
+        mock_flash.return_value = [
+            {
+                'title': 'Tech Innovation in Sports',
+                'source': 'TechNews',
+                'importance_score': 8,
+                'relevance_score': 7,
+                'combined_score': 15,
+                'processed_content': 'Technology revolutionizes sports performance tracking.',
+                'key_entities': ['technology', 'sports'],
+                'reasoning': 'High relevance to tech interests'
+            }
+        ]
+        
         mock_model = MagicMock()
         mock_response = MagicMock()
         mock_response.text = "Here's your personalized casual briefing for today, Alice..."
@@ -246,8 +263,12 @@ class TestStyleAwareBriefingScript:
         
         # Verify that AI was configured and called
         mock_configure.assert_called_once_with(api_key='test_key')
+        # With mocked Flash function, only Pro model is called
         mock_model_class.assert_called_once_with('gemini-2.5-pro')
         assert mock_model.generate_content.called
+        
+        # Verify Flash was called with correct parameters
+        mock_flash.assert_called_once_with(mock_filter.return_value, config, 'test_key')
         
         # Get the prompt that was sent to AI
         call_args = mock_model.generate_content.call_args[0]
