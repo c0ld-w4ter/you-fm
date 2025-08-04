@@ -115,10 +115,9 @@ class TestEnhancedUI:
     def test_max_articles_per_topic_validation(self):
         """Test that max articles per topic is now auto-configured."""
         defaults = WebConfig.get_form_defaults()
-        # max_articles_per_topic field was removed - it's now auto-configured to 100
         assert 'max_articles_per_topic' not in defaults  # Field removed for UI simplification
         
-        # Verify that when creating config, max articles is automatically set to 100
+        # Verify that when creating config, max articles is automatically set to 25
         form_data = {
             'newsapi_key': 'test_key',
             'openweather_api_key': 'test_key',
@@ -126,7 +125,7 @@ class TestEnhancedUI:
             'elevenlabs_api_key': 'test_key',
         }
         config = WebConfig.create_config_from_form(form_data)
-        assert config.get('MAX_ARTICLES_PER_TOPIC') == '100'
+        assert config.get('MAX_ARTICLES_PER_TOPIC') == '25'
 
     def test_checkbox_list_to_string_conversion(self):
         """Test that news topics are now auto-configured regardless of input."""
