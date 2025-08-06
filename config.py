@@ -34,7 +34,7 @@ class Config:
         'NEWSAPI_AI_KEY',            # NewsAPI.ai API key (replacement for NewsAPI.org)
         'OPENWEATHER_API_KEY',       # OpenWeatherMap API key
         'GEMINI_API_KEY',            # Google Gemini API key
-        # TTS provider is now configurable - at least one API key required
+        'ELEVENLABS_API_KEY',        # ElevenLabs API key for TTS
     ]
     
     # Optional configuration with defaults
@@ -50,16 +50,16 @@ class Config:
         'MAX_ARTICLES_PER_TOPIC': '25',  # Reduced from 100 to prevent overwhelming Flash model
         
         # TTS Provider settings
-        'TTS_PROVIDER': 'google',  # 'google' (recommended - Neural2) or 'elevenlabs' (legacy)
+        'TTS_PROVIDER': 'elevenlabs',  # 'elevenlabs' (recommended - high quality) or 'google' (fallback)
         
         # Audio settings - ElevenLabs
-        'ELEVENLABS_API_KEY': '',  # Optional - only needed if using ElevenLabs
-        'ELEVENLABS_VOICE_ID': 'default',  # Use default voice
+        'ELEVENLABS_API_KEY': '',  # Required for TTS generation
+        'ELEVENLABS_VOICE_ID': 'default',  # Use default voice (Rachel)
         
-        # Audio settings - Google TTS
-        'GOOGLE_API_KEY': '',  # Google API key for TTS (alternative to credentials)
+        # Audio settings - Google TTS (fallback)
+        'GOOGLE_API_KEY': '',  # Google API key for TTS (fallback option)
         'GOOGLE_CLOUD_CREDENTIALS_PATH': '',  # Path to service account JSON (optional)
-        'GOOGLE_TTS_VOICE_NAME': 'en-US-Neural2-C',  # Google TTS Neural2 voice name (recommended)
+        'GOOGLE_TTS_VOICE_NAME': 'en-US-Neural2-C',  # Google TTS Neural2 voice name (fallback)
         'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
         
         # AWS settings (optional for S3 upload)

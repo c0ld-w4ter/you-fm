@@ -31,25 +31,25 @@ class APIKeysForm(FlaskForm):
         render_kw={'placeholder': 'Enter your Google Gemini API key'}
     )
     
-    # TTS Provider Selection - Google TTS (Neural2) Recommended
+    # TTS Provider Selection - ElevenLabs Recommended
     tts_provider = SelectField(
         'Text-to-Speech Provider',
         choices=[
-            ('google', 'Google Cloud Text-to-Speech (Recommended - Neural2 Voices)'),
-            ('elevenlabs', 'ElevenLabs (Legacy Support)')
+            ('elevenlabs', 'ElevenLabs (Recommended - High Quality Voices)'),
+            ('google', 'Google Cloud Text-to-Speech (Fallback)')
         ],
-        default='google',
+        default='elevenlabs',
         validators=[DataRequired()]
     )
     
     elevenlabs_api_key = StringField(
-        'ElevenLabs API Key (Optional - only needed if using ElevenLabs)',
-        validators=[Optional()],
+        'ElevenLabs API Key (Required for high-quality TTS)',
+        validators=[DataRequired(message='ElevenLabs API Key is required')],
         render_kw={'placeholder': 'Enter your ElevenLabs API key'}
     )
     
     google_api_key = StringField(
-        'Google API Key (Optional - only needed if using Google TTS)',
+        'Google API Key (Optional - only needed if using Google TTS fallback)',
         validators=[Optional()],
         render_kw={'placeholder': 'Enter your Google API key'}
     )
@@ -153,21 +153,19 @@ class SettingsForm(FlaskForm):
     
     # Removed: content_depth (hardcoded to 'balanced'), keywords_exclude (let AI handle filtering)
     
-    # Audio Settings - Google TTS Neural2 Voice Selection Only
-    google_tts_voice_name = SelectField(
-        'Voice Selection (Google Neural2 - High Quality)',
+    # Audio Settings - ElevenLabs Voice Selection
+    elevenlabs_voice_id = SelectField(
+        'Voice Selection (ElevenLabs - Premium Quality)',
         choices=[
-            ('en-US-Neural2-C', 'Neural2-C - Professional Female (Default)'),
-            ('en-US-Neural2-A', 'Neural2-A - Professional Male'),
-            ('en-US-Neural2-D', 'Neural2-D - Conversational Male'),
-            ('en-US-Neural2-E', 'Neural2-E - Conversational Female'),
-            ('en-US-Neural2-F', 'Neural2-F - Warm Female'),
-            ('en-US-Neural2-G', 'Neural2-G - Clear Female'),
-            ('en-US-Neural2-H', 'Neural2-H - Expressive Female'),
-            ('en-US-Neural2-I', 'Neural2-I - Deep Male'),
-            ('en-US-Neural2-J', 'Neural2-J - Authoritative Male'),
+            ('default', 'Rachel - Professional Female (Default)'),
+            ('21m00Tcm4TlvDq8ikWAM', 'Rachel - Professional Female'),
+            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Conversational Female'),
+            ('VR6AewLTigWG4xSOukaG', 'Arnold - Authoritative Male'),
+            ('pNInz6obpgDQGcFmaJgB', 'Adam - Deep Male'),
+            ('Xb7hH8MSUJpSbSDYk0k2', 'Alice - Warm Female'),
+            ('onwK4e9ZLuTAKqWW03F9', 'Daniel - Professional Male'),
         ],
-        default='en-US-Neural2-C',
+        default='default',
         validators=[Optional()]
     )
     
@@ -318,21 +316,19 @@ class BriefingConfigForm(FlaskForm):
         render_kw={'min': 1, 'max': 10}
     )
     
-    # Audio Settings - Google TTS Neural2 Voice Selection Only
-    google_tts_voice_name = SelectField(
-        'Voice Selection (Google Neural2 - High Quality)',
+    # Audio Settings - ElevenLabs Voice Selection
+    elevenlabs_voice_id = SelectField(
+        'Voice Selection (ElevenLabs - Premium Quality)',
         choices=[
-            ('en-US-Neural2-C', 'Neural2-C - Professional Female (Default)'),
-            ('en-US-Neural2-A', 'Neural2-A - Professional Male'),
-            ('en-US-Neural2-D', 'Neural2-D - Conversational Male'),
-            ('en-US-Neural2-E', 'Neural2-E - Conversational Female'),
-            ('en-US-Neural2-F', 'Neural2-F - Warm Female'),
-            ('en-US-Neural2-G', 'Neural2-G - Clear Female'),
-            ('en-US-Neural2-H', 'Neural2-H - Expressive Female'),
-            ('en-US-Neural2-I', 'Neural2-I - Deep Male'),
-            ('en-US-Neural2-J', 'Neural2-J - Authoritative Male'),
+            ('default', 'Rachel - Professional Female (Default)'),
+            ('21m00Tcm4TlvDq8ikWAM', 'Rachel - Professional Female'),
+            ('EXAVITQu4vr4xnSDxMaL', 'Bella - Conversational Female'),
+            ('VR6AewLTigWG4xSOukaG', 'Arnold - Authoritative Male'),
+            ('pNInz6obpgDQGcFmaJgB', 'Adam - Deep Male'),
+            ('Xb7hH8MSUJpSbSDYk0k2', 'Alice - Warm Female'),
+            ('onwK4e9ZLuTAKqWW03F9', 'Daniel - Professional Male'),
         ],
-        default='en-US-Neural2-C',
+        default='default',
         validators=[Optional()]
     )
     

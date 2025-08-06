@@ -134,7 +134,7 @@ class TestGenerateAudioElevenLabs:
         mock_client.text_to_speech.convert.assert_called_once_with(
             text=script_text,
             voice_id='test-voice-id',
-            model_id="eleven_multilingual_v2",
+            model_id="eleven_flash_v2_5",
             output_format="mp3_44100_128",
             voice_settings={
                 "stability": 0.75,
@@ -169,7 +169,7 @@ class TestGenerateAudioElevenLabs:
         mock_client.text_to_speech.convert.assert_called_once_with(
             text="Test script",
             voice_id="21m00Tcm4TlvDq8ikWAM",  # Rachel voice
-            model_id="eleven_multilingual_v2",
+            model_id="eleven_flash_v2_5",
             output_format="mp3_44100_128",
             voice_settings={
                 "stability": 0.75,

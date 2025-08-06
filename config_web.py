@@ -162,7 +162,7 @@ class WebConfig:
             'location_city': 'Denver',
             'location_country': 'US',
             # Removed news_topics, max_articles_per_topic - these are now auto-configured
-            'google_tts_voice_name': 'en-US-Neural2-C',
+            'elevenlabs_voice_id': 'default',
             'briefing_duration_minutes': 5,  # Updated from 3 to 5 minutes
             'listener_name': '',
             

@@ -87,17 +87,16 @@ class TestVoiceSelectionFlow:
             settings_form = SettingsForm()
             briefing_form = BriefingConfigForm()
             
-            settings_choices = settings_form.google_tts_voice_name.choices
-            briefing_choices = briefing_form.google_tts_voice_name.choices
+            settings_choices = settings_form.elevenlabs_voice_id.choices
+            briefing_choices = briefing_form.elevenlabs_voice_id.choices
             
             # Both forms should have the same voice choices
             assert settings_choices == briefing_choices
             
-            # Should have Neural2 voices
+            # Should have ElevenLabs voices
             choice_texts = [choice[1] for choice in settings_choices]
-            assert any('Neural2' in choice_text for choice_text in choice_texts), "Should have Neural2 voices"
-            assert any('Female' in choice_text for choice_text in choice_texts), "Should have female voices"
-            assert any('Male' in choice_text for choice_text in choice_texts), "Should have male voices"
+            assert any('Rachel' in choice_text for choice_text in choice_texts), "Should have Rachel voice"
+            assert any('Professional Female' in choice_text for choice_text in choice_texts), "Should have descriptive voice names"
     
     def test_config_creation_preserves_voice_id(self, form_data):
         """Test that voice ID is properly preserved when creating Config from form data."""
@@ -131,18 +130,18 @@ class TestVoicePreview:
     
     @patch('tts_generator.generate_audio')
     def test_preview_voice_endpoint(self, mock_generate_audio, client):
-        """Test the voice preview endpoint with Google TTS."""
+        """Test the voice preview endpoint with ElevenLabs TTS."""
         mock_generate_audio.return_value = b'fake_audio_data'
         
         # Set up session with API keys
         with client.session_transaction() as sess:
             sess['api_keys'] = {
-                'google_api_key': 'test_api_key'
+                'elevenlabs_api_key': 'test_api_key'
             }
         
-        # Test voice preview request with Neural2 voice
+        # Test voice preview request with ElevenLabs voice
         response = client.post('/preview-voice',
-                              json={'voice_id': 'en-US-Neural2-C'},
+                              json={'voice_id': 'default'},
                               content_type='application/json')
         
         assert response.status_code == 200
@@ -150,33 +149,33 @@ class TestVoicePreview:
         
         assert data['success'] is True
         assert 'audio_data' in data
-        assert data['voice_id'] == 'en-US-Neural2-C'
+        assert data['voice_id'] == 'default'
         
         # Verify the mock was called with correct config
         mock_generate_audio.assert_called_once()
         args, kwargs = mock_generate_audio.call_args
         preview_text, config_obj = args
         
-        assert "Neural2 voice" in preview_text
-        assert config_obj.get('TTS_PROVIDER') == 'google'
-        assert config_obj.get('GOOGLE_TTS_VOICE_NAME') == 'en-US-Neural2-C'
+        assert "ElevenLabs voice" in preview_text
+        assert config_obj.get('TTS_PROVIDER') == 'elevenlabs'
+        assert config_obj.get('ELEVENLABS_VOICE_ID') == 'default'
     
     def test_preview_voice_no_api_key(self, client):
-        """Test voice preview fails without Google API key."""
+        """Test voice preview fails without ElevenLabs API key."""
         response = client.post('/preview-voice',
-                              json={'voice_id': 'en-US-Neural2-C'},
+                              json={'voice_id': 'default'},
                               content_type='application/json')
         
         assert response.status_code == 200
         data = json.loads(response.data)
         
         assert data['success'] is False
-        assert 'Google TTS API key not configured' in data['error']
+        assert 'ElevenLabs API key not configured' in data['error']
     
     def test_preview_voice_no_voice_id(self, client):
-        """Test voice preview fails without voice name."""
+        """Test voice preview fails without voice ID."""
         with client.session_transaction() as sess:
-            sess['api_keys'] = {'google_api_key': 'test_key'}
+            sess['api_keys'] = {'elevenlabs_api_key': 'test_key'}
         
         response = client.post('/preview-voice',
                               json={},
@@ -186,7 +185,7 @@ class TestVoicePreview:
         data = json.loads(response.data)
         
         assert data['success'] is False
-        assert 'No voice name provided' in data['error']
+        assert 'No voice ID provided' in data['error']
 
 
 class TestTTSVoiceGeneration:

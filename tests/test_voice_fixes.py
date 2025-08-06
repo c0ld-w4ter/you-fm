@@ -129,8 +129,8 @@ class TestVoiceFixes:
             briefing_form = BriefingConfigForm()
             
             # Test that forms have same choices
-            settings_choices = settings_form.google_tts_voice_name.choices
-            briefing_choices = briefing_form.google_tts_voice_name.choices
+            settings_choices = settings_form.elevenlabs_voice_id.choices
+            briefing_choices = briefing_form.elevenlabs_voice_id.choices
             
             assert settings_choices == briefing_choices
             
@@ -141,8 +141,8 @@ class TestVoiceFixes:
                 assert len(voice_id) > 0, "Voice ID should not be empty"
                 assert len(description) > 0, "Description should not be empty"
                 
-            # Should have Neural2 voices
+            # Should have ElevenLabs voices
             choice_texts = [choice[1] for choice in settings_choices]
-            assert any('Neural2' in choice_text for choice_text in choice_texts), "Should have Neural2 voices"
+            assert any('Rachel' in choice_text for choice_text in choice_texts), "Should have Rachel voice"
             assert any('Female' in choice_text for choice_text in choice_texts), "Should have female voices"
             assert any('Male' in choice_text for choice_text in choice_texts), "Should have male voices" 

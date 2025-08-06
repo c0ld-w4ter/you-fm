@@ -114,7 +114,7 @@ The following API keys are required and can be entered through the web form:
 - **NewsAPI.ai Key**: For fetching news articles (replacement for NewsAPI.org)
 - **OpenWeatherMap API Key**: For weather data
 - **Google Gemini API Key**: For AI summarization and script generation
-- **ElevenLabs API Key**: For text-to-speech conversion
+- **ElevenLabs API Key**: For high-quality text-to-speech conversion
 
 ### Optional Configuration (via Web Interface)
 **Simplified UI for Fast Iteration** - Configuration made streamlined for rapid development:
@@ -166,6 +166,7 @@ DEFAULT_ROUTINE="I listen during my morning coffee"
 1. **NewsAPI.ai**: Register at [newsapi.ai](https://newsapi.ai/) (replacement for NewsAPI.org with better pricing and features)
 2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
 3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
+4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/) for cost-effective voice generation (using Flash v2.5 model)
 
 
 ## 🏃 Running the Application
@@ -206,7 +207,7 @@ python app.py
 - ✅ **Live Data Aggregation**: Weather and News data fetching
 - ✅ **AI Summarization**: Google Gemini 2.5 Pro for article summaries
 - ✅ **AI Script Generation**: Natural, professional briefing scripts
-- ✅ **Text-to-Speech**: High-quality audio generation via ElevenLabs
+- ✅ **Text-to-Speech**: Cost-optimized audio generation via ElevenLabs Flash v2.5 (50% cost savings)
 - ✅ **Multi-Page Interface**: Intuitive step-by-step configuration process
 - ✅ **Local File Storage**: Audio files saved in `static/audio/` directory
 - ✅ **Intelligent Selection**: AI-powered story prioritization

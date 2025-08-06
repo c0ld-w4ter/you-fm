@@ -119,8 +119,9 @@ class TestTTSConfigurationValidation:
         # Test valid Google TTS configuration
         config_data = {
             'NEWSAPI_AI_KEY': 'test-news-key',
-            'OPENWEATHER_API_KEY': 'test-weather-key', 
+            'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',  # Required even for Google TTS
             'TTS_PROVIDER': 'google',
             'GOOGLE_TTS_VOICE_NAME': 'en-US-Journey-D',
             'GOOGLE_TTS_LANGUAGE_CODE': 'en-US'
@@ -158,7 +159,7 @@ class TestTTSConfigurationValidation:
             config = Config(config_data)
             config._validate_tts_config()
         
-        assert "ELEVENLABS_API_KEY is required" in str(exc_info.value)
+        assert "ELEVENLABS_API_KEY" in str(exc_info.value)
     
     def test_invalid_tts_provider(self):
         """Test validation with invalid TTS provider."""
@@ -166,6 +167,7 @@ class TestTTSConfigurationValidation:
             'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
             'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key',  # Required
             'TTS_PROVIDER': 'invalid_provider'
         }
         
@@ -307,15 +309,18 @@ class TestTTSPerformanceAndCompatibility:
 class TestTTSMigrationCompatibility:
     """Test cases for ensuring compatibility during the ElevenLabs to Google TTS migration."""
     
-    def test_default_provider_is_google(self):
-        """Test that Google is the default TTS provider after migration."""
+    def test_default_provider_is_elevenlabs(self):
+        """Test that ElevenLabs is the default TTS provider after migration."""
         config_data = {
             'NEWSAPI_AI_KEY': 'test-news-key',
             'OPENWEATHER_API_KEY': 'test-weather-key',
-            'GEMINI_API_KEY': 'test-gemini-key'
+            'GEMINI_API_KEY': 'test-gemini-key',
+            'ELEVENLABS_API_KEY': 'test-elevenlabs-key'  # Required
         }
         config = Config(config_data)
-        assert config.get('TTS_PROVIDER', 'google').lower() == 'google'
+        
+        # Should default to ElevenLabs
+        assert config.get('TTS_PROVIDER') == 'elevenlabs'
     
     @patch('tts_generator.get_config')
     def test_backward_compatibility_with_elevenlabs(self, mock_get_config):
