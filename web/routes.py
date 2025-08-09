@@ -1,5 +1,5 @@
 """
-Flask route handlers for AI Daily Briefing Agent web interface.
+Flask route handlers for You.FM web interface.
 
 This module defines HTTP endpoints for the web application.
 """
@@ -575,7 +575,7 @@ def health_check():
     """Health check endpoint."""
     return jsonify({
         'status': 'healthy',
-        'service': 'ai-daily-briefing-agent',
+        'service': 'you-fm',
         'timestamp': datetime.now(UTC).isoformat()
     })
 

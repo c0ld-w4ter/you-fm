@@ -1,5 +1,5 @@
 """
-Main Flask application for AI Daily Briefing Agent Web Interface.
+Main Flask application for You.FM Web Interface.
 
 This module provides the web server entry point and application configuration.
 """
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     For production deployment, use a WSGI server like Gunicorn:
     gunicorn -w 4 -b 0.0.0.0:5000 app:app
     """
-    logger.info("Starting AI Daily Briefing Agent Web Interface...")
+    logger.info("Starting You.FM Web Interface...")
     logger.info("Access the application at: http://localhost:8080")
     
     # Run development server

@@ -1,4 +1,4 @@
-# AI Daily Briefing Agent
+# You.FM
 
 A modern web application that generates personalized, AI-powered daily audio news briefings. The system features an intuitive web interface where users can configure their preferences and generate custom audio briefings from multiple data sources including news and weather.
 
@@ -39,7 +39,7 @@ The interface has been significantly streamlined to enable **rapid testing and d
 
 1. **Clone and navigate to the project**:
    ```bash
-   cd ai-daily-briefing-agent
+   cd you-fm
    ```
 
 2. **Create and activate virtual environment**:
@@ -257,7 +257,7 @@ We maintain comprehensive technical documentation in two focused documents:
 ## 📁 Project Structure
 
 ```
-ai-daily-briefing-agent/
+you-fm/
 ├── app.py                  # Flask application entry point (✅ Milestone 4)
 ├── config_web.py           # Web form to config mapping (✅ Milestone 4)
 ├── web/                    # Web interface modules (✅ Milestone 4)

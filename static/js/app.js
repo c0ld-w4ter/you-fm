@@ -1,10 +1,10 @@
 /**
- * JavaScript for AI Daily Briefing Agent Web Interface
+ * JavaScript for You.FM Web Interface
  * Provides enhanced user experience and form interactions
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('AI Daily Briefing Agent - Web Interface Loaded');
+    console.log('You.FM - Web Interface Loaded');
     
     // Initialize all functionality
     initFormValidation();

@@ -1,5 +1,5 @@
 """
-Main Lambda handler for AI Daily Briefing Agent.
+Main Lambda handler for You.FM.
 
 This module orchestrates the entire workflow:
 1. Fetch data from external sources
@@ -31,7 +31,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Response dictionary with status and message
     """
     try:
-        logger.info("Starting AI Daily Briefing Agent...")
+        logger.info("Starting You.FM...")
         
         # Load configuration
         config = get_config()
@@ -275,7 +275,7 @@ def main():
     
     This allows running the briefing generator locally during development.
     """
-    print("AI Daily Briefing Agent - Local Test Mode")
+    print("You.FM - Local Test Mode")
     print("=" * 50)
     
     try:

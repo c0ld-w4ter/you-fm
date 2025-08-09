@@ -1,5 +1,5 @@
 """
-Unit tests for AI Daily Briefing Agent web interface.
+Unit tests for You.FM web interface.
 
 Tests the Flask web application functionality including form validation,
 route handlers, and configuration integration.
@@ -678,7 +678,7 @@ class TestRouteHandlers:
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['status'] == 'healthy'
-        assert data['service'] == 'ai-daily-briefing-agent'
+        assert data['service'] == 'you-fm'
     
     def test_audio_file_serving(self, client):
         """Test audio file serving endpoint."""

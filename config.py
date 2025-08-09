@@ -1,5 +1,5 @@
 """
-Configuration module for AI Daily Briefing Agent.
+Configuration module for You.FM.
 
 This module handles loading configuration from environment variables during development
 and will be extended to support AWS Secrets Manager in production (Milestone 4).
@@ -27,7 +27,7 @@ class ConfigurationError(Exception):
 
 
 class Config:
-    """Configuration manager for the AI Daily Briefing Agent."""
+    """Configuration manager for You.FM."""
     
     # Required configuration keys
     REQUIRED_KEYS = [
