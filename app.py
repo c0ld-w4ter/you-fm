@@ -27,7 +27,7 @@ def create_app(config_name='development'):
     app = Flask(__name__)
     
     # Basic Flask configuration
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
     app.config['WTF_CSRF_ENABLED'] = True
     app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year for audio files
