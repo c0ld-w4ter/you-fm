@@ -1,6 +1,6 @@
 # You.FM
 
-An application to generate personalized podcast audio using AI. 
+Personalized AI News Podcast Generation 
 
 ## 🎵 Example Output
 
