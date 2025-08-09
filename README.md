@@ -165,7 +165,7 @@ DEFAULT_ROUTINE="I listen during my morning coffee"
 ### Getting API Keys
 1. **NewsAPI.ai**: Register at [newsapi.ai](https://newsapi.ai/) (replacement for NewsAPI.org with better pricing and features)
 2. **OpenWeatherMap**: Sign up at [openweathermap.org](https://openweathermap.org/api)
-3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/)
+3. **Google Gemini**: Access via [Google AI Studio](https://makersuite.google.com/) (make sure you have the gemini genrative language API enabled in Google Cloud)
 4. **ElevenLabs**: Sign up at [elevenlabs.io](https://elevenlabs.io/) for cost-effective voice generation (using Flash v2.5 model)
 
 
