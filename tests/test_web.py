@@ -65,7 +65,7 @@ class TestSettingsForm:
                 'location_country': 'US',
                 'briefing_duration_minutes': 8,
                 'elevenlabs_voice_id': 'default',
-                'aws_region': 'us-east-1',
+
                 # Only remaining advanced field
                 'briefing_tone': 'casual',
                 # Removed fields: content_depth, keywords_exclude, voice_speed, news_topics, max_articles_per_topic
@@ -127,7 +127,6 @@ class TestWebConfig:
             'location_country': 'US',
             'briefing_duration_minutes': 10,
             'elevenlabs_voice_id': 'default',
-            'aws_region': 'us-east-1',
             # Only remaining advanced field
             'briefing_tone': 'casual',
             # Removed fields are auto-configured
@@ -492,7 +491,6 @@ def valid_settings_data():
         'location_country': 'US',
         'briefing_duration_minutes': 8,
         'elevenlabs_voice_id': 'default',
-        'aws_region': 'us-east-1',
         # Only remaining advanced field
         'briefing_tone': 'casual',
         # Removed fields: content_depth, keywords_exclude, voice_speed, news_topics, max_articles_per_topic
@@ -514,8 +512,7 @@ def valid_form_data():
         'briefing_duration_minutes': 5,
         'news_topics': 'technology,business',
         'max_articles_per_topic': 3,
-        'elevenlabs_voice_id': 'default',
-        'aws_region': 'us-east-1'
+        'elevenlabs_voice_id': 'default'
     }
 
 

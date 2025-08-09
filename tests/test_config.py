@@ -65,7 +65,6 @@ class TestConfig:
             config = Config()
             
             # Verify default values are loaded
-            assert config.get('AWS_REGION') == 'us-east-1'
             assert config.get('LOCATION_CITY') == 'Denver'
             assert config.get('NEWS_TOPICS') == 'business,entertainment,general,health,science,sports,technology,politics,world,environment,finance,crime,education,weather'  # Updated for expanded coverage
     

@@ -92,7 +92,7 @@ Current test coverage includes **110+ comprehensive tests** covering:
 - ✅ **AI summarization with Google Gemini (17 tests)**
 - ✅ **Style-aware AI script generation with filtering**
 - ✅ **Text-to-Speech generation with ElevenLabs (12 tests)**
-- ✅ **Amazon S3 upload and authentication (18 tests)**
+
 - ✅ **Web interface and form validation (37 tests)**
 - ✅ **Advanced customization features and preview functionality**
 - ✅ **Route handlers and configuration integration**
@@ -280,16 +280,16 @@ you-fm/
 ├── data_fetchers.py        # External API data fetching (✅ Complete)
 ├── summarizer.py           # AI summarization with Gemini API (✅ Complete)
 ├── tts_generator.py        # Text-to-speech with ElevenLabs (✅ Complete)
-├── uploader.py             # Amazon S3 file upload (✅ Complete)
+
 ├── tests/                  # Unit tests (81+ tests)
 │   ├── test_config.py      # Configuration tests (✅ Complete)
 │   ├── test_data_fetchers.py # Data fetching tests (✅ Complete)
 │   ├── test_summarizer.py  # AI summarization tests (✅ Complete)
 │   ├── test_tts_generator.py # Text-to-speech tests (✅ Complete)
-│   ├── test_uploader.py    # Amazon S3 upload tests (✅ Complete)
+
 │   └── test_web.py         # Web interface tests (✅ Milestone 4)
 ├── requirements.txt        # Python dependencies (updated for Flask)
-├── iam_policy.json         # AWS Lambda execution policy
+
 └── .gitignore             # Git ignore rules
 ```
 
@@ -297,7 +297,7 @@ you-fm/
 
 - **No hardcoded secrets**: All API keys loaded from environment variables
 - **Graceful error handling**: Missing configuration handled safely
-- **AWS IAM policy**: Minimal permissions for Lambda execution
+
 - **Environment isolation**: Virtual environment for dependencies
 
 ## 🛠️ Development

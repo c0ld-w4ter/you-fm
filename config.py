@@ -62,10 +62,6 @@ class Config:
         'GOOGLE_TTS_VOICE_NAME': 'en-US-Neural2-C',  # Google TTS Neural2 voice name (fallback)
         'GOOGLE_TTS_LANGUAGE_CODE': 'en-US',  # Language code
         
-        # AWS settings (optional for S3 upload)
-        'AWS_REGION': 'us-east-1',
-        'S3_BUCKET_NAME': '',
-        
         # Advanced customization settings (Milestone 5)
         'BRIEFING_TONE': 'professional',  # professional, casual, energetic
         'CONTENT_DEPTH': 'balanced',       # headlines, balanced, detailed

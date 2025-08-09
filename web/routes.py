@@ -102,7 +102,6 @@ def settings():
                 'news_topics': news_topics_str,  # Auto-configured to all categories
                 'max_articles_per_topic': 25,  # Reduced from 100 to prevent overwhelming Flash model
                 'elevenlabs_voice_id': form.elevenlabs_voice_id.data,  # Store ElevenLabs voice selection
-                'aws_region': form.aws_region.data,
                 
                 # Simplified settings
                 'briefing_tone': form.briefing_tone.data,

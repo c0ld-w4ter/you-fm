@@ -1,6 +1,5 @@
-# Core HTTP and AWS libraries
+# Core HTTP libraries
 requests>=2.31.0
-boto3>=1.34.0
 
 # Google AI (for Gemini API)
 google-generativeai>=0.3.0

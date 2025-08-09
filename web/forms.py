@@ -239,7 +239,7 @@ class SettingsForm(FlaskForm):
         }
     )
     
-    aws_region = HiddenField(default='us-east-1')
+
     
     # Submit button
     submit = SubmitField('Save Settings & Continue')
@@ -332,7 +332,7 @@ class BriefingConfigForm(FlaskForm):
         validators=[Optional()]
     )
     
-    aws_region = HiddenField(default='us-east-1')
+
     
     # Submit button
     submit = SubmitField('Generate Daily Briefing')

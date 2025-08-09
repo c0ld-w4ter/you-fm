@@ -5,7 +5,6 @@ This module orchestrates the entire workflow:
 1. Fetch data from external sources
 2. Summarize content using AI
 3. Generate audio from text
-4. Upload to Amazon S3
 """
 
 import logging
@@ -158,7 +157,7 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
     This function will be expanded in each milestone:
     - Milestone 1: Fetch and assemble raw data ✅
     - Milestone 2: Add AI summarization ✅
-    - Milestone 3: Add audio generation and upload ✅
+    - Milestone 3: Add audio generation ✅
     
     Args:
         config: Optional Config object. If None, loads from environment variables.
@@ -178,7 +177,6 @@ def generate_daily_briefing(config: Config = None) -> Dict[str, Any]:
         from data_fetchers import get_weather, get_news_articles
         from summarizer import create_briefing_script  # Note: summarize_articles no longer needed
         from tts_generator import generate_audio, save_audio_locally
-        # from uploader import upload_to_s3  # Uncomment for S3 upload
         
         import time
 

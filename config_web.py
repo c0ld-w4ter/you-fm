@@ -120,10 +120,6 @@ class WebConfig:
             'GOOGLE_TTS_VOICE_NAME': form_data.get('google_tts_voice_name', 'en-US-Neural2-C'),
             'GOOGLE_TTS_LANGUAGE_CODE': form_data.get('google_tts_language_code', 'en-US'),
             
-            # AWS Settings
-            'AWS_REGION': form_data.get('aws_region', 'us-east-1'),
-            'S3_BUCKET_NAME': form_data.get('s3_bucket_name', ''),
-            
             # Customization settings - Simplified UI (some hardcoded for fast iteration)
             'BRIEFING_TONE': form_data.get('briefing_tone', 'professional'),
             'CONTENT_DEPTH': 'balanced',  # Hardcoded - removed from UI
@@ -158,7 +154,6 @@ class WebConfig:
             Dictionary of default form values
         """
         defaults = {
-            'aws_region': 'us-east-1',
             'location_city': 'Denver',
             'location_country': 'US',
             # Removed news_topics, max_articles_per_topic - these are now auto-configured
