@@ -1,5 +1,0 @@
----
-description: Consult this rule when making medium to large changes to the code base. 
-alwaysApply: false
----
-The @TECHNICAL_SPECIFICATION_FULL.md document is the authoritative source of truth for technical requirements, architecture, and milestone definitions. Before making any changes to this document, always prompt the user for explicit confirmation. Do not modify @TECHNICAL_SPECIFICATION_FULL.md automatically or without user approval.
