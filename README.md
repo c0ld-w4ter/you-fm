@@ -363,6 +363,6 @@ python -m pytest tests/test_<module>.py -v
 
 ## 📄 License
 
-This project is part of a technical specification implementation for an AI Daily Briefing Agent system.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
